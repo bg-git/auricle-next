@@ -317,8 +317,11 @@ export const getStaticPaths = async () => {
 
   const data = await shopifyFetch({ query });
 
-  const paths = data.collections.edges.map(({ node }: any) => ({
-    params: { handle: node.handle },
+  const handles = data.collections.edges.map(({ node }: any) => node.handle);
+  console.log('Collection handles fetched:', handles);
+
+  const paths = handles.map((handle: string) => ({
+    params: { handle },
   }));
 
   return {

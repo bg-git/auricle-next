@@ -440,8 +440,11 @@ export const getStaticPaths: GetStaticPaths = async () => {
 
   const data = await shopifyFetch({ query });
 
-  const paths = data.products.edges.map(({ node }: any) => ({
-    params: { handle: node.handle },
+  const handles = data.products.edges.map(({ node }: any) => node.handle);
+  console.log('Product handles fetched:', handles);
+
+  const paths = handles.map((handle: string) => ({
+    params: { handle },
   }));
 
   return {
