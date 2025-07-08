@@ -5,9 +5,11 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 First, set up the required environment variables:
 
 ```bash
-SHOPIFY_STORE_DOMAIN=<your-storefront-domain>
+SHOPIFY_STORE_DOMAIN=your-store.myshopify.com
 SHOPIFY_STOREFRONT_TOKEN=<your-storefront-token>
 ```
+
+`SHOPIFY_STORE_DOMAIN` should only contain the store domain and not include `http://` or `https://`.
 
 Then run the development server:
 
@@ -50,5 +52,5 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/b
 
 The application expects the following variables to be configured in your environment or in your Vercel project:
 
-- `SHOPIFY_STORE_DOMAIN` – the full Shopify domain for your store.
+- `SHOPIFY_STORE_DOMAIN` – your store's `.myshopify.com` domain without `http://` or `https://`.
 - `SHOPIFY_STOREFRONT_TOKEN` – a Storefront API access token with read and write permissions.
