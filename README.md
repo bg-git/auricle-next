@@ -2,7 +2,14 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-First, run the development server:
+First, set up the required environment variables:
+
+```bash
+SHOPIFY_STORE_DOMAIN=<your-storefront-domain>
+SHOPIFY_STOREFRONT_TOKEN=<your-storefront-token>
+```
+
+Then run the development server:
 
 ```bash
 npm run dev
@@ -38,3 +45,10 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
+
+## Environment Variables
+
+The application expects the following variables to be configured in your environment or in your Vercel project:
+
+- `SHOPIFY_STORE_DOMAIN` – the full Shopify domain for your store.
+- `SHOPIFY_STOREFRONT_TOKEN` – a Storefront API access token with read and write permissions.
