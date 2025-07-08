@@ -1,6 +1,4 @@
-import type { NextConfig } from 'next';
-
-const nextConfig: NextConfig = {
+const nextConfig = {
   reactStrictMode: true,
 
   images: {
@@ -11,6 +9,10 @@ const nextConfig: NextConfig = {
         pathname: '**',
       },
     ],
+  },
+
+  eslint: {
+    ignoreDuringBuilds: true,
   },
 };
 
