@@ -46,20 +46,69 @@
 }
 
 .mobile-filter-toggle {
-  display: block;
-  margin-top: 24px;
+  position: fixed;
+  bottom: 16px;
+  left: 0;
+  width: 100%;
+  padding: 0 16px;
+  display: flex;
+  justify-content: center;
+  z-index: 50;
 
   @media (min-width: 800px) {
     display: none;
   }
+
+  button {
+    background: #181818;
+    color: #fff;
+    font-size: 14px;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 4px;
+    width: 100%;
+    max-width: 500px;
+  }
 }
 
 .mobile-filter-drawer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
   background: #fff;
   padding: 16px;
   border-top: 1px solid #ccc;
+  z-index: 100;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+  max-height: 90vh;
+  overflow-y: auto;
 
   @media (min-width: 800px) {
     display: none;
+  }
+
+  button {
+    display: block;
+    margin-bottom: 16px;
+    font-size: 14px;
+    padding: 10px;
+    background: #181818;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    width: 100%;
+  }
+}
+.filters-desktop {
+  width: 100%;
+
+  @media (max-width: 799px) {
+    display: none;
+  }
+
+  @media (min-width: 800px) {
+    display: block;
+    width: 240px;
   }
 }

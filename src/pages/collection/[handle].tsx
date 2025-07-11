@@ -200,6 +200,7 @@ export default function CollectionPage({ products, title }: CollectionPageProps)
             {renderFilterSection('Finish', finishOptions, selectedFinishes, setSelectedFinishes)}
             {renderFilterSection('Gem Colour', gemColourOptions, selectedGemColours, setSelectedGemColours)}
             {renderFilterSection('Gem Type', gemTypeOptions, selectedGemTypes, setSelectedGemTypes)}
+            {renderFilterSection('Fitting', fittingOptions, selectedFittings, setSelectedFittings)}
           </div>
         )}
       </main>

@@ -52,15 +52,17 @@ interface ProductPageProps {
 }
 
 export default function ProductPage({ product }: ProductPageProps) {
-  const { addToCart } = useCart();
+  const { addToCart, openDrawer } = useCart(); // ✅ correct location
   const [selectedVariantId, setSelectedVariantId] = useState(
     product.variants?.edges?.[0]?.node?.id || null
   );
+
 
   if (!product) {
     return <div style={{ padding: '16px' }}>Product not found.</div>;
   }
 
+  
   const imageUrl = product.images?.edges?.[0]?.node?.url ?? '/placeholder.png';
   const metafields = product.metafields || [];
 
@@ -283,29 +285,41 @@ export default function ProductPage({ product }: ProductPageProps) {
                   </button>
                 </div>
 
-                <button
-                  style={{
-                    flex: '3',
-                    height: '40px',
-                    background: '#000',
-                    color: '#fff',
-                    border: 'none',
-                    fontSize: '14px',
-                    fontWeight: 900,
-                    cursor: 'pointer',
-                    borderRadius: '4px',
-                  }}
-                  onClick={() => {
-                    const qtyInput = document.getElementById('qty') as HTMLInputElement;
-                    const qty = qtyInput ? parseInt(qtyInput.value || '1') : 1;
-                    const variantId = selectedVariantId;
-                    if (variantId) {
-                      addToCart(variantId, qty);
-                    }
-                  }}
-                >
-                  ADD TO BAG
-                </button>
+ <button
+  style={{
+    flex: '3',
+    height: '40px',
+    background: '#000',
+    color: '#fff',
+    border: 'none',
+    fontSize: '14px',
+    fontWeight: 900,
+    cursor: 'pointer',
+    borderRadius: '4px',
+  }}
+  onClick={() => {
+    const qtyInput = document.getElementById('qty') as HTMLInputElement;
+    const qty = qtyInput ? parseInt(qtyInput.value || '1') : 1;
+    const variantId = selectedVariantId;
+
+    if (!variantId) {
+      console.warn('No variant ID selected');
+      return;
+    }
+
+    addToCart(variantId, qty, {
+      title: product.title,
+      price: product.priceRange.minVariantPrice.amount,
+      image: product.images?.edges?.[0]?.node?.url || undefined,
+    });
+
+    openDrawer();
+  }}
+>
+  ADD TO BAG
+</button>
+
+
               </div>
             </div>
 
