@@ -1,12 +1,43 @@
-import type { GetStaticProps } from 'next';
+import type {
+  GetStaticProps,
+  GetStaticPaths,
+  GetStaticPropsContext,
+} from 'next';
 import { shopifyFetch } from '@/lib/shopify';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
 
-export default function CollectionPage({ products, title }: any) {
-  const getMetafieldValue = (product: any, key: string): string | null => {
-    const field = product.metafields?.find((f: any) => f?.key === key);
+type Metafield = {
+  key: string;
+  value: string;
+};
+
+type ProductImage = {
+  node: {
+    url: string;
+    altText: string | null;
+  };
+};
+
+type Product = {
+  id: string;
+  title: string;
+  handle: string;
+  images?: {
+    edges: ProductImage[];
+  };
+  metafields?: Metafield[];
+};
+
+type CollectionPageProps = {
+  products: Product[];
+  title: string;
+};
+
+export default function CollectionPage({ products, title }: CollectionPageProps) {
+  const getMetafieldValue = (product: Product, key: string): string | null => {
+    const field = product.metafields?.find((f) => f?.key === key);
     if (!field?.value) return null;
 
     try {
@@ -19,7 +50,7 @@ export default function CollectionPage({ products, title }: any) {
 
   const extractOptions = (key: string): string[] => {
     const optionsSet = new Set<string>();
-    products.forEach((p: any) => {
+    products.forEach((p) => {
       const value = getMetafieldValue(p, key);
       if (value) optionsSet.add(value);
     });
@@ -39,7 +70,11 @@ export default function CollectionPage({ products, title }: any) {
   const [selectedFittings, setSelectedFittings] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
 
-  const toggle = (value: string, setFn: Function, selected: string[]) => {
+  const toggle = (
+    value: string,
+    setFn: React.Dispatch<React.SetStateAction<string[]>>,
+    selected: string[]
+  ) => {
     setFn(
       selected.includes(value)
         ? selected.filter((v) => v !== value)
@@ -47,7 +82,7 @@ export default function CollectionPage({ products, title }: any) {
     );
   };
 
-  const filteredProducts = products.filter((p: any) => {
+  const filteredProducts = products.filter((p) => {
     const metal = getMetafieldValue(p, 'metal') || '';
     const finish = getMetafieldValue(p, 'finish') || '';
     const gemColour = getMetafieldValue(p, 'gem_colour') || '';
@@ -67,7 +102,7 @@ export default function CollectionPage({ products, title }: any) {
     label: string,
     options: string[],
     selected: string[],
-    setFn: Function
+    setFn: React.Dispatch<React.SetStateAction<string[]>>
   ) => {
     if (options.length === 0) return null;
     return (
@@ -84,7 +119,7 @@ export default function CollectionPage({ products, title }: any) {
               marginBottom: '6px',
               background: selected.includes(option) ? '#000' : '#f9f9f9',
               color: selected.includes(option) ? '#fff' : '#000',
-              border: '1px solid #ccc',
+              border: '1px solid #e0e0e0',
               fontSize: '14px',
               cursor: 'pointer',
             }}
@@ -99,22 +134,20 @@ export default function CollectionPage({ products, title }: any) {
   return (
     <>
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '16px 16px 0' }}>
-        <h1 style={{ fontSize: '18px', fontWeight: 600 }}>{title}</h1>
+        <h1 style={{ fontSize: '30px', fontWeight: 900 }}>{title}</h1>
       </div>
 
       <main className="collection-page">
         <aside className="filters-desktop">
-          <p style={{ fontWeight: 600, fontSize: '14px' }}>Filters</p>
           {renderFilterSection('Metal', metalOptions, selectedMetals, setSelectedMetals)}
           {renderFilterSection('Finish', finishOptions, selectedFinishes, setSelectedFinishes)}
           {renderFilterSection('Gem Colour', gemColourOptions, selectedGemColours, setSelectedGemColours)}
           {renderFilterSection('Gem Type', gemTypeOptions, selectedGemTypes, setSelectedGemTypes)}
           {renderFilterSection('Fitting', fittingOptions, selectedFittings, setSelectedFittings)}
-
         </aside>
 
         <section className="product-grid">
-          {filteredProducts.map((product: any) => {
+          {filteredProducts.map((product) => {
             const image = product.images?.edges?.[0]?.node;
 
             return (
@@ -156,12 +189,10 @@ export default function CollectionPage({ products, title }: any) {
           })}
         </section>
 
-        {/* Mobile Filter Button */}
         <div className="mobile-filter-toggle">
           <button onClick={() => setShowFilters(true)}>Filters</button>
         </div>
 
-        {/* Mobile Drawer */}
         {showFilters && (
           <div className="mobile-filter-drawer">
             <button onClick={() => setShowFilters(false)}>Close</button>
@@ -243,8 +274,14 @@ export default function CollectionPage({ products, title }: any) {
   );
 }
 
-export const getStaticProps: GetStaticProps = async ({ params }) => {
-  const handle = params?.handle;
+export const getStaticProps: GetStaticProps<CollectionPageProps> = async (
+  context: GetStaticPropsContext
+) => {
+  const handle = context.params?.handle;
+
+  if (typeof handle !== 'string') {
+    return { notFound: true };
+  }
 
   const query = `
     query CollectionByHandle($handle: String!) {
@@ -270,7 +307,7 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
                 { namespace: "custom", key: "finish" },
                 { namespace: "custom", key: "gem_colour" },
                 { namespace: "custom", key: "gem_type" },
-                 { namespace: "custom", key: "fitting" } 
+                { namespace: "custom", key: "fitting" }
               ]) {
                 key
                 value
@@ -288,10 +325,12 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
     return { notFound: true };
   }
 
-  const products = data.collectionByHandle.products.edges.map((edge: any) => ({
-    ...edge.node,
-    metafields: edge.node.metafields || [],
-  }));
+  const products: Product[] = data.collectionByHandle.products.edges.map(
+    (edge: { node: Product }) => ({
+      ...edge.node,
+      metafields: edge.node.metafields || [],
+    })
+  );
 
   return {
     props: {
@@ -302,7 +341,7 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
   };
 };
 
-export const getStaticPaths = async () => {
+export const getStaticPaths: GetStaticPaths = async () => {
   const query = `
     {
       collections(first: 10) {
@@ -317,9 +356,11 @@ export const getStaticPaths = async () => {
 
   const data = await shopifyFetch({ query });
 
-  const paths = data.collections.edges.map(({ node }: any) => ({
-    params: { handle: node.handle },
-  }));
+  const paths = data.collections.edges.map(
+    (edge: { node: { handle: string } }) => ({
+      params: { handle: edge.node.handle },
+    })
+  );
 
   return {
     paths,

@@ -272,7 +272,7 @@ const fieldLabels = {
     color: '#fff',
     border: 'none',
     fontSize: '14px',
-    fontWeight: 500,
+    fontWeight: 900,
     cursor: 'pointer',
     borderRadius: '4px',
   }}
@@ -286,7 +286,7 @@ const fieldLabels = {
     }
   }}
 >
-  Add to Bag
+  ADD TO BAG
 </button>
 
   </div>

@@ -8,7 +8,7 @@ export default function Header() {
       <header
         style={{
           width: '100%',
-          background: '#ececec',
+          background: '#181818',
           height: '40px',
           display: 'flex',
           alignItems: 'center',
@@ -24,14 +24,14 @@ export default function Header() {
             justifyContent: 'flex-end',
             alignItems: 'center',
             fontSize: '12px',
-            color: '#000',
+            color: '#fff',
           }}
         >
-          <Link href="/join" style={{ color: '#000', textDecoration: 'none', marginRight: '12px' }}>
+          <Link href="/join" style={{ color: '#fff', textDecoration: 'none', marginRight: '12px' }}>
             Join Us
           </Link>
           <span style={{ marginRight: '12px' }}>|</span>
-          <Link href="/signin" style={{ color: '#000', textDecoration: 'none' }}>
+          <Link href="/signin" style={{ color: '#fff', textDecoration: 'none' }}>
             Sign In
           </Link>
         </div>
@@ -45,7 +45,7 @@ export default function Header() {
           height: '64px',
           display: 'flex',
           alignItems: 'center',
-          borderBottom: '1px solid #e0e0e0',
+          borderBottom: '1px solid #ececec',
         }}
       >
         <div
@@ -73,7 +73,7 @@ export default function Header() {
 
 
           {/* Shopping bag (right) */}
-          {/* Shopping bag (right) — now text only */}
+         
 <Link
   href="/cart"
   style={{
@@ -96,8 +96,8 @@ export default function Header() {
 <nav
   style={{
     width: '100%',
-    background: '#ffffff',
-    borderBottom: '1px solid #e0e0e0',
+    background: '#f9f9f9',
+    borderBottom: '1px solid #ececec',
     overflowX: 'auto',
   }}
 >
@@ -119,6 +119,7 @@ export default function Header() {
           padding: '16px 12px',
           fontSize: '16px',
           color: '#000',
+          fontWeight: '600',
           textDecoration: 'none',
           flexShrink: 0,
         }}
