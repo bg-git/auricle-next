@@ -1,4 +1,4 @@
-const domain = process.env.SHOPIFY_STORE_DOMAIN!;
+const domain = process.env.SHOPIFY_STORE_DOMAIN?.replace(/^https?:\/\//, '')!;
 const token = process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN!;
 
 export async function shopifyFetch({ query, variables = {} }: { query: string; variables?: any }) {
