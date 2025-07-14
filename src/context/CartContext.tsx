@@ -1,17 +1,23 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
 
-interface CartItem {
+export interface CartItem {
   variantId: string;
   quantity: number;
-  title: string;
-  price: string;
+  title?: string;
+  price?: string;
   image?: string;
 }
 
 interface CartContextType {
   cartItems: CartItem[];
   checkoutUrl: string | null;
-  addToCart: (variantId: string, quantity: number, meta: { title: string; price: string; image?: string }) => void;
+  addToCart: (
+    variantId: string,
+    quantity: number,
+    meta?: Omit<CartItem, 'variantId' | 'quantity'>
+  ) => void;
+  updateQuantity: (variantId: string, newQty: number) => void;
+  removeFromCart: (variantId: string) => void;
   isDrawerOpen: boolean;
   openDrawer: () => void;
   closeDrawer: () => void;
@@ -27,10 +33,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const openDrawer = () => setIsDrawerOpen(true);
   const closeDrawer = () => setIsDrawerOpen(false);
 
-  const addToCart = async (
+  const addToCart = (
     variantId: string,
     quantity: number,
-    meta: { title: string; price: string; image?: string }
+    meta: Omit<CartItem, 'variantId' | 'quantity'> = {}
   ) => {
     const existing = cartItems.find((item) => item.variantId === variantId);
     const updatedItems = existing
@@ -44,21 +50,47 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     setCartItems(updatedItems);
     openDrawer();
 
-    const response = await fetch('/api/create-checkout', {
+    fetch('/api/create-checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        items: updatedItems.map(({ variantId, quantity }) => ({ variantId, quantity })),
-      }),
-    });
+      body: JSON.stringify({ items: updatedItems }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setCheckoutUrl(data.checkoutUrl);
+      })
+      .catch((err) => {
+        console.error('Checkout error:', err);
+      });
+  };
 
-    const data = await response.json();
-    setCheckoutUrl(data.checkoutUrl);
+  const updateQuantity = (variantId: string, newQty: number) => {
+    const updated = cartItems
+      .map((item) =>
+        item.variantId === variantId ? { ...item, quantity: newQty } : item
+      )
+      .filter((item) => item.quantity > 0);
+
+    setCartItems(updated);
+  };
+
+  const removeFromCart = (variantId: string) => {
+    const updated = cartItems.filter((item) => item.variantId !== variantId);
+    setCartItems(updated);
   };
 
   return (
     <CartContext.Provider
-      value={{ cartItems, checkoutUrl, addToCart, isDrawerOpen, openDrawer, closeDrawer }}
+      value={{
+        cartItems,
+        checkoutUrl,
+        addToCart,
+        updateQuantity,
+        removeFromCart,
+        isDrawerOpen,
+        openDrawer,
+        closeDrawer,
+      }}
     >
       {children}
     </CartContext.Provider>
