@@ -228,23 +228,25 @@ export default function ProductPage({ product }: ProductPageProps) {
             <div className="desktop-add-to-cart" style={{ marginTop: '24px' }}>
               <div style={{ display: 'flex', gap: '12px' }}>
                 <div
-                  style={{
-                    flex: '1',
-                    display: 'flex',
-                    alignItems: 'center',
-                    border: '1px solid #ccc',
-                    borderRadius: '4px',
-                    overflow: 'hidden',
-                    paddingInline: '4px',
-                  }}
-                >
+  style={{
+    flex: '0 0 120px', // fixed width for qty controls
+    display: 'flex',
+    alignItems: 'center',
+    border: '1px solid #ccc',
+    borderRadius: '4px',
+    overflow: 'hidden',
+    paddingInline: '4px',
+  }}
+>
                   <button
                     style={{
-                      width: '32px',
-                      height: '40px',
+                      width: '48px',
+height: '48px',
+minWidth: '48px',
+minHeight: '48px',
                       background: '#fff',
                       border: 'none',
-                      fontSize: '18px',
+                      fontSize: '20px',
                       cursor: 'pointer',
                     }}
                     onClick={() => {
@@ -269,11 +271,13 @@ export default function ProductPage({ product }: ProductPageProps) {
                   />
                   <button
                     style={{
-                      width: '32px',
-                      height: '40px',
+                      width: '48px',
+height: '48px',
+minWidth: '48px',
+minHeight: '48px',
+fontSize: '20px',
                       background: '#fff',
                       border: 'none',
-                      fontSize: '18px',
                       cursor: 'pointer',
                     }}
                     onClick={() => {
@@ -285,10 +289,11 @@ export default function ProductPage({ product }: ProductPageProps) {
                   </button>
                 </div>
 
- <button
+<button
   style={{
-    flex: '3',
-    height: '40px',
+    flex: '1',
+    height: '48px',
+    minHeight: '48px',
     background: '#000',
     color: '#fff',
     border: 'none',
@@ -296,28 +301,12 @@ export default function ProductPage({ product }: ProductPageProps) {
     fontWeight: 900,
     cursor: 'pointer',
     borderRadius: '4px',
-  }}
-  onClick={() => {
-    const qtyInput = document.getElementById('qty') as HTMLInputElement;
-    const qty = qtyInput ? parseInt(qtyInput.value || '1') : 1;
-    const variantId = selectedVariantId;
-
-    if (!variantId) {
-      console.warn('No variant ID selected');
-      return;
-    }
-
-    addToCart(variantId, qty, {
-      title: product.title,
-      price: product.priceRange.minVariantPrice.amount,
-      image: product.images?.edges?.[0]?.node?.url || undefined,
-    });
-
-    openDrawer();
+    whiteSpace: 'nowrap',
   }}
 >
   ADD TO BAG
 </button>
+
 
 
               </div>
