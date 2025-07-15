@@ -137,7 +137,7 @@ const [qty, setQty] = useState(1);
     title={getFieldValue('title') || product.title}
     description={getFieldValue('description') || `Buy ${product.title} in 14k gold or titanium.`}
   />
-      <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '16px' }}>
+      <main style={{ maxWidth: '1400px', margin: '0 auto', padding: '16px' }}>
         <div className="product-layout">
           <div className="product-image">
             <Image
