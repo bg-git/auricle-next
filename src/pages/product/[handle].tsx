@@ -52,17 +52,15 @@ interface ProductPageProps {
 }
 
 export default function ProductPage({ product }: ProductPageProps) {
-  const { addToCart, openDrawer } = useCart(); // ✅ correct location
+  const { addToCart, openDrawer } = useCart();
   const [selectedVariantId, setSelectedVariantId] = useState(
     product.variants?.edges?.[0]?.node?.id || null
   );
-
 
   if (!product) {
     return <div style={{ padding: '16px' }}>Product not found.</div>;
   }
 
-  
   const imageUrl = product.images?.edges?.[0]?.node?.url ?? '/placeholder.png';
   const metafields = product.metafields || [];
 
@@ -228,22 +226,22 @@ export default function ProductPage({ product }: ProductPageProps) {
             <div className="desktop-add-to-cart" style={{ marginTop: '24px' }}>
               <div style={{ display: 'flex', gap: '12px' }}>
                 <div
-  style={{
-    flex: '0 0 120px', // fixed width for qty controls
-    display: 'flex',
-    alignItems: 'center',
-    border: '1px solid #ccc',
-    borderRadius: '4px',
-    overflow: 'hidden',
-    paddingInline: '4px',
-  }}
->
+                  style={{
+                    flex: '0 0 120px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    border: '1px solid #ccc',
+                    borderRadius: '4px',
+                    overflow: 'hidden',
+                    paddingInline: '4px',
+                  }}
+                >
                   <button
                     style={{
                       width: '48px',
-height: '48px',
-minWidth: '48px',
-minHeight: '48px',
+                      height: '48px',
+                      minWidth: '48px',
+                      minHeight: '48px',
                       background: '#fff',
                       border: 'none',
                       fontSize: '20px',
@@ -272,10 +270,10 @@ minHeight: '48px',
                   <button
                     style={{
                       width: '48px',
-height: '48px',
-minWidth: '48px',
-minHeight: '48px',
-fontSize: '20px',
+                      height: '48px',
+                      minWidth: '48px',
+                      minHeight: '48px',
+                      fontSize: '20px',
                       background: '#fff',
                       border: 'none',
                       cursor: 'pointer',
@@ -289,26 +287,41 @@ fontSize: '20px',
                   </button>
                 </div>
 
-<button
-  style={{
-    flex: '1',
-    height: '48px',
-    minHeight: '48px',
-    background: '#000',
-    color: '#fff',
-    border: 'none',
-    fontSize: '14px',
-    fontWeight: 900,
-    cursor: 'pointer',
-    borderRadius: '4px',
-    whiteSpace: 'nowrap',
-  }}
->
-  ADD TO BAG
-</button>
+                <button
+                  style={{
+                    flex: '1',
+                    height: '48px',
+                    minHeight: '48px',
+                    background: '#000',
+                    color: '#fff',
+                    border: 'none',
+                    fontSize: '14px',
+                    fontWeight: 900,
+                    cursor: 'pointer',
+                    borderRadius: '4px',
+                    whiteSpace: 'nowrap',
+                  }}
+                  onClick={() => {
+                    const qtyInput = document.getElementById('qty') as HTMLInputElement;
+                    const qty = qtyInput ? parseInt(qtyInput.value || '1') : 1;
+                    const variantId = selectedVariantId;
 
+                    if (!variantId) {
+                      console.warn('No variant ID selected');
+                      return;
+                    }
 
+                    addToCart(variantId, qty, {
+                      title: product.title,
+                      price: product.priceRange.minVariantPrice.amount,
+                      image: product.images?.edges?.[0]?.node?.url || undefined,
+                    });
 
+                    openDrawer();
+                  }}
+                >
+                  ADD TO BAG
+                </button>
               </div>
             </div>
 
@@ -457,10 +470,7 @@ export const getStaticProps: GetStaticProps<ProductPageProps> = async (
     }
   `;
 
-  const data = await shopifyFetch({
-    query,
-    variables: { handle },
-  });
+  const data = await shopifyFetch({ query, variables: { handle } });
 
   if (!data.productByHandle) {
     return { notFound: true };
