@@ -83,6 +83,16 @@
   box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
   max-height: 90vh;
   overflow-y: auto;
+  transform: translateY(100%);
+  opacity: 0;
+  visibility: hidden;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+
+  &.open {
+    transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
+  }
 
   @media (min-width: 800px) {
     display: none;
@@ -100,6 +110,7 @@
     width: 100%;
   }
 }
+
 .filters-desktop {
   width: 100%;
 

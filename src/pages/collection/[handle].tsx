@@ -8,6 +8,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
 import Seo from '@/components/Seo';
+import { useEffect } from 'react';
 
 // Types
 
@@ -76,6 +77,13 @@ export default function CollectionPage({ products, title, seoTitle, seoDescripti
   const [selectedGemTypes, setSelectedGemTypes] = useState<string[]>([]);
   const [selectedFittings, setSelectedFittings] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
+
+useEffect(() => {
+  document.body.style.overflow = showFilters ? 'hidden' : '';
+  return () => {
+    document.body.style.overflow = '';
+  };
+}, [showFilters]);
 
   const toggle = (
     value: string,
@@ -157,46 +165,31 @@ export default function CollectionPage({ products, title, seoTitle, seoDescripti
         </aside>
 
         <section className="product-grid">
-          {filteredProducts.map((product) => {
-            const image = product.images?.edges?.[0]?.node;
+          {filteredProducts.map((product, index) => {
+  const image = product.images?.edges?.[0]?.node;
 
-            return (
-              <Link
-                href={`/product/${product.handle}`}
-                key={product.id}
-                className="product-card"
-              >
-                <div className="product-card-inner">
-                  <div
-                    style={{
-                      position: 'relative',
-                      width: '100%',
-                      paddingTop: '125%',
-                      background: '#f9f9f9',
-                    }}
-                  >
-                    <Image
-                      src={image?.url || '/placeholder.png'}
-                      alt={image?.altText || product.title}
-                      fill
-                      style={{ objectFit: 'cover' }}
-                      sizes="(min-width: 800px) 25vw, 50vw"
-                    />
-                  </div>
-                  <h3
-                    style={{
-                      marginTop: '8px',
-                      fontSize: '13px',
-                      fontWeight: 400,
-                      textDecoration: 'none',
-                    }}
-                  >
-                    {product.title}
-                  </h3>
-                </div>
-              </Link>
-            );
-          })}
+  return (
+    <Link href={`/product/${product.handle}`} key={product.id} className="product-card">
+      <div className="product-card-inner">
+        <div style={{ position: 'relative', width: '100%', paddingTop: '125%', background: '#f9f9f9' }}>
+          <Image
+            src={image?.url || '/placeholder.png'}
+            alt=""
+            fill
+            priority={index === 0}
+            fetchPriority={index === 0 ? 'high' : undefined}
+            style={{ objectFit: 'cover' }}
+            sizes="(min-width: 800px) 25vw, 50vw"
+          />
+        </div>
+        <h2 style={{ marginTop: '8px', fontSize: '13px', fontWeight: 400 }}>
+          {product.title}
+        </h2>
+      </div>
+    </Link>
+  );
+})}
+
         </section>
 
         <div className="mobile-filter-toggle">
@@ -204,14 +197,17 @@ export default function CollectionPage({ products, title, seoTitle, seoDescripti
         </div>
 
         {showFilters && (
-          <div className="mobile-filter-drawer">
-            <button onClick={() => setShowFilters(false)}>Close</button>
-            {renderFilterSection('Metal', metalOptions, selectedMetals, setSelectedMetals)}
-            {renderFilterSection('Finish', finishOptions, selectedFinishes, setSelectedFinishes)}
-            {renderFilterSection('Gem Colour', gemColourOptions, selectedGemColours, setSelectedGemColours)}
-            {renderFilterSection('Gem Type', gemTypeOptions, selectedGemTypes, setSelectedGemTypes)}
-            {renderFilterSection('Fitting', fittingOptions, selectedFittings, setSelectedFittings)}
-          </div>
+          <div className={`mobile-filter-drawer ${showFilters ? 'open' : ''}`}>
+  <button onClick={() => setShowFilters(false)}>Close</button>
+  {renderFilterSection('Metal', metalOptions, selectedMetals, setSelectedMetals)}
+  {renderFilterSection('Finish', finishOptions, selectedFinishes, setSelectedFinishes)}
+  {renderFilterSection('Gem Colour', gemColourOptions, selectedGemColours, setSelectedGemColours)}
+  {renderFilterSection('Gem Type', gemTypeOptions, selectedGemTypes, setSelectedGemTypes)}
+  {renderFilterSection('Fitting', fittingOptions, selectedFittings, setSelectedFittings)}
+  
+</div>
+
+
         )}
       </main>
     </>
