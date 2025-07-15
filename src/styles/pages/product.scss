@@ -10,18 +10,14 @@
 }
 
 .product-image {
-  position: relative;
   width: 100%;
-  padding-top: 125%;
   background: #ececec;
 
   @media (min-width: 800px) {
     flex: 1;
-    padding-top: 0;
-    aspect-ratio: 4 / 5;
-    height: auto;
   }
 }
+
 
 .product-info {
   width: 100%;

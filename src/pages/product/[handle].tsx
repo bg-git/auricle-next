@@ -141,12 +141,17 @@ const [qty, setQty] = useState(1);
         <div className="product-layout">
           <div className="product-image">
             <Image
-              src={imageUrl}
-              alt={product.title}
-              fill
-              style={{ objectFit: 'cover' }}
-              sizes="(min-width: 800px) 50vw, 100vw"
-            />
+  src={imageUrl}
+  alt={product.title}
+  width={600}
+  height={750}
+  priority
+  fetchPriority="high"
+  sizes="(min-width: 800px) 50vw, 100vw"
+  style={{ objectFit: 'cover', width: '100%', height: 'auto' }}
+/>
+
+
             <div
               style={{
                 position: 'absolute',
@@ -168,14 +173,14 @@ const [qty, setQty] = useState(1);
 
             {variantOptions.length > 0 && (
               <div style={{ marginTop: '24px' }}>
-                <label htmlFor="variant" style={{ fontWeight: 500, fontSize: '14px' }}>
-                  Options & Choices:
-                </label>
-                <select
-                  id="variant"
-                  onChange={(e) => {
-                    if (e.target.value) window.location.href = e.target.value;
-                  }}
+                <label htmlFor="variant" style={{ fontWeight: 500, fontSize: '14px', display: 'block', marginBottom: '8px' }}>
+  Options & Choices:
+</label>
+<select
+  id="variant"
+  onChange={(e) => {
+    if (e.target.value) window.location.href = e.target.value;
+  }}
                   defaultValue=""
                   style={{
                     display: 'block',
@@ -203,10 +208,13 @@ const [qty, setQty] = useState(1);
 
             {product.variants?.edges?.length > 1 && (
               <div style={{ marginTop: '24px' }}>
-                <label style={{ fontWeight: 500, fontSize: '14px' }}>Options & Choices:</label>
-                <select
-                  value={selectedVariantId || ''}
-                  onChange={(e) => setSelectedVariantId(e.target.value)}
+                <label htmlFor="shopify-variant" style={{ fontWeight: 500, fontSize: '14px', display: 'block', marginBottom: '8px' }}>
+  Options & Choices:
+</label>
+<select
+  id="shopify-variant"
+  value={selectedVariantId || ''}
+  onChange={(e) => setSelectedVariantId(e.target.value)}
                   style={{
                     display: 'block',
                     marginTop: '8px',

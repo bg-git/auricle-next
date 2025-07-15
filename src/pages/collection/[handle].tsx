@@ -7,6 +7,9 @@ import { shopifyFetch } from '@/lib/shopify';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
+import Seo from '@/components/Seo';
+
+// Types
 
 type Metafield = {
   key: string;
@@ -33,9 +36,11 @@ type Product = {
 type CollectionPageProps = {
   products: Product[];
   title: string;
+  seoTitle?: string;
+  seoDescription?: string;
 };
 
-export default function CollectionPage({ products, title }: CollectionPageProps) {
+export default function CollectionPage({ products, title, seoTitle, seoDescription }: CollectionPageProps) {
   const getMetafieldValue = (product: Product, key: string): string | null => {
     const field = product.metafields?.find((f) => f?.key === key);
     if (!field?.value) return null;
@@ -133,6 +138,8 @@ export default function CollectionPage({ products, title }: CollectionPageProps)
 
   return (
     <>
+      <Seo title={seoTitle || title} description={seoDescription || undefined} />
+
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '16px 16px 0' }}>
         <h1 style={{ fontSize: '30px', fontWeight: 900 }}>{title}</h1>
       </div>
@@ -198,7 +205,7 @@ export default function CollectionPage({ products, title }: CollectionPageProps)
             <button onClick={() => setShowFilters(false)}>Close</button>
             {renderFilterSection('Metal', metalOptions, selectedMetals, setSelectedMetals)}
             {renderFilterSection('Finish', finishOptions, selectedFinishes, setSelectedFinishes)}
-            {renderFilterSection('Gem Colour', gemColourOptions, selectedGemColours, setSelectedGemColours)}
+            {renderFilterSection('Gem Colour', gemColourOptions, setSelectedGemColours, selectedGemColours)}
             {renderFilterSection('Gem Type', gemTypeOptions, selectedGemTypes, setSelectedGemTypes)}
             {renderFilterSection('Fitting', fittingOptions, selectedFittings, setSelectedFittings)}
           </div>
@@ -222,6 +229,13 @@ export const getStaticProps: GetStaticProps<CollectionPageProps> = async (
       collectionByHandle(handle: $handle) {
         id
         title
+        metafields(identifiers: [
+          { namespace: "custom", key: "title" },
+          { namespace: "custom", key: "description" }
+        ]) {
+          key
+          value
+        }
         products(first: 250) {
           edges {
             node {
@@ -266,10 +280,16 @@ export const getStaticProps: GetStaticProps<CollectionPageProps> = async (
     })
   );
 
+  const metafields = data.collectionByHandle.metafields || [];
+  const seoTitle = metafields.find((f: any) => f.key === 'title')?.value;
+  const seoDescription = metafields.find((f: any) => f.key === 'description')?.value;
+
   return {
     props: {
       products,
       title: data.collectionByHandle.title,
+      seoTitle,
+      seoDescription,
     },
     revalidate: 60,
   };
