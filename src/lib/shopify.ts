@@ -6,6 +6,7 @@ export async function shopifyFetch({
   variables = {},
 }: { query: string; variables?: Record<string, unknown> }) {
 
+
   const res = await fetch(`https://${domain}/api/2024-04/graphql.json`, {
     method: 'POST',
     headers: {

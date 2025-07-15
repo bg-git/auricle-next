@@ -158,7 +158,7 @@ const [qty, setQty] = useState(1);
                 inset: 0,
                 zIndex: 2,
                 background: 'transparent',
-                pointerEvents: 'auto',
+                pointerEvents: 'none',
               }}
             />
           </div>

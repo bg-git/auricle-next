@@ -53,6 +53,7 @@ export default function CollectionPage({ products, title, seoTitle, seoDescripti
       return field.value;
     }
   };
+  
 
   const extractOptions = (key: string): string[] => {
     const optionsSet = new Set<string>();
@@ -140,6 +141,7 @@ export default function CollectionPage({ products, title, seoTitle, seoDescripti
   return (
     <>
       <Seo title={seoTitle || title} description={seoDescription || undefined} />
+
 
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '16px 16px 0' }}>
         <h1 style={{ fontSize: '30px', fontWeight: 900 }}>{title}</h1>
@@ -293,16 +295,17 @@ const seoTitle = validMetafields.find((f: { key: string; value: string }) => f.k
 const seoDescription = validMetafields.find((f: { key: string; value: string }) => f.key === 'description')?.value;
 
 
-  return {
-    props: {
-      products,
-      title: data.collectionByHandle.title,
-      seoTitle,
-      seoDescription,
-    },
-    revalidate: 60,
-  };
+return {
+  props: {
+    products,
+    title: data.collectionByHandle.title,
+    seoTitle,
+    seoDescription,
+  },
+  revalidate: 60,
 };
+};
+
 
 export const getStaticPaths: GetStaticPaths = async () => {
   const query = `
@@ -329,4 +332,5 @@ export const getStaticPaths: GetStaticPaths = async () => {
     paths,
     fallback: 'blocking',
   };
-};
+  };
+
