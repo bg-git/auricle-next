@@ -42,18 +42,17 @@ type CollectionPageProps = {
 
 export default function CollectionPage({ products, title, seoTitle, seoDescription }: CollectionPageProps) {
   const getMetafieldValue = (product: Product, key: string): string | null => {
-  const validMetafields = (product.metafields || []).filter((f): f is Metafield => f != null);
-  const field = validMetafields.find((f) => f.key === key);
-  if (!field?.value) return null;
+    const validMetafields = (product.metafields || []).filter((f): f is Metafield => f != null);
+    const field = validMetafields.find((f) => f.key === key);
+    if (!field?.value) return null;
 
-  try {
-    const parsed = JSON.parse(field.value);
-    return Array.isArray(parsed) ? parsed.join(', ') : String(parsed);
-  } catch {
-    return field.value;
-  }
-};
-
+    try {
+      const parsed = JSON.parse(field.value);
+      return Array.isArray(parsed) ? parsed.join(', ') : String(parsed);
+    } catch {
+      return field.value;
+    }
+  };
 
   const extractOptions = (key: string): string[] => {
     const optionsSet = new Set<string>();
@@ -79,8 +78,8 @@ export default function CollectionPage({ products, title, seoTitle, seoDescripti
 
   const toggle = (
     value: string,
-    setFn: React.Dispatch<React.SetStateAction<string[]>>,
-    selected: string[]
+    selected: string[],
+    setFn: React.Dispatch<React.SetStateAction<string[]>>
   ) => {
     setFn(
       selected.includes(value)
@@ -118,7 +117,7 @@ export default function CollectionPage({ products, title, seoTitle, seoDescripti
         {options.map((option) => (
           <button
             key={option}
-            onClick={() => toggle(option, setFn, selected)}
+            onClick={() => toggle(option, selected, setFn)}
             style={{
               display: 'block',
               width: '100%',
@@ -149,11 +148,10 @@ export default function CollectionPage({ products, title, seoTitle, seoDescripti
       <main className="collection-page">
         <aside className="filters-desktop">
           {renderFilterSection('Metal', metalOptions, selectedMetals, setSelectedMetals)}
-{renderFilterSection('Finish', finishOptions, selectedFinishes, setSelectedFinishes)}
-{renderFilterSection('Gem Colour', gemColourOptions, selectedGemColours, setSelectedGemColours)}
-{renderFilterSection('Gem Type', gemTypeOptions, selectedGemTypes, setSelectedGemTypes)}
-{renderFilterSection('Fitting', fittingOptions, selectedFittings, setSelectedFittings)}
-
+          {renderFilterSection('Finish', finishOptions, selectedFinishes, setSelectedFinishes)}
+          {renderFilterSection('Gem Colour', gemColourOptions, selectedGemColours, setSelectedGemColours)}
+          {renderFilterSection('Gem Type', gemTypeOptions, selectedGemTypes, setSelectedGemTypes)}
+          {renderFilterSection('Fitting', fittingOptions, selectedFittings, setSelectedFittings)}
         </aside>
 
         <section className="product-grid">
@@ -207,11 +205,10 @@ export default function CollectionPage({ products, title, seoTitle, seoDescripti
           <div className="mobile-filter-drawer">
             <button onClick={() => setShowFilters(false)}>Close</button>
             {renderFilterSection('Metal', metalOptions, selectedMetals, setSelectedMetals)}
-{renderFilterSection('Finish', finishOptions, selectedFinishes, setSelectedFinishes)}
-{renderFilterSection('Gem Colour', gemColourOptions, selectedGemColours, setSelectedGemColours)}
-{renderFilterSection('Gem Type', gemTypeOptions, selectedGemTypes, setSelectedGemTypes)}
-{renderFilterSection('Fitting', fittingOptions, selectedFittings, setSelectedFittings)}
-
+            {renderFilterSection('Finish', finishOptions, selectedFinishes, setSelectedFinishes)}
+            {renderFilterSection('Gem Colour', gemColourOptions, selectedGemColours, setSelectedGemColours)}
+            {renderFilterSection('Gem Type', gemTypeOptions, selectedGemTypes, setSelectedGemTypes)}
+            {renderFilterSection('Fitting', fittingOptions, selectedFittings, setSelectedFittings)}
           </div>
         )}
       </main>
@@ -284,14 +281,14 @@ export const getStaticProps: GetStaticProps<CollectionPageProps> = async (
     })
   );
 
-const rawMetafields = data.collectionByHandle.metafields || [];
-const validMetafields = rawMetafields.filter(
-  (f: any): f is { key: string; value: string } => f && typeof f === 'object' && 'key' in f
-);
+  const rawMetafields = data.collectionByHandle.metafields || [];
+  const validMetafields = rawMetafields.filter(
+    (f: unknown): f is { key: string; value: string } =>
+      typeof f === 'object' && f !== null && 'key' in f && 'value' in f
+  );
 
-const seoTitle = validMetafields.find((f) => f.key === 'title')?.value;
-const seoDescription = validMetafields.find((f) => f.key === 'description')?.value;
-
+  const seoTitle = validMetafields.find((f) => f.key === 'title')?.value;
+  const seoDescription = validMetafields.find((f) => f.key === 'description')?.value;
 
   return {
     props: {
