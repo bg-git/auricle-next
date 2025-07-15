@@ -6,22 +6,22 @@ export default function Home() {
   return (
     <>
       <Seo
-        title="Wholesale Body Piercing Jewellery | AURICLE UK"
+        title="Wholesale Body Piercing Jewellery"
         description="Boutique wholesaler of 14k gold & ASTM F136 titanium body jewellery. Dainty styles, low MOQs, fast UK dispatch. Limited-run piercing jewellery for pros."
       />
 
       <main className="home-page">
         <section className="info-grid">
-          <Link href="/first-timer" className="info-link">
+          <Link href="#" className="info-link">
             <div className="info-block">NEW HERE?<br />GET YOUR FIRST-TIMER DISCOUNT</div>
           </Link>
-          <Link href="/shipping" className="info-link">
+          <Link href="#" className="info-link">
             <div className="info-block">FAST SHIPPING<br />FROM UNITED KINGDOM</div>
           </Link>
-          <Link href="/register" className="info-link">
+          <Link href="#" className="info-link">
             <div className="info-block">REGISTER YOUR<br />FREE B2B ACCOUNT</div>
           </Link>
-          <Link href="/collection/gold" className="info-link">
+          <Link href="#" className="info-link">
             <div className="info-block">SEARCH DAINTY GOLD PIERCING JEWELLERY</div>
           </Link>
         </section>
@@ -41,7 +41,7 @@ export default function Home() {
                 <p className="overlay-subtitle">Browse our collection of ends & gems</p>
                 <div className="overlay-buttons">
                   <Link href="/collection/ends-gems" className="button">VIEW ALL ENDS & GEMS &#x27F6;</Link>
-                  <Link href="/collection/new" className="button secondary">VIEW</Link>
+                  {/*<Link href="#" className="button secondary">VIEW</Link>*/}
                 </div>
               </div>
             </div>
