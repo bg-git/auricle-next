@@ -291,8 +291,13 @@ const validMetafields = rawMetafields.filter(
 );
 
 
-const seoTitle = validMetafields.find((f: { key: string; value: string }) => f.key === 'title')?.value;
-const seoDescription = validMetafields.find((f: { key: string; value: string }) => f.key === 'description')?.value;
+const seoTitle =
+  validMetafields.find((f: { key: string; value: string }) => f.key === 'title')?.value ?? null;
+
+const seoDescription =
+  validMetafields.find((f: { key: string; value: string }) => f.key === 'description')?.value ?? null;
+
+
 
 
 return {
