@@ -3,6 +3,8 @@ import { shopifyFetch } from '@/lib/shopify';
 import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
 import { useState } from 'react';
+import Seo from '@/components/Seo';
+
 
 // TYPES
 interface Metafield {
@@ -56,7 +58,7 @@ export default function ProductPage({ product }: ProductPageProps) {
   const [selectedVariantId, setSelectedVariantId] = useState(
     product.variants?.edges?.[0]?.node?.id || null
   );
-
+const [qty, setQty] = useState(1);
   if (!product) {
     return <div style={{ padding: '16px' }}>Product not found.</div>;
   }
@@ -129,7 +131,12 @@ export default function ProductPage({ product }: ProductPageProps) {
   };
 
   return (
+    
     <>
+    <Seo
+    title={getFieldValue('title') || product.title}
+    description={getFieldValue('description') || `Buy ${product.title} in 14k gold or titanium.`}
+  />
       <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '16px' }}>
         <div className="product-layout">
           <div className="product-image">
@@ -225,6 +232,8 @@ export default function ProductPage({ product }: ProductPageProps) {
 
             <div className="desktop-add-to-cart" style={{ marginTop: '24px' }}>
               <div style={{ display: 'flex', gap: '12px' }}>
+                <label htmlFor="qty" style={{ position: 'absolute', left: '-9999px' }}>Quantity</label>
+
                 <div
                   style={{
                     flex: '0 0 120px',
@@ -247,26 +256,27 @@ export default function ProductPage({ product }: ProductPageProps) {
                       fontSize: '20px',
                       cursor: 'pointer',
                     }}
-                    onClick={() => {
-                      const input = document.getElementById('qty') as HTMLInputElement;
-                      if (input) input.value = String(Math.max(1, parseInt(input.value || '1') - 1));
-                    }}
+                    onClick={() => setQty((prev) => Math.max(1, prev - 1))}
+
                   >
                     −
                   </button>
-                  <input
-                    id="qty"
-                    type="number"
-                    defaultValue={1}
-                    min={1}
-                    style={{
-                      width: '100%',
-                      height: '40px',
-                      textAlign: 'center',
-                      border: 'none',
-                      fontSize: '14px',
-                    }}
-                  />
+                  <span
+                   id="qty"
+  style={{
+    width: '100%',
+    height: '40px',
+    textAlign: 'center',
+    fontSize: '14px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    userSelect: 'none',
+  }}
+>
+  {qty}
+</span>
+
                   <button
                     style={{
                       width: '48px',
@@ -278,10 +288,8 @@ export default function ProductPage({ product }: ProductPageProps) {
                       border: 'none',
                       cursor: 'pointer',
                     }}
-                    onClick={() => {
-                      const input = document.getElementById('qty') as HTMLInputElement;
-                      if (input) input.value = String(parseInt(input.value || '1') + 1);
-                    }}
+                    onClick={() => setQty((prev) => prev + 1)}
+
                   >
                     +
                   </button>
@@ -302,23 +310,19 @@ export default function ProductPage({ product }: ProductPageProps) {
                     whiteSpace: 'nowrap',
                   }}
                   onClick={() => {
-                    const qtyInput = document.getElementById('qty') as HTMLInputElement;
-                    const qty = qtyInput ? parseInt(qtyInput.value || '1') : 1;
-                    const variantId = selectedVariantId;
+  if (!selectedVariantId) {
+    console.warn('No variant ID selected');
+    return;
+  }
 
-                    if (!variantId) {
-                      console.warn('No variant ID selected');
-                      return;
-                    }
+  addToCart(selectedVariantId, qty, {
+    title: product.title,
+    price: product.priceRange.minVariantPrice.amount,
+    image: product.images?.edges?.[0]?.node?.url || undefined,
+  });
 
-                    addToCart(variantId, qty, {
-                      title: product.title,
-                      price: product.priceRange.minVariantPrice.amount,
-                      image: product.images?.edges?.[0]?.node?.url || undefined,
-                    });
-
-                    openDrawer();
-                  }}
+  openDrawer();
+}}
                 >
                   ADD TO BAG
                 </button>
@@ -352,27 +356,7 @@ export default function ProductPage({ product }: ProductPageProps) {
         <div style={{ height: '80px' }} />
       </main>
 
-      <div className="sticky-add-to-cart">
-        <input
-          type="number"
-          defaultValue={1}
-          min={1}
-          style={{ width: '60px', padding: '8px', fontSize: '14px' }}
-        />
-        <button
-          style={{
-            padding: '12px 24px',
-            fontSize: '14px',
-            background: '#000',
-            color: '#fff',
-            border: 'none',
-            cursor: 'pointer',
-          }}
-        >
-          Add to Cart
-        </button>
-      </div>
-    </>
+        </>
   );
 }
 

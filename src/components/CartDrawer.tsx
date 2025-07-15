@@ -1,5 +1,4 @@
 import { useCart } from '@/context/CartContext';
-import Link from 'next/link';
 import Image from 'next/image';
 import { useEffect } from 'react';
 
@@ -79,7 +78,7 @@ export default function CartDrawer() {
                           className="cart-remove"
                           onClick={() => removeFromCart(item.variantId)}
                         >
-                          ×
+                          x
                         </button>
                       </div>
                     </div>
@@ -89,11 +88,16 @@ export default function CartDrawer() {
             </ul>
           )}
 
-          {checkoutUrl && (
-            <Link href={checkoutUrl} className="checkout-button">
-              Checkout
-            </Link>
-          )}
+          <a
+  className={`checkout-button ${checkoutUrl ? '' : 'disabled'}`}
+  href={checkoutUrl || '#'}
+  onClick={(e) => {
+    if (!checkoutUrl) e.preventDefault();
+  }}
+>
+  Checkout
+</a>
+
         </div>
       </div>
     </div>
