@@ -25,3 +25,11 @@ a {
 a:hover {
   text-decoration: underline;
 }
+button {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-color: transparent;
+  color: inherit;
+  border: none;
+}

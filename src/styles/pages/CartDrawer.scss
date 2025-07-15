@@ -173,3 +173,12 @@
   cursor: pointer;
   line-height: 1;
 }
+
+button {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-color: transparent;
+  color: #000;
+  border: none;
+}
