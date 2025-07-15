@@ -147,10 +147,11 @@ export default function CollectionPage({ products, title, seoTitle, seoDescripti
       <main className="collection-page">
         <aside className="filters-desktop">
           {renderFilterSection('Metal', metalOptions, selectedMetals, setSelectedMetals)}
-          {renderFilterSection('Finish', finishOptions, selectedFinishes, setSelectedFinishes)}
-          {renderFilterSection('Gem Colour', gemColourOptions, selectedGemColours, setSelectedGemColours)}
-          {renderFilterSection('Gem Type', gemTypeOptions, selectedGemTypes, setSelectedGemTypes)}
-          {renderFilterSection('Fitting', fittingOptions, selectedFittings, setSelectedFittings)}
+{renderFilterSection('Finish', finishOptions, selectedFinishes, setSelectedFinishes)}
+{renderFilterSection('Gem Colour', gemColourOptions, selectedGemColours, setSelectedGemColours)}
+{renderFilterSection('Gem Type', gemTypeOptions, selectedGemTypes, setSelectedGemTypes)}
+{renderFilterSection('Fitting', fittingOptions, selectedFittings, setSelectedFittings)}
+
         </aside>
 
         <section className="product-grid">
@@ -204,10 +205,11 @@ export default function CollectionPage({ products, title, seoTitle, seoDescripti
           <div className="mobile-filter-drawer">
             <button onClick={() => setShowFilters(false)}>Close</button>
             {renderFilterSection('Metal', metalOptions, selectedMetals, setSelectedMetals)}
-            {renderFilterSection('Finish', finishOptions, selectedFinishes, setSelectedFinishes)}
-            {renderFilterSection('Gem Colour', gemColourOptions, setSelectedGemColours, selectedGemColours)}
-            {renderFilterSection('Gem Type', gemTypeOptions, selectedGemTypes, setSelectedGemTypes)}
-            {renderFilterSection('Fitting', fittingOptions, selectedFittings, setSelectedFittings)}
+{renderFilterSection('Finish', finishOptions, selectedFinishes, setSelectedFinishes)}
+{renderFilterSection('Gem Colour', gemColourOptions, selectedGemColours, setSelectedGemColours)}
+{renderFilterSection('Gem Type', gemTypeOptions, selectedGemTypes, setSelectedGemTypes)}
+{renderFilterSection('Fitting', fittingOptions, selectedFittings, setSelectedFittings)}
+
           </div>
         )}
       </main>
