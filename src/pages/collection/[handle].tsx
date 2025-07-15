@@ -42,16 +42,18 @@ type CollectionPageProps = {
 
 export default function CollectionPage({ products, title, seoTitle, seoDescription }: CollectionPageProps) {
   const getMetafieldValue = (product: Product, key: string): string | null => {
-    const field = product.metafields?.find((f) => f?.key === key);
-    if (!field?.value) return null;
+  const validMetafields = (product.metafields || []).filter((f): f is Metafield => f != null);
+  const field = validMetafields.find((f) => f.key === key);
+  if (!field?.value) return null;
 
-    try {
-      const parsed = JSON.parse(field.value);
-      return Array.isArray(parsed) ? parsed.join(', ') : parsed;
-    } catch {
-      return field.value;
-    }
-  };
+  try {
+    const parsed = JSON.parse(field.value);
+    return Array.isArray(parsed) ? parsed.join(', ') : String(parsed);
+  } catch {
+    return field.value;
+  }
+};
+
 
   const extractOptions = (key: string): string[] => {
     const optionsSet = new Set<string>();
