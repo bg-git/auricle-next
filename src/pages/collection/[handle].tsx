@@ -282,13 +282,16 @@ export const getStaticProps: GetStaticProps<CollectionPageProps> = async (
   );
 
   const rawMetafields = data.collectionByHandle.metafields || [];
-  const validMetafields = rawMetafields.filter(
-    (f: unknown): f is { key: string; value: string } =>
-      typeof f === 'object' && f !== null && 'key' in f && 'value' in f
-  );
+const validMetafields = rawMetafields.filter(
+  (f: unknown): f is { key: string; value: string } =>
 
-  const seoTitle = validMetafields.find((f) => f.key === 'title')?.value;
-  const seoDescription = validMetafields.find((f) => f.key === 'description')?.value;
+    typeof f === 'object' && f !== null && 'key' in f && 'value' in f
+);
+
+
+const seoTitle = validMetafields.find((f: { key: string; value: string }) => f.key === 'title')?.value;
+const seoDescription = validMetafields.find((f: { key: string; value: string }) => f.key === 'description')?.value;
+
 
   return {
     props: {

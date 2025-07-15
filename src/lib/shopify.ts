@@ -1,7 +1,11 @@
 const domain = process.env.SHOPIFY_STORE_DOMAIN!;
 const token = process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN!;
 
-export async function shopifyFetch({ query, variables = {} }: { query: string; variables?: any }) {
+export async function shopifyFetch({
+  query,
+  variables = {},
+}: { query: string; variables?: Record<string, unknown> }) {
+
   const res = await fetch(`https://${domain}/api/2024-04/graphql.json`, {
     method: 'POST',
     headers: {
