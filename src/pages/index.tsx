@@ -25,28 +25,50 @@ export default function Home() {
             <div className="info-block">SEARCH DAINTY GOLD PIERCING JEWELLERY</div>
           </Link>
         </section>
-
+{/* CHAINS & CHARMS */}
         <section className="custom-grid">
           <div className="custom-card">
             <div className="image-container">
               <Image
-                src="/images/piercing_ends_and_gems_wholesale_uk.jpg"
-                alt="Gold Ends"
+                src="/images/piercing_chains_and_charms_wholesale_uk.jpg"
+                alt="Chains & Charms"
                 fill
+                  priority
+  fetchPriority="high"
                 style={{ objectFit: 'cover' }}
                 sizes="(max-width: 800px) 50vw, 600px"
               />
               <div className="overlay">
-                <h2 className="overlay-title">ENDS & GEMS</h2>
-                <p className="overlay-subtitle">Browse our collection of ends & gems</p>
+                <h2 className="overlay-title">CHAINS & CHARMS</h2>
+                <p className="overlay-subtitle">Browse our collection of chains & charms</p>
                 <div className="overlay-buttons">
-                  <Link href="/collection/ends-gems" className="button">VIEW ALL ENDS & GEMS &#x27F6;</Link>
+                  <Link href="/collection/chains-charms" className="button">VIEW ALL CHAINS & CHARMS &#x27F6;</Link>
                   {/*<Link href="#" className="button secondary">VIEW</Link>*/}
                 </div>
               </div>
             </div>
           </div>
+{/* ENDS & GEMS */}
+          <div className="custom-card">
+            <div className="image-container">
+              <Image
+  src="/images/piercing_ends_and_gems_wholesale_uk.jpg"
+  alt="Ends & gems"
+  fill
+  style={{ objectFit: 'cover' }}
+  sizes="(max-width: 800px) 50vw, 600px"
+/>
 
+              <div className="overlay">
+                <h2 className="overlay-title">ENDS & GEMS</h2>
+                <p className="overlay-subtitle">View our collection of ends & gems</p>
+                <div className="overlay-buttons">
+                  <Link href="/collection/ends-gems" className="button">VIEW ALL ENDS & GEMS &#x27F6;</Link>
+                </div>
+              </div>
+            </div>
+          </div>
+{/* RINGS */}
           <div className="custom-card">
             <div className="image-container">
               <Image
@@ -65,26 +87,7 @@ export default function Home() {
               </div>
             </div>
           </div>
-
-          <div className="custom-card">
-            <div className="image-container">
-              <Image
-                src="/images/piercing_chains_and_charms_wholesale_uk.jpg"
-                alt="Gold Twist Ring Made from Titanium with pave gems"
-                fill
-                style={{ objectFit: 'cover' }}
-                sizes="(max-width: 800px) 50vw, 600px"
-              />
-              <div className="overlay">
-                <h2 className="overlay-title">CHAINS & CHARMS</h2>
-                <p className="overlay-subtitle">View our collection of chains & charms</p>
-                <div className="overlay-buttons">
-                  <Link href="/collection/chains-charms" className="button">VIEW ALL CHAINS & CHARMS &#x27F6;</Link>
-                </div>
-              </div>
-            </div>
-          </div>
-
+{/* BASE */}
           <div className="custom-card">
             <div className="image-container">
               <Image
