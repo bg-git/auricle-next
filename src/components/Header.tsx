@@ -31,11 +31,11 @@ export default function Header() {
             color: '#fff',
           }}
         >
-          <Link href="/join" style={{ color: '#fff', textDecoration: 'none', marginRight: '12px' }}>
+          <Link href="/register" style={{ color: '#fff', textDecoration: 'none', marginRight: '12px' }}>
             Join Us
           </Link>
           <span style={{ marginRight: '12px' }}>|</span>
-          <Link href="/signin" style={{ color: '#fff', textDecoration: 'none' }}>
+          <Link href="/sign-in" style={{ color: '#fff', textDecoration: 'none' }}>
             Sign In
           </Link>
         </div>
