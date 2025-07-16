@@ -17,12 +17,10 @@ const nextConfig: NextConfig = {
 
   eslint: {
     ignoreDuringBuilds: true,
-  },
-
-  pwa: {
-    dest: 'public',
-    disable: process.env.NODE_ENV === 'development',
-  },
+  }
 };
 
-export default withPWA(nextConfig);
+export default withPWA(nextConfig, {
+  dest: 'public',
+  disable: process.env.NODE_ENV === 'development',
+});
