@@ -62,7 +62,11 @@ console.log('Token present:', !!STOREFRONT_TOKEN);
     }
 
     return res.status(200).json({ success: true });
-  } catch (error: any) {
-    return res.status(500).json({ success: false, error: error.message });
-  }
+  } catch (error: unknown) {
+  const message =
+    error instanceof Error ? error.message : 'An unknown error occurred';
+
+  return res.status(500).json({ error: message });
+}
+
 }
