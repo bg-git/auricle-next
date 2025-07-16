@@ -144,8 +144,8 @@ const [qty, setQty] = useState(1);
             <Image
   src={imageUrl}
   alt={product.title}
-  width={600}
-  height={750}
+  width={1200}
+  height={1500}
   priority
   fetchPriority="high"
   sizes="(min-width: 800px) 50vw, 100vw"

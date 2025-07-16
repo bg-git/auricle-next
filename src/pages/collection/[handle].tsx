@@ -180,23 +180,25 @@ const metalColourMatch = selectedMetalColours.length ? selectedMetalColours.incl
 
   return (
     <Link href={`/product/${product.handle}`} key={product.id} className="product-card">
-      <div className="product-card-inner">
-        <div style={{ position: 'relative', width: '100%', paddingTop: '125%', background: '#f9f9f9' }}>
-          <Image
-            src={image?.url || '/placeholder.png'}
-            alt=""
-            fill
-            priority={index === 0}
-            fetchPriority={index === 0 ? 'high' : undefined}
-            style={{ objectFit: 'cover' }}
-            sizes="(min-width: 800px) 25vw, 50vw"
-          />
-        </div>
-        <h2 style={{ marginTop: '8px', fontSize: '13px', fontWeight: 400 }}>
-          {product.title}
-        </h2>
-      </div>
-    </Link>
+  <div className="product-card-inner">
+    <div style={{ background: '#f9f9f9' }}>
+      <Image
+        src={image?.url || '/placeholder.png'}
+        alt=""
+        width={1200}
+        height={1500}
+        priority={index === 0}
+        fetchPriority={index === 0 ? 'high' : undefined}
+        style={{ objectFit: 'cover', width: '100%', height: 'auto', display: 'block' }}
+        sizes="(min-width: 1200px) 300px, (min-width: 768px) 50vw, 100vw"
+      />
+    </div>
+    <h2 style={{ marginTop: '8px', fontSize: '13px', fontWeight: 400 }}>
+      {product.title}
+    </h2>
+  </div>
+</Link>
+
   );
 })}
 
