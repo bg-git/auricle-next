@@ -1,7 +1,7 @@
 import withPWA from 'next-pwa';
 import type { NextConfig } from 'next';
 
-const baseConfig: NextConfig = {
+const nextConfig: NextConfig = {
   reactStrictMode: true,
   trailingSlash: false,
 
@@ -18,14 +18,11 @@ const baseConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-};
 
-const nextConfig = withPWA({
-  ...baseConfig,
   pwa: {
     dest: 'public',
     disable: process.env.NODE_ENV === 'development',
   },
-});
+};
 
-export default nextConfig;
+export default withPWA(nextConfig);
