@@ -70,12 +70,16 @@ export default function CollectionPage({ products, title, seoTitle, seoDescripti
   const gemColourOptions = extractOptions('gem_colour');
   const gemTypeOptions = extractOptions('gem_type');
   const fittingOptions = extractOptions('fitting');
+  const metalColourOptions = extractOptions('metal_colour');
+
 
   const [selectedMetals, setSelectedMetals] = useState<string[]>([]);
   const [selectedFinishes, setSelectedFinishes] = useState<string[]>([]);
   const [selectedGemColours, setSelectedGemColours] = useState<string[]>([]);
   const [selectedGemTypes, setSelectedGemTypes] = useState<string[]>([]);
   const [selectedFittings, setSelectedFittings] = useState<string[]>([]);
+  const [selectedMetalColours, setSelectedMetalColours] = useState<string[]>([]);
+
   const [showFilters, setShowFilters] = useState(false);
 
 useEffect(() => {
@@ -103,14 +107,18 @@ useEffect(() => {
     const gemColour = getMetafieldValue(p, 'gem_colour') || '';
     const gemType = getMetafieldValue(p, 'gem_type') || '';
     const fitting = getMetafieldValue(p, 'fitting') || '';
+        const metalColour = getMetafieldValue(p, 'metal_colour') || '';
 
     const metalMatch = selectedMetals.length ? selectedMetals.includes(metal) : true;
     const finishMatch = selectedFinishes.length ? selectedFinishes.includes(finish) : true;
     const gemColourMatch = selectedGemColours.length ? selectedGemColours.includes(gemColour) : true;
     const gemTypeMatch = selectedGemTypes.length ? selectedGemTypes.includes(gemType) : true;
     const fittingMatch = selectedFittings.length ? selectedFittings.includes(fitting) : true;
+const metalColourMatch = selectedMetalColours.length ? selectedMetalColours.includes(metalColour) : true;
 
-    return metalMatch && finishMatch && gemColourMatch && gemTypeMatch && fittingMatch;
+
+    return metalMatch && finishMatch && gemColourMatch && gemTypeMatch && fittingMatch &&
+       metalColourMatch;
   });
 
   const renderFilterSection = (
@@ -162,6 +170,8 @@ useEffect(() => {
           {renderFilterSection('Gem Colour', gemColourOptions, selectedGemColours, setSelectedGemColours)}
           {renderFilterSection('Gem Type', gemTypeOptions, selectedGemTypes, setSelectedGemTypes)}
           {renderFilterSection('Fitting', fittingOptions, selectedFittings, setSelectedFittings)}
+          {renderFilterSection('Metal Colour', metalColourOptions, selectedMetalColours, setSelectedMetalColours)}
+
         </aside>
 
         <section className="product-grid">
@@ -204,6 +214,8 @@ useEffect(() => {
   {renderFilterSection('Gem Colour', gemColourOptions, selectedGemColours, setSelectedGemColours)}
   {renderFilterSection('Gem Type', gemTypeOptions, selectedGemTypes, setSelectedGemTypes)}
   {renderFilterSection('Fitting', fittingOptions, selectedFittings, setSelectedFittings)}
+  {renderFilterSection('Metal Colour', metalColourOptions, selectedMetalColours, setSelectedMetalColours)}
+
   
 </div>
 
@@ -254,7 +266,8 @@ export const getStaticProps: GetStaticProps<CollectionPageProps> = async (
                 { namespace: "custom", key: "finish" },
                 { namespace: "custom", key: "gem_colour" },
                 { namespace: "custom", key: "gem_type" },
-                { namespace: "custom", key: "fitting" }
+                { namespace: "custom", key: "fitting" },
+                 { namespace: "custom", key: "metal_colour" }
               ]) {
                 key
                 value

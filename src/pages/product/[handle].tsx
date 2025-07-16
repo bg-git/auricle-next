@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
 import { useState } from 'react';
 import Seo from '@/components/Seo';
+import Link from 'next/link';
 
 
 // TYPES
@@ -170,74 +171,51 @@ const [qty, setQty] = useState(1);
                 £{product.priceRange.minVariantPrice.amount}
               </p>
             </div>
+{variantOptions.length > 0 && (
+  <div style={{ marginTop: '24px' }}>
+    <p style={{ fontSize: '14px', fontWeight: 500, marginBottom: '8px' }}>Available in:</p>
+    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+      {variantOptions.map((variant) => {
+        const isCurrent = variant.label === currentVariantLabel;
 
-            {variantOptions.length > 0 && (
-              <div style={{ marginTop: '24px' }}>
-                <label htmlFor="variant" style={{ fontWeight: 500, fontSize: '14px', display: 'block', marginBottom: '8px' }}>
-  Options & Choices:
-</label>
-<select
-  id="variant"
-  onChange={(e) => {
-    if (e.target.value) window.location.href = e.target.value;
-  }}
-                  defaultValue=""
-                  style={{
-                    display: 'block',
-                    marginTop: '8px',
-                    padding: '10px 12px',
-                    height: '44px',
-                    width: '100%',
-                    background: '#ffffff',
-                    border: '1px solid #ccc',
-                    borderRadius: '4px',
-                    fontSize: '14px',
-                    color: '#000',
-                    appearance: 'none',
-                  }}
-                >
-                  <option disabled value="">{currentVariantLabel}</option>
-                  {variantOptions.map((variant) => (
-                    <option key={variant.url} value={variant.url}>
-                      {variant.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-            {product.variants?.edges?.length > 1 && (
-              <div style={{ marginTop: '24px' }}>
-                <label htmlFor="shopify-variant" style={{ fontWeight: 500, fontSize: '14px', display: 'block', marginBottom: '8px' }}>
-  Options & Choices:
-</label>
-<select
-  id="shopify-variant"
-  value={selectedVariantId || ''}
-  onChange={(e) => setSelectedVariantId(e.target.value)}
-                  style={{
-                    display: 'block',
-                    marginTop: '8px',
-                    padding: '10px 12px',
-                    height: '44px',
-                    width: '100%',
-                    background: '#ffffff',
-                    border: '1px solid #ccc',
-                    borderRadius: '4px',
-                    fontSize: '14px',
-                    color: '#000',
-                    appearance: 'none',
-                  }}
-                >
-                  {product.variants.edges.map(({ node }) => (
-                    <option key={node.id} value={node.id}>
-                      {node.title}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-
+        return isCurrent ? (
+          <span
+            key={variant.label}
+            style={{
+              padding: '8px 12px',
+              borderRadius: '5px',
+              background: '#000',
+              color: '#fff',
+              fontSize: '14px',
+              fontWeight: 500,
+              border: '2px solid #000',
+            }}
+          >
+            {variant.label}
+          </span>
+        ) : (
+          <Link
+            key={variant.url}
+            href={variant.url}
+            style={{
+              padding: '8px 12px',
+              borderRadius: '5px',
+              background: '#fff',
+              color: '#000',
+              fontSize: '14px',
+              fontWeight: 500,
+              border: '1px solid #ccc',
+              textDecoration: 'none',
+              transition: 'all 0.2s',
+            }}
+          >
+            {variant.label}
+          </Link>
+        );
+      })}
+    </div>
+  </div>
+)}
             <div className="desktop-add-to-cart" style={{ marginTop: '24px' }}>
               <div style={{ display: 'flex', gap: '12px' }}>
                 <label htmlFor="qty" style={{ position: 'absolute', left: '-9999px' }}>Quantity</label>
@@ -336,6 +314,7 @@ const [qty, setQty] = useState(1);
                 </button>
               </div>
             </div>
+
 
             <div style={{ marginTop: '32px' }}>
               <h2 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '8px' }}>Details</h2>
