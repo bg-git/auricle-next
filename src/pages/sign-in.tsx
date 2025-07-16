@@ -1,9 +1,7 @@
 import { useState } from 'react';
 
-export default function Register() {
+export default function SignIn() {
   const [form, setForm] = useState({
-    firstName: '',
-    lastName: '',
     email: '',
     password: '',
   });
@@ -18,7 +16,7 @@ export default function Register() {
     e.preventDefault();
     setStatus('submitting');
 
-    const res = await fetch('/api/shopify/create-customer', {
+    const res = await fetch('/api/shopify/sign-in-customer', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form),
@@ -26,43 +24,21 @@ export default function Register() {
 
     if (res.ok) {
       setStatus('success');
-      setForm({ firstName: '', lastName: '', email: '', password: '' });
+      setForm({ email: '', password: '' });
     } else {
       setStatus('error');
     }
   };
 
   return (
-    <main className="register-page">
-      <div className="register-container">
-        <div className="register-info">
-          <h1>REGISTER FREE</h1>
-          <p>B2B Business Account</p>
+    <main className="sign-in-page">
+      <div className="sign-in-container">
+        <div className="sign-in-info">
+          <h1>SIGN IN</h1>
+          <p>Access your business account</p>
         </div>
 
-        <form className="register-form" onSubmit={handleSubmit}>
-          <label>
-            First Name
-            <input
-              name="firstName"
-              value={form.firstName}
-              onChange={handleChange}
-              required
-              placeholder="First Name"
-            />
-          </label>
-
-          <label>
-            Last Name
-            <input
-              name="lastName"
-              value={form.lastName}
-              onChange={handleChange}
-              required
-              placeholder="Last Name"
-            />
-          </label>
-
+        <form className="sign-in-form" onSubmit={handleSubmit}>
           <label>
             Email
             <input
@@ -88,11 +64,11 @@ export default function Register() {
           </label>
 
           <button type="submit" disabled={status === 'submitting'}>
-            {status === 'submitting' ? 'Submitting…' : 'Register'}
+            {status === 'submitting' ? 'Signing in…' : 'Sign In'}
           </button>
 
-          {status === 'success' && <p className="success-msg">✅ Registration successful</p>}
-          {status === 'error' && <p className="error-msg">❌ Something went wrong</p>}
+          {status === 'success' && <p className="success-msg">✅ Signed in successfully</p>}
+          {status === 'error' && <p className="error-msg">❌ Invalid email or password</p>}
         </form>
       </div>
     </main>

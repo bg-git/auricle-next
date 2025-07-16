@@ -1,27 +1,28 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-const SHOPIFY_ADMIN_API_URL = `https://${process.env.SHOPIFY_STORE_DOMAIN}/admin/api/2024-04/graphql.json`;
-const SHOPIFY_ADMIN_API_TOKEN = process.env.SHOPIFY_ADMIN_API_KEY!;
+const SHOPIFY_DOMAIN = process.env.SHOPIFY_STORE_DOMAIN!;
+const STOREFRONT_TOKEN = process.env.SHOPIFY_STOREFRONT_TOKEN!;
+const STOREFRONT_URL = `https://${SHOPIFY_DOMAIN}/api/2024-04/graphql.json`;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return res.status(405).json({ success: false, error: 'Method not allowed' });
   }
 
-  const { email, firstName, lastName } = req.body;
+  const { email, password, firstName, lastName } = req.body;
 
-  if (!email) {
-    return res.status(400).json({ error: 'Email is required' });
+  if (!email || !password) {
+    return res.status(400).json({ success: false, error: 'Email and password are required' });
   }
 
-  const mutation = `
-    mutation customerCreate($input: CustomerInput!) {
+  const query = `
+    mutation customerCreate($input: CustomerCreateInput!) {
       customerCreate(input: $input) {
         customer {
           id
           email
         }
-        userErrors {
+        customerUserErrors {
           field
           message
         }
@@ -32,42 +33,36 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const variables = {
     input: {
       email,
+      password,
       firstName,
       lastName,
-      tags: 'B2B, Registered via custom form',
-      emailMarketingConsent: {
-        state: 'NOT_SUBSCRIBED',
-        marketingOptInLevel: 'SINGLE_OPT_IN',
-      }
     },
   };
 
   try {
-    const shopifyRes = await fetch(SHOPIFY_ADMIN_API_URL, {
+    console.log('Incoming body:', req.body);
+console.log('Domain:', SHOPIFY_DOMAIN);
+console.log('Token present:', !!STOREFRONT_TOKEN);
+
+    const response = await fetch(STOREFRONT_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-Shopify-Access-Token': SHOPIFY_ADMIN_API_TOKEN,
+        'X-Shopify-Storefront-Access-Token': STOREFRONT_TOKEN,
       },
-      body: JSON.stringify({ query: mutation, variables }),
+      body: JSON.stringify({ query, variables }),
     });
 
-    const json = await shopifyRes.json();
+    const json = await response.json();
 
-    if (json.errors) {
-      console.error('GraphQL top-level error:', json.errors);
-      return res.status(500).json({ error: 'GraphQL error', details: json.errors });
+    if (json.errors || json.data.customerCreate.customerUserErrors.length > 0) {
+      const message =
+        json.errors?.[0]?.message || json.data.customerCreate.customerUserErrors[0]?.message;
+      return res.status(400).json({ success: false, error: message });
     }
 
-    const { customerCreate } = json.data;
-
-    if (customerCreate.userErrors.length) {
-      return res.status(400).json({ errors: customerCreate.userErrors });
-    }
-
-    return res.status(200).json({ customer: customerCreate.customer });
-  } catch (err: any) {
-    console.error('Request failed:', err);
-    return res.status(500).json({ error: 'Unexpected error', details: err.message });
+    return res.status(200).json({ success: true });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, error: error.message });
   }
 }
