@@ -148,8 +148,8 @@ const [qty, setQty] = useState(1);
   height={1500}
   priority
   fetchPriority="high"
-  sizes="(min-width: 800px) 50vw, 100vw"
-  style={{ objectFit: 'cover', width: '100%', height: 'auto' }}
+  sizes="(min-width: 1400px) 600px, (min-width: 1024px) 50vw, 100vw"
+  style={{ objectFit: 'cover', width: '100%', height: 'auto', display: 'block' }}
 />
 
 

@@ -17,6 +17,9 @@ const nextConfig = {
         pathname: '**',
       },
     ],
+    formats: ['image/webp'],
+    deviceSizes: [360, 414, 768, 1024, 1280, 1440, 1600, 1920],
+    imageSizes: [300, 350, 400, 500, 600, 750, 900],
   },
 
   eslint: {

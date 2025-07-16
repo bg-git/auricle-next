@@ -183,15 +183,16 @@ const metalColourMatch = selectedMetalColours.length ? selectedMetalColours.incl
   <div className="product-card-inner">
     <div style={{ background: '#f9f9f9' }}>
       <Image
-        src={image?.url || '/placeholder.png'}
-        alt=""
-        width={1200}
-        height={1500}
-        priority={index === 0}
-        fetchPriority={index === 0 ? 'high' : undefined}
-        style={{ objectFit: 'cover', width: '100%', height: 'auto', display: 'block' }}
-        sizes="(min-width: 1200px) 300px, (min-width: 768px) 50vw, 100vw"
-      />
+  src={image?.url || '/placeholder.png'}
+  alt=""
+  width={1200}
+  height={1500}
+  priority={index === 0}
+  fetchPriority={index === 0 ? 'high' : undefined}
+  style={{ objectFit: 'cover', width: '100%', height: 'auto', display: 'block' }}
+  sizes="(min-width: 1400px) 350px, (min-width: 1024px) 25vw, (min-width: 768px) 50vw, 100vw"
+/>
+
     </div>
     <h2 style={{ marginTop: '8px', fontSize: '13px', fontWeight: 400 }}>
       {product.title}
