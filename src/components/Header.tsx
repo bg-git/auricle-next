@@ -1,9 +1,11 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
 
 export default function Header() {
   const { openDrawer, cartItems } = useCart();
+  const { isAuthenticated, user, signOut, loading } = useAuth();
   const itemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
@@ -31,13 +33,39 @@ export default function Header() {
             color: '#fff',
           }}
         >
-          <Link href="/register" style={{ color: '#fff', textDecoration: 'none', marginRight: '12px' }}>
-            Join Us
-          </Link>
-          <span style={{ marginRight: '12px' }}>|</span>
-          <Link href="/sign-in" style={{ color: '#fff', textDecoration: 'none' }}>
-            Sign In
-          </Link>
+          {!loading && (
+            isAuthenticated ? (
+              <>
+                <Link href="/account" style={{ color: '#fff', textDecoration: 'none', marginRight: '12px' }}>
+                  {user?.firstName ? `Hi, ${user.firstName}` : 'My Account'}
+                </Link>
+                <span style={{ marginRight: '12px' }}>|</span>
+                <button 
+                  onClick={signOut}
+                  style={{ 
+                    background: 'none', 
+                    border: 'none', 
+                    color: '#fff', 
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    padding: 0
+                  }}
+                >
+                  Sign Out
+                </button>
+              </>
+            ) : (
+              <>
+                <Link href="/register" style={{ color: '#fff', textDecoration: 'none', marginRight: '12px' }}>
+                  Join Us
+                </Link>
+                <span style={{ marginRight: '12px' }}>|</span>
+                <Link href="/sign-in" style={{ color: '#fff', textDecoration: 'none' }}>
+                  Sign In
+                </Link>
+              </>
+            )
+          )}
         </div>
       </header>
 
