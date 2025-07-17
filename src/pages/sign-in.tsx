@@ -30,10 +30,10 @@ export default function SignIn() {
       // Redirect to account page after successful sign in
       setTimeout(() => {
         router.push('/account');
-      }, 1000);
+      }, 100);
     } else {
       setStatus('error');
-      setErrorMessage(result.error || 'Sign in failed');
+      setErrorMessage('You credentials are incorrect. Please try again.');
     }
   };
 

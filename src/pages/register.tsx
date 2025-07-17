@@ -31,7 +31,7 @@ export default function Register() {
       setForm({ firstName: '', lastName: '', email: '', password: '' });
       setTimeout(() => {
         router.push('/sign-in');
-      }, 1500);
+      }, 100);
     } else {
       setStatus('error');
     }
@@ -97,7 +97,7 @@ export default function Register() {
           </button>
 
           {status === 'success' && <p className="success-msg">✅ Registration successful! Redirecting to sign in…</p>}
-          {status === 'error' && <p className="error-msg">❌ Something went wrong</p>}
+          {status === 'error' && <p className="error-msg">❌Registration Failed, Please try again.</p>}
         </form>
       </div>
     </main>

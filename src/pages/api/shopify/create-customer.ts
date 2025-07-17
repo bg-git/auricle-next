@@ -39,13 +39,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     },
   };
 
-  console.log(variables)
 
   try {
-    console.log(STOREFRONT_URL)
-    console.log(STOREFRONT_TOKEN)
-    console.log(query)
-    console.log(variables)
+
 
 
     const response = await fetch(STOREFRONT_URL, {
@@ -60,7 +56,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     
 
     const json = await response.json();
-    console.log(json)
 
     if (json.errors || json.data.customerCreate.customerUserErrors.length > 0) {
       const message =
