@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useRouter } from 'next/router';
 
 export default function Register() {
   const [form, setForm] = useState({
@@ -9,6 +10,7 @@ export default function Register() {
   });
 
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+  const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -27,6 +29,9 @@ export default function Register() {
     if (res.ok) {
       setStatus('success');
       setForm({ firstName: '', lastName: '', email: '', password: '' });
+      setTimeout(() => {
+        router.push('/sign-in');
+      }, 1500);
     } else {
       setStatus('error');
     }
@@ -91,7 +96,7 @@ export default function Register() {
             {status === 'submitting' ? 'Submitting…' : 'Register'}
           </button>
 
-          {status === 'success' && <p className="success-msg">✅ Registration successful</p>}
+          {status === 'success' && <p className="success-msg">✅ Registration successful! Redirecting to sign in…</p>}
           {status === 'error' && <p className="error-msg">❌ Something went wrong</p>}
         </form>
       </div>

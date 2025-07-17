@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { useAuth } from '@/context/AuthContext';
+import { useRouter } from 'next/router';
 
 export default function SignIn() {
   const [form, setForm] = useState({
@@ -7,6 +9,9 @@ export default function SignIn() {
   });
 
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState('');
+  const { signIn } = useAuth();
+  const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -15,18 +20,20 @@ export default function SignIn() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus('submitting');
+    setErrorMessage('');
 
-    const res = await fetch('/api/shopify/sign-in-customer', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
-    });
+    const result = await signIn(form.email, form.password);
 
-    if (res.ok) {
+    if (result.success) {
       setStatus('success');
       setForm({ email: '', password: '' });
+      // Redirect to account page after successful sign in
+      setTimeout(() => {
+        router.push('/account');
+      }, 1000);
     } else {
       setStatus('error');
+      setErrorMessage(result.error || 'Sign in failed');
     }
   };
 
@@ -67,8 +74,8 @@ export default function SignIn() {
             {status === 'submitting' ? 'Signing in…' : 'Sign In'}
           </button>
 
-          {status === 'success' && <p className="success-msg">✅ Signed in successfully</p>}
-          {status === 'error' && <p className="error-msg">❌ Invalid email or password</p>}
+          {status === 'success' && <p className="success-msg">✅ Signed in successfully! Redirecting to account...</p>}
+          {status === 'error' && <p className="error-msg">❌ {errorMessage}</p>}
         </form>
       </div>
     </main>
