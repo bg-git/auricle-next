@@ -112,23 +112,23 @@ const [qty, setQty] = useState(1);
   };
 
   const fieldLabels = {
-    name: 'Name',
-    title: 'Title',
-    sku: 'SKU',
-    metal: 'Metal',
-    alloy: 'Alloy',
-    metal_colour: 'Metal Colour',
-    thread_type: 'Thread Type',
-    gem_type: 'Gem Type',
-    gem_colour: 'Gem Colour',
-    width: 'Width',
-    height: 'Height',
-    length: 'Length',
-    gauge: 'Gauge',
-    sold_as: 'Sold As',
-    shipping: 'Shipping',
-    fitting: 'Fitting',
-    base_size: 'Base Size'
+  title: 'Title',
+  name: 'Name',
+  sku: 'SKU',
+  metal: 'Metal',
+  alloy: 'Alloy',
+  metal_colour: 'Metal Colour',
+  thread_type: 'Thread Type',
+  fitting: 'Fitting',
+   gem_type: 'Gem Type',
+  gem_colour: 'Gem Colour',
+  gauge: 'Gauge',
+  base_size: 'Base Size',
+  length: 'Length',
+  width: 'Width',
+  height: 'Height',
+  sold_as: 'Sold As',
+  shipping: 'Shipping'
   };
 
   return (
@@ -350,7 +350,7 @@ const [qty, setQty] = useState(1);
 export const getStaticPaths: GetStaticPaths = async () => {
   const query = `
     {
-      products(first: 10) {
+      products(first: 250) {
         edges {
           node {
             handle
