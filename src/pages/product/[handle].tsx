@@ -350,7 +350,7 @@ const [qty, setQty] = useState(1);
 export const getStaticPaths: GetStaticPaths = async () => {
   const query = `
     {
-      products(first: 10) {
+      products(first: 250) {
         edges {
           node {
             handle
