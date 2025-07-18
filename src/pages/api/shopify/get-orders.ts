@@ -3,7 +3,6 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 const SHOPIFY_DOMAIN = process.env.SHOPIFY_STORE_DOMAIN!;
 const STOREFRONT_TOKEN = process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN!;
 const STOREFRONT_URL = `https://${SHOPIFY_DOMAIN}/api/2024-04/graphql.json`;
-const ADMIN_API_KEY = process.env.SHOPIFY_ADMIN_API_KEY!;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -17,43 +16,33 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const query = `
-    query customer($customerAccessToken: String!) {
+    query getOrders($customerAccessToken: String!) {
       customer(customerAccessToken: $customerAccessToken) {
-        id
-        firstName
-        lastName
-        email
-        phone
-        acceptsMarketing
-        createdAt
-        updatedAt
-        defaultAddress {
-          id
-          firstName
-          lastName
-          company
-          address1
-          address2
-          city
-          province
-          country
-          zip
-          phone
-        }
-        addresses(first: 10) {
+        orders(first: 10, sortKey: PROCESSED_AT, reverse: true) {
           edges {
             node {
               id
-              firstName
-              lastName
-              company
-              address1
-              address2
-              city
-              province
-              country
-              zip
-              phone
+              name
+              orderNumber
+              processedAt
+              totalPriceV2 {
+                amount
+                currencyCode
+              }
+              lineItems(first: 10) {
+                edges {
+                  node {
+                    title
+                    quantity
+                    originalTotalPrice {
+                      amount
+                      currencyCode
+                    }
+                  }
+                }
+              }
+              fulfillmentStatus
+              financialStatus
             }
           }
         }
@@ -78,29 +67,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const json = await response.json();
 
     if (json.errors || !json.data.customer) {
-      return res.status(401).json({ success: false, error: 'Invalid token' });
-    }
-
-    const customer = json.data.customer;
-
-    let note = '';
-    if (customer.email) {
-      const adminRes = await fetch(`https://${SHOPIFY_DOMAIN}/admin/api/2023-01/customers/search.json?query=email:${encodeURIComponent(customer.email)}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Shopify-Access-Token': ADMIN_API_KEY,
-        },
-      });
-      const adminJson = await adminRes.json();
-      if (adminJson.customers && adminJson.customers.length > 0) {
-        note = adminJson.customers[0].note || '';
-      }
+      return res.status(401).json({ success: false, error: 'Invalid token or no orders found' });
     }
 
     return res.status(200).json({ 
       success: true, 
-      customer: { ...customer, note }
+      orders: json.data.customer.orders.edges.map((edge: any) => edge.node) 
     });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'An unknown error occurred';

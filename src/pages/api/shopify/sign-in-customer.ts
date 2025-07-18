@@ -49,7 +49,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const json = await response.json();
 
-    console.dir(json, { depth: null })
+    
 
     if (json.errors || json.data.customerAccessTokenCreate.customerUserErrors.length > 0) {
       const message =
