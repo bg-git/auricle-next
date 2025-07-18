@@ -76,3 +76,27 @@
     font-size: 0.95rem;
   }
 }
+
+.forgot-password-link {
+  background: none;
+  border: none;
+  color: #0070f3;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  font-size: 1em;
+}
+
+.forgot-password-form {
+  margin-bottom: 12px;
+}
+
+.forgot-password-success {
+  color: green;
+  margin-top: 4px;
+}
+
+.forgot-password-error {
+  color: red;
+  margin-top: 4px;
+}

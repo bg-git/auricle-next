@@ -380,7 +380,7 @@ function AccountSettingsForm({ customer }: { customer: any }) {
       </label>
       {error && <div style={{ color: 'red', marginBottom: 10 }}>{error}</div>}
       {success && <div style={{ color: 'green', marginBottom: 10 }}>{success}</div>}
-      {refreshing && <div style={{ display: 'none' }}>Refreshing info...</div>}
+      {refreshing && <div style={{ color: 'blue', marginBottom: 10 }}>Refreshing info...</div>}
       <button type="submit" className="primary-btn" disabled={loading}>
         {loading ? "Saving..." : "Save Changes"}
       </button>

@@ -13,6 +13,11 @@ export default function SignIn() {
   const { signIn } = useAuth();
   const router = useRouter();
 
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotStatus, setForgotStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+  const [forgotMsg, setForgotMsg] = useState('');
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
@@ -34,6 +39,31 @@ export default function SignIn() {
     } else {
       setStatus('error');
       setErrorMessage('You credentials are incorrect. Please try again.');
+    }
+  };
+
+  // Forgot password submit
+  const handleForgotSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setForgotStatus('submitting');
+    setForgotMsg('');
+    try {
+      const res = await fetch('/api/shopify/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: forgotEmail }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        setForgotStatus('error');
+        setForgotMsg(data.error || 'Failed to send reset email.');
+      } else {
+        setForgotStatus('success');
+        setForgotMsg('Password reset email sent! Please check your inbox.');
+      }
+    } catch (err: any) {
+      setForgotStatus('error');
+      setForgotMsg('Network error.');
     }
   };
 
@@ -69,6 +99,37 @@ export default function SignIn() {
               placeholder="Password"
             />
           </label>
+
+          {/* Forgot Password Link */}
+          <div style={{ margin: '8px 0' }}>
+            <button
+              type="button"
+              style={{ background: 'none', border: 'none', color: '#333333', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
+              onClick={() => setShowForgot((v) => !v)}
+            >
+              Forgot Password?
+            </button>
+          </div>
+
+          {showForgot && (
+            <div style={{ marginBottom: 12 }}>
+              <form onSubmit={handleForgotSubmit}>
+                <input
+                  type="email"
+                  placeholder="Enter your email"
+                  value={forgotEmail}
+                  onChange={e => setForgotEmail(e.target.value)}
+                  required
+                  style={{ width: '100%', marginBottom: 4 }}
+                />
+                <button type="submit" disabled={forgotStatus === 'submitting'} style={{ width: '100%' }}>
+                  {forgotStatus === 'submitting' ? 'Sending…' : 'Send Reset Email'}
+                </button>
+                {forgotStatus === 'success' && <div style={{ color: 'green', marginTop: 4 }}>{forgotMsg}</div>}
+                {forgotStatus === 'error' && <div style={{ color: 'red', marginTop: 4 }}>{forgotMsg}</div>}
+              </form>
+            </div>
+          )}
 
           <button type="submit" disabled={status === 'submitting'}>
             {status === 'submitting' ? 'Signing in…' : 'Sign In'}
