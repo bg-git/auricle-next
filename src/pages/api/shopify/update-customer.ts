@@ -5,6 +5,14 @@ const STOREFRONT_TOKEN = process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN!;
 const STOREFRONT_URL = `https://${SHOPIFY_DOMAIN}/api/2024-04/graphql.json`;
 const ADMIN_API_KEY = process.env.SHOPIFY_ADMIN_API_KEY!;
 
+interface StorefrontCustomer {
+  id?: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ success: false, error: 'Method not allowed' });
@@ -34,17 +42,29 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
   `;
 
-  const variables: any = {
-    customerAccessToken: token,
-    customer: {}
-  };
+  interface CustomerUpdateInput {
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  password?: string;
+}
+
+const variables: {
+  customerAccessToken: string;
+  customer: CustomerUpdateInput;
+} = {
+  customerAccessToken: token,
+  customer: {},
+};
+
   if (firstName !== undefined) variables.customer.firstName = firstName;
   if (lastName !== undefined) variables.customer.lastName = lastName;
   if (phone !== undefined) variables.customer.phone = phone;
   if (password !== undefined) variables.customer.password = password;
 
-  try {    
-    let storefrontCustomer = null;
+  try {
+    let storefrontCustomer: StorefrontCustomer | null = null;
+
     if (Object.keys(variables.customer).length > 0) {
       const response = await fetch(STOREFRONT_URL, {
         method: 'POST',
@@ -67,7 +87,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
       storefrontCustomer = json.data.customerUpdate.customer;
     }
-
 
     if (note !== undefined) {
       let email = storefrontCustomer?.email;
@@ -118,4 +137,4 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const message = error instanceof Error ? error.message : 'An unknown error occurred';
     return res.status(500).json({ success: false, error: message });
   }
-} 
+}
