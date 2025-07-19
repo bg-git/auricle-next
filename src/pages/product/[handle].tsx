@@ -64,6 +64,10 @@ const [qty, setQty] = useState(1);
     return <div style={{ padding: '16px' }}>Product not found.</div>;
   }
 
+  const rawPrice = parseFloat(product.priceRange.minVariantPrice.amount);
+const formattedPrice =
+  rawPrice % 1 === 0 ? rawPrice.toFixed(0) : rawPrice.toFixed(2);
+
   const imageUrl = product.images?.edges?.[0]?.node?.url ?? '/placeholder.png';
   const metafields = product.metafields || [];
 
@@ -168,7 +172,7 @@ const [qty, setQty] = useState(1);
             <h1 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '4px' }}>{product.title}</h1>
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
               <p style={{ fontSize: '14px', fontWeight: 500 }}>
-                £{product.priceRange.minVariantPrice.amount}
+                £{formattedPrice}
               </p>
             </div>
 {variantOptions.length > 0 && (
