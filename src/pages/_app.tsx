@@ -8,6 +8,8 @@ import '@/styles/pages/CartDrawer.scss';
 import '@/styles/pages/register.scss';
 import '@/styles/pages/sign-in.scss';
 import '@/styles/pages/account.scss';
+import '@/styles/pages/studio-list.scss';
+import '@/styles/pages/studio-page.scss';
 import Header from '@/components/Header';
 import { CartProvider } from '@/context/CartContext';
 import { AuthProvider } from '@/context/AuthContext';
