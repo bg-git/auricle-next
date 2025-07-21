@@ -2,24 +2,30 @@ import { useFavourites } from '@/context/FavouritesContext';
 import { useEffect, useState } from 'react';
 
 interface FavouriteToggleProps {
-  id: string;
+  handle: string;
   title: string;
   image?: string;
   price?: string;
-  size?: number; // Optional icon size
+  metafields?: { key: string; value: string }[];
 }
 
-export default function FavouriteToggle({ id, title, image, price, size = 20 }: FavouriteToggleProps) {
+export default function FavouriteToggle({
+  handle,
+  title,
+  image,
+  price,
+  metafields,
+}: FavouriteToggleProps) {
   const { isFavourite, toggleFavourite } = useFavourites();
   const [active, setActive] = useState(false);
 
   useEffect(() => {
-    setActive(isFavourite(id));
-  }, [id, isFavourite]);
+    setActive(isFavourite(handle));
+  }, [handle, isFavourite]);
 
   const handleClick = (e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent navigation if inside a link
-    toggleFavourite({ id, title, image, price });
+    e.preventDefault();
+    toggleFavourite({ handle, title, image, price, metafields });
     setActive(!active);
   };
 
@@ -35,8 +41,8 @@ export default function FavouriteToggle({ id, title, image, price, size = 20 }: 
         viewBox="0 0 24 24"
         stroke="currentColor"
         strokeWidth="2"
-        width={size}
-        height={size}
+        width="20"
+        height="20"
         style={{
           display: 'block',
           pointerEvents: 'none',

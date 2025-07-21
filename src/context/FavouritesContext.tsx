@@ -1,19 +1,20 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 
 export interface FavouriteItem {
-  id: string; // variantId or handle
+  handle: string; // ✅ used for linking to /product/[handle]
   title: string;
   image?: string;
   price?: string;
   orderAgain?: boolean;
+  metafields?: { key: string; value: string }[];
 }
 
 interface FavouritesContextType {
   favourites: FavouriteItem[];
   addFavourite: (item: FavouriteItem) => void;
-  removeFavourite: (id: string) => void;
+  removeFavourite: (handle: string) => void;
   toggleFavourite: (item: FavouriteItem) => void;
-  isFavourite: (id: string) => boolean;
+  isFavourite: (handle: string) => boolean;
 }
 
 const FavouritesContext = createContext<FavouritesContextType | undefined>(undefined);
@@ -39,21 +40,21 @@ export const FavouritesProvider = ({ children }: { children: ReactNode }) => {
   }, [favourites]);
 
   const addFavourite = (item: FavouriteItem) => {
-    if (!favourites.find((f) => f.id === item.id)) {
+    if (!favourites.find((f) => f.handle === item.handle)) {
       setFavourites([...favourites, item]);
     }
   };
 
-  const removeFavourite = (id: string) => {
-    setFavourites(favourites.filter((f) => f.id !== id));
+  const removeFavourite = (handle: string) => {
+    setFavourites(favourites.filter((f) => f.handle !== handle));
   };
 
   const toggleFavourite = (item: FavouriteItem) => {
-    isFavourite(item.id) ? removeFavourite(item.id) : addFavourite(item);
+    isFavourite(item.handle) ? removeFavourite(item.handle) : addFavourite(item);
   };
 
-  const isFavourite = (id: string) => {
-    return favourites.some((f) => f.id === id);
+  const isFavourite = (handle: string) => {
+    return favourites.some((f) => f.handle === handle);
   };
 
   return (

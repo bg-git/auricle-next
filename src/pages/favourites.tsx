@@ -2,9 +2,122 @@ import { useFavourites } from '@/context/FavouritesContext';
 import Link from 'next/link';
 import Image from 'next/image';
 import Seo from '@/components/Seo';
+import FavouriteToggle from '@/components/FavouriteToggle';
+import { useState, useEffect } from 'react';
+
+type Metafield = {
+  key: string;
+  value: string;
+};
+
 
 export default function FavouritesPage() {
   const { favourites } = useFavourites();
+
+  const getFieldValue = (
+  item: { metafields?: (Metafield | null)[] },
+  key: string
+): string | null => {
+return item.metafields
+  ?.filter((f): f is Metafield => f !== null)
+  .find((f) => f.key === key)
+  ?.value ?? null;
+};
+
+
+  const extractOptions = (key: string): string[] => {
+    const options = new Set<string>();
+    favourites.forEach((item) => {
+      const value = getFieldValue(item, key);
+      if (value) options.add(value);
+    });
+    return Array.from(options).sort();
+  };
+
+  const [selectedMetals, setSelectedMetals] = useState<string[]>([]);
+  const [selectedFinishes, setSelectedFinishes] = useState<string[]>([]);
+  const [selectedGemColours, setSelectedGemColours] = useState<string[]>([]);
+  const [selectedGemTypes, setSelectedGemTypes] = useState<string[]>([]);
+  const [selectedFittings, setSelectedFittings] = useState<string[]>([]);
+  const [selectedMetalColours, setSelectedMetalColours] = useState<string[]>([]);
+  const [showFilters, setShowFilters] = useState(false);
+
+  useEffect(() => {
+    document.body.style.overflow = showFilters ? 'hidden' : '';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [showFilters]);
+
+  const toggle = (
+    value: string,
+    selected: string[],
+    setFn: React.Dispatch<React.SetStateAction<string[]>>
+  ) => {
+    setFn(
+      selected.includes(value)
+        ? selected.filter((v) => v !== value)
+        : [...selected, value]
+    );
+  };
+
+  const renderFilterSection = (
+    label: string,
+    options: string[],
+    selected: string[],
+    setFn: React.Dispatch<React.SetStateAction<string[]>>
+  ) => {
+    if (options.length === 0) return null;
+    return (
+      <div style={{ marginBottom: '24px' }}>
+        <p style={{ fontSize: '14px', fontWeight: 600, marginBottom: '8px' }}>{label}</p>
+        {options.map((option) => (
+          <button
+            key={option}
+            onClick={() => toggle(option, selected, setFn)}
+            style={{
+              display: 'block',
+              width: '100%',
+              padding: '8px 12px',
+              marginBottom: '6px',
+              background: selected.includes(option) ? '#000' : '#f9f9f9',
+              color: selected.includes(option) ? '#fff' : '#000',
+              border: '1px solid #e0e0e0',
+              fontSize: '14px',
+              cursor: 'pointer',
+            }}
+          >
+            {option}
+          </button>
+        ))}
+      </div>
+    );
+  };
+
+  const filteredItems = favourites.filter((item) => {
+    const metal = getFieldValue(item, 'metal') || '';
+    const finish = getFieldValue(item, 'finish') || '';
+    const gemColour = getFieldValue(item, 'gem_colour') || '';
+    const gemType = getFieldValue(item, 'gem_type') || '';
+    const fitting = getFieldValue(item, 'fitting') || '';
+    const metalColour = getFieldValue(item, 'metal_colour') || '';
+
+    const metalMatch = selectedMetals.length ? selectedMetals.includes(metal) : true;
+    const finishMatch = selectedFinishes.length ? selectedFinishes.includes(finish) : true;
+    const gemColourMatch = selectedGemColours.length ? selectedGemColours.includes(gemColour) : true;
+    const gemTypeMatch = selectedGemTypes.length ? selectedGemTypes.includes(gemType) : true;
+    const fittingMatch = selectedFittings.length ? selectedFittings.includes(fitting) : true;
+    const metalColourMatch = selectedMetalColours.length ? selectedMetalColours.includes(metalColour) : true;
+
+    return (
+      metalMatch &&
+      finishMatch &&
+      gemColourMatch &&
+      gemTypeMatch &&
+      fittingMatch &&
+      metalColourMatch
+    );
+  });
 
   return (
     <>
@@ -20,11 +133,18 @@ export default function FavouritesPage() {
       </div>
 
       <main className="collection-page">
-        <aside className="filters-desktop" /> {/* Empty sidebar to preserve layout */}
+        <aside className="filters-desktop">
+          {renderFilterSection('Metal', extractOptions('metal'), selectedMetals, setSelectedMetals)}
+          {renderFilterSection('Finish', extractOptions('finish'), selectedFinishes, setSelectedFinishes)}
+          {renderFilterSection('Gem Colour', extractOptions('gem_colour'), selectedGemColours, setSelectedGemColours)}
+          {renderFilterSection('Gem Type', extractOptions('gem_type'), selectedGemTypes, setSelectedGemTypes)}
+          {renderFilterSection('Fitting', extractOptions('fitting'), selectedFittings, setSelectedFittings)}
+          {renderFilterSection('Metal Colour', extractOptions('metal_colour'), selectedMetalColours, setSelectedMetalColours)}
+        </aside>
 
         <section className="product-grid">
-          {favourites.map((item) => (
-            <Link href={`/product/${item.id}`} key={item.id} className="product-card">
+          {filteredItems.map((item, index) => (
+            <Link href={`/product/${item.handle}`} key={item.handle} className="product-card">
               <div className="product-card-inner">
                 <div className="product-image-wrapper">
                   <Image
@@ -32,22 +152,45 @@ export default function FavouritesPage() {
                     alt={item.title}
                     width={1200}
                     height={1500}
-                    style={{ objectFit: 'cover', width: '100%', height: 'auto', display: 'block' }}
+                    priority={index === 0}
+                    fetchPriority={index === 0 ? 'high' : undefined}
+                    style={{
+                      objectFit: 'cover',
+                      width: '100%',
+                      height: 'auto',
+                      display: 'block',
+                    }}
                     sizes="(min-width: 1400px) 350px, (min-width: 1024px) 25vw, (min-width: 768px) 50vw, 100vw"
                   />
+                  <FavouriteToggle
+                    handle={item.handle}
+                    title={item.title}
+                    image={item.image}
+                    price={item.price}
+                    metafields={item.metafields}
+                  />
                 </div>
-
-                <h3>{item.title}</h3>
-
-                {item.price && (
-                  <p style={{ fontSize: '13px', color: '#888', marginTop: '4px' }}>
-                    £{parseFloat(item.price).toFixed(2)}
-                  </p>
-                )}
+                <h2 style={{ marginTop: '8px', fontSize: '13px', fontWeight: 400 }}>{item.title}</h2>
               </div>
             </Link>
           ))}
         </section>
+
+        <div className="mobile-filter-toggle">
+          <button onClick={() => setShowFilters(true)}>Filters</button>
+        </div>
+
+        {showFilters && (
+          <div className={`mobile-filter-drawer ${showFilters ? 'open' : ''}`}>
+            <button onClick={() => setShowFilters(false)}>Close</button>
+            {renderFilterSection('Metal', extractOptions('metal'), selectedMetals, setSelectedMetals)}
+            {renderFilterSection('Finish', extractOptions('finish'), selectedFinishes, setSelectedFinishes)}
+            {renderFilterSection('Gem Colour', extractOptions('gem_colour'), selectedGemColours, setSelectedGemColours)}
+            {renderFilterSection('Gem Type', extractOptions('gem_type'), selectedGemTypes, setSelectedGemTypes)}
+            {renderFilterSection('Fitting', extractOptions('fitting'), selectedFittings, setSelectedFittings)}
+            {renderFilterSection('Metal Colour', extractOptions('metal_colour'), selectedMetalColours, setSelectedMetalColours)}
+          </div>
+        )}
       </main>
     </>
   );

@@ -34,7 +34,17 @@ type Product = {
     edges: ProductImage[];
   };
   metafields?: Metafield[];
+  variants?: {
+    edges: {
+      node: {
+        price: {
+          amount: string;
+        };
+      };
+    }[];
+  };
 };
+
 
 type CollectionPageProps = {
   products: Product[];
@@ -227,10 +237,14 @@ return (
     />
 
     <FavouriteToggle
-      id={product.id}
-      title={product.title}
-      image={image?.url}
-    />
+  handle={product.handle}
+  title={product.title}
+  image={image?.url}
+  price={product.variants?.edges?.[0]?.node?.price.amount}
+  metafields={product.metafields}
+/>
+
+
   </div>
 
   <h2 style={{ marginTop: '8px', fontSize: '13px', fontWeight: 400 }}>
