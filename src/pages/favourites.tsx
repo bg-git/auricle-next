@@ -4,20 +4,18 @@ import Image from 'next/image';
 import Seo from '@/components/Seo';
 
 export default function FavouritesPage() {
-  const { favourites, removeFavourite } = useFavourites();
+  const { favourites } = useFavourites();
 
   return (
     <>
       <Seo title="My Favourites | AURICLE" />
 
       <div className="collection-page">
-        <div className="filters-desktop" /> {/* Keeps structure aligned with 2-column layout */}
+        <div className="filters-desktop" /> {/* Empty sidebar to preserve layout */}
 
         <section className="product-grid">
           <div style={{ gridColumn: '1 / -1', marginBottom: '16px' }}>
-            <h1 style={{ fontSize: '30px', fontWeight: 900 }}>
-              My Favourites
-            </h1>
+            <h1 style={{ fontSize: '30px', fontWeight: 900 }}>My Favourites</h1>
             {favourites.length === 0 && (
               <p style={{ fontSize: '14px', marginTop: '8px' }}>
                 You haven’t added any favourites yet.
@@ -26,11 +24,7 @@ export default function FavouritesPage() {
           </div>
 
           {favourites.map((item) => (
-            <Link
-              href={`/product/${item.id}`}
-              key={item.id}
-              className="product-card"
-            >
+            <Link href={`/product/${item.id}`} key={item.id} className="product-card">
               <div className="product-card-inner">
                 <div className="product-image-wrapper">
                   <Image
@@ -39,9 +33,6 @@ export default function FavouritesPage() {
                     width={1200}
                     height={1500}
                   />
-                  {item.orderAgain && (
-                    <span className="order-again">Order Again</span>
-                  )}
                 </div>
 
                 <h3>{item.title}</h3>
@@ -51,16 +42,6 @@ export default function FavouritesPage() {
                     £{parseFloat(item.price).toFixed(2)}
                   </p>
                 )}
-
-                <button
-                  className="remove-button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    removeFavourite(item.id);
-                  }}
-                >
-                  Remove
-                </button>
               </div>
             </Link>
           ))}

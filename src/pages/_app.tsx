@@ -11,7 +11,6 @@ import '@/styles/pages/sign-in.scss';
 import '@/styles/pages/account.scss';
 import '@/styles/pages/studio-list.scss';
 import '@/styles/pages/studio-page.scss';
-import '@/styles/pages/favourites.scss';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { CartProvider } from '@/context/CartContext';
