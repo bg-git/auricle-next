@@ -64,9 +64,12 @@ const [qty, setQty] = useState(1);
     return <div style={{ padding: '16px' }}>Product not found.</div>;
   }
 
-  const rawPrice = parseFloat(product.priceRange.minVariantPrice.amount);
-const formattedPrice =
-  rawPrice % 1 === 0 ? rawPrice.toFixed(0) : rawPrice.toFixed(2);
+  const selectedVariant = product.variants?.edges?.find(v => v.node.id === selectedVariantId)?.node;
+const rawPrice = selectedVariant
+  ? parseFloat(selectedVariant.price.amount)
+  : parseFloat(product.priceRange.minVariantPrice.amount);
+const formattedPrice = rawPrice % 1 === 0 ? rawPrice.toFixed(0) : rawPrice.toFixed(2);
+
 
   const imageUrl = product.images?.edges?.[0]?.node?.url ?? '/placeholder.png';
   const metafields = product.metafields || [];
@@ -220,6 +223,29 @@ const formattedPrice =
     </div>
   </div>
 )}
+
+{product.variants?.edges?.length > 1 && (
+  <div className="variant-wrapper">
+    <p className="variant-label">Select an option:</p>
+    <div className="variant-grid">
+      {product.variants.edges.map(({ node }) => {
+        const isSelected = selectedVariantId === node.id;
+
+        return (
+          <button
+            key={node.id}
+            onClick={() => setSelectedVariantId(node.id)}
+            className={`variant-button${isSelected ? ' selected' : ''}`}
+          >
+            {node.title}
+          </button>
+        );
+      })}
+    </div>
+  </div>
+)}
+
+
             <div className="desktop-add-to-cart" style={{ marginTop: '24px' }}>
               <div style={{ display: 'flex', gap: '12px' }}>
                 <label htmlFor="qty" style={{ position: 'absolute', left: '-9999px' }}>Quantity</label>
@@ -300,19 +326,20 @@ const formattedPrice =
                     whiteSpace: 'nowrap',
                   }}
                   onClick={() => {
-  if (!selectedVariantId) {
-    console.warn('No variant ID selected');
+  if (!selectedVariantId || !selectedVariant) {
+    console.warn('No variant selected');
     return;
   }
 
   addToCart(selectedVariantId, qty, {
-    title: product.title,
-    price: product.priceRange.minVariantPrice.amount,
+    title: `${product.title} - ${selectedVariant.title}`,
+    price: selectedVariant.price.amount,
     image: product.images?.edges?.[0]?.node?.url || undefined,
   });
 
   openDrawer();
 }}
+
                 >
                   ADD TO BAG
                 </button>

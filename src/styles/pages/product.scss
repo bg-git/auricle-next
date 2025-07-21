@@ -70,3 +70,37 @@ input[type='number'] {
   appearance: textfield;
   color: #000;
 }
+
+.variant-wrapper {
+  margin-top: 24px;
+}
+
+.variant-label {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.variant-grid {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.variant-button {
+  padding: 8px 12px;
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  background: #fff;
+  color: #000;
+  border: 1px solid #ccc; // prevent layout shift
+  transition: all 0.2s ease;
+
+  &.selected {
+    background: #000;
+    color: #fff;
+    border-color: #000;
+  }
+}

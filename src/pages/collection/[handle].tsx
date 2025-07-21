@@ -39,9 +39,12 @@ type CollectionPageProps = {
   title: string;
   seoTitle?: string;
   seoDescription?: string;
+  collectionDescription?: string;
+  deepLinks?: { label: string; href: string }[];
 };
 
-export default function CollectionPage({ products, title, seoTitle, seoDescription }: CollectionPageProps) {
+
+export default function CollectionPage({ products, title, seoTitle, seoDescription, collectionDescription, deepLinks }: CollectionPageProps) {
   const getMetafieldValue = (product: Product, key: string): string | null => {
     const validMetafields = (product.metafields || []).filter((f): f is Metafield => f != null);
     const field = validMetafields.find((f) => f.key === key);
@@ -159,8 +162,36 @@ const metalColourMatch = selectedMetalColours.length ? selectedMetalColours.incl
       <Seo title={seoTitle || title} description={seoDescription || undefined} />
 
 
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '16px 16px 0' }}>
+      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '16px 16px 0' }}>
         <h1 style={{ fontSize: '30px', fontWeight: 900 }}>{title}</h1>
+        {collectionDescription && (
+  <div style={{ marginTop: '12px', fontSize: '14px', lineHeight: '1.6', maxWidth: '800px' }}>
+    <p>{collectionDescription}</p>
+  </div>
+)}
+        {Array.isArray(deepLinks) && deepLinks.length > 0 && (
+  <div style={{ marginTop: '16px', marginBottom: '24px' }}>
+    <p style={{ fontSize: '14px', fontWeight: 600, marginBottom: '8px' }}>Quick Links</p>
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+      {deepLinks.map(({ label, href }) => (
+        <Link key={href} href={href} legacyBehavior>
+          <a style={{
+            padding: '10px 20px',
+            fontSize: '20px',
+            background: '#f0f0f0',
+            borderRadius: '4px',
+            border: '1px solid #e0e0e0',
+            textDecoration: 'none',
+            color: '#000'
+          }}>
+            {label}
+          </a>
+        </Link>
+      ))}
+    </div>
+  </div>
+)}
+
       </div>
 
       <main className="collection-page">
@@ -243,9 +274,11 @@ export const getStaticProps: GetStaticProps<CollectionPageProps> = async (
       collectionByHandle(handle: $handle) {
         id
         title
+        description
         metafields(identifiers: [
           { namespace: "custom", key: "title" },
-          { namespace: "custom", key: "description" }
+          { namespace: "custom", key: "description" },
+          { namespace: "custom", key: "deep_links" }
         ]) {
           key
           value
@@ -309,6 +342,17 @@ const seoTitle =
 const seoDescription =
   validMetafields.find((f: { key: string; value: string }) => f.key === 'description')?.value ?? null;
 
+const deepLinksRaw =
+  validMetafields.find((f) => f.key === 'deep_links')?.value ?? null;
+
+let deepLinks: { label: string; href: string }[] = [];
+
+if (deepLinksRaw) {
+  deepLinks = deepLinksRaw.split(',').map(entry => {
+    const [label, href] = entry.split('::');
+    return { label: label?.trim(), href: href?.trim() };
+  }).filter(link => link.label && link.href);
+}
 
 
 
@@ -316,12 +360,15 @@ return {
   props: {
     products,
     title: data.collectionByHandle.title,
+    collectionDescription: data.collectionByHandle.description || null,
     seoTitle,
     seoDescription,
+    deepLinks,
   },
   revalidate: 60,
 };
 };
+
 
 
 export const getStaticPaths: GetStaticPaths = async () => {
