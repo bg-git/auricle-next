@@ -11,7 +11,7 @@ export default function Home() {
       />
 
       <main className="home-page">
-        <section className="info-grid">
+       {/* <section className="info-grid">
           <Link href="#" className="info-link">
             <div className="info-block">NEW HERE?<br />GET YOUR FIRST-TIMER DISCOUNT</div>
           </Link>
@@ -24,7 +24,7 @@ export default function Home() {
           <Link href="#" className="info-link">
             <div className="info-block">SEARCH DAINTY GOLD PIERCING JEWELLERY</div>
           </Link>
-        </section>
+        </section>*/}
 {/* CHAINS & CHARMS */}
         <section className="custom-grid">
           <div className="custom-card">

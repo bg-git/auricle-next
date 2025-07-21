@@ -92,7 +92,14 @@
     pointer-events: none;
   }
 }
-
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  @media screen and (max-width: 768px) {
+    .checkout-button {
+      padding-bottom: 16px; // normal fallback
+      margin-bottom: env(safe-area-inset-bottom); // only triggers when iOS bottom bar is present
+    }
+  }
+}
 
 .cart-backdrop {
   position: fixed;
