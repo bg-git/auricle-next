@@ -84,6 +84,8 @@
     &:hover {
     text-decoration: none;
   }
+   // ✅ Keeps button visible above iOS browser bar
+  padding-bottom: calc(16px + env(safe-area-inset-bottom));
 
   &.disabled {
     background: #ccc;

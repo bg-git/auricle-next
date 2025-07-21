@@ -20,30 +20,17 @@ export default function CartDrawer() {
 
     // 🔒 Lock scroll when drawer is open
    if (isDrawerOpen) {
-  const scrollY = window.scrollY;
-  document.body.style.position = 'fixed';
-  document.body.style.top = `-${scrollY}px`;
-  document.body.style.left = '0';
-  document.body.style.right = '0';
-  document.body.dataset.scrollY = String(scrollY);
+  document.body.style.overflow = 'hidden';
+  document.documentElement.style.overflow = 'hidden'; // <html>
 } else {
-  const scrollY = document.body.dataset.scrollY;
-  document.body.style.position = '';
-  document.body.style.top = '';
-  document.body.style.left = '';
-  document.body.style.right = '';
   document.body.style.overflow = '';
-  if (scrollY) window.scrollTo(0, parseInt(scrollY, 10));
+  document.documentElement.style.overflow = '';
 }
-
 
     return () => {
   document.removeEventListener('keydown', handleEscape);
-  document.body.style.position = '';
-  document.body.style.top = '';
-  document.body.style.left = '';
-  document.body.style.right = '';
   document.body.style.overflow = '';
+  document.documentElement.style.overflow = '';
 };
 
   }, [isDrawerOpen, closeDrawer]);
