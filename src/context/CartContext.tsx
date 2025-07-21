@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
+import { useFavourites } from '@/context/FavouritesContext';
 
 export interface CartItem {
   variantId: string;
@@ -6,6 +7,8 @@ export interface CartItem {
   title?: string;
   price?: string;
   image?: string;
+  handle?: string;
+  metafields?: { key: string; value: string }[];
 }
 
 interface CartContextType {
@@ -30,6 +33,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
+  const { addFavourite, isFavourite } = useFavourites();
+
   const openDrawer = () => setIsDrawerOpen(true);
   const closeDrawer = () => setIsDrawerOpen(false);
 
@@ -48,7 +53,28 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       : [...cartItems, { variantId, quantity, ...meta }];
 
     setCartItems(updatedItems);
+    if (meta?.handle) {
+  addFavourite({
+    handle: meta.handle,
+    title: meta.title || '',
+    image: meta.image,
+    price: meta.price,
+    metafields: meta.metafields,
+  });
+}
+
     openDrawer();
+
+    // ✅ Add to favourites silently
+    if (meta.handle && !isFavourite(meta.handle)) {
+      addFavourite({
+        handle: meta.handle,
+        title: meta.title || '',
+        image: meta.image,
+        price: meta.price,
+        metafields: meta.metafields,
+      });
+    }
 
     fetch('/api/create-checkout', {
       method: 'POST',

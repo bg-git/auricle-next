@@ -104,3 +104,17 @@ input[type='number'] {
     border-color: #000;
   }
 }
+.favourite-toggle {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  background: transparent;
+  border: none;
+  padding: 12px; // ← optional for larger touch target
+  cursor: pointer;
+  z-index: 5;
+
+  svg {
+    transition: fill 0.2s ease;
+  }
+}

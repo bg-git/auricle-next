@@ -6,6 +6,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Seo from '@/components/Seo';
 import Link from 'next/link';
+import FavouriteToggle from '@/components/FavouriteToggle';
+
 
 
 // TYPES
@@ -156,29 +158,27 @@ const formattedPrice = rawPrice % 1 === 0 ? rawPrice.toFixed(0) : rawPrice.toFix
   />
       <main style={{ maxWidth: '1400px', margin: '0 auto', padding: '16px' }}>
         <div className="product-layout">
-          <div className="product-image">
-            <Image
-  src={imageUrl}
-  alt={product.title}
-  width={1200}
-  height={1500}
-  priority
-  fetchPriority="high"
-  sizes="(min-width: 1400px) 600px, (min-width: 1024px) 50vw, 100vw"
-  style={{ objectFit: 'cover', width: '100%', height: 'auto', display: 'block' }}
-/>
+          <div className="product-image" style={{ position: 'relative' }}>
+  <Image
+    src={imageUrl}
+    alt={product.title}
+    width={1200}
+    height={1500}
+    priority
+    fetchPriority="high"
+    sizes="(min-width: 1400px) 600px, (min-width: 1024px) 50vw, 100vw"
+    style={{ objectFit: 'cover', width: '100%', height: 'auto', display: 'block' }}
+  />
 
+  <FavouriteToggle
+    handle={router.query.handle as string}
+    title={product.title}
+    image={imageUrl}
+    price={formattedPrice}
+    metafields={product.metafields}
+  />
+</div>
 
-            <div
-              style={{
-                position: 'absolute',
-                inset: 0,
-                zIndex: 2,
-                background: 'transparent',
-                pointerEvents: 'none',
-              }}
-            />
-          </div>
 
           <div className="product-info">
             <h1 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '4px' }}>{product.title}</h1>
@@ -340,11 +340,14 @@ const formattedPrice = rawPrice % 1 === 0 ? rawPrice.toFixed(0) : rawPrice.toFix
     return;
   }
 
-  addToCart(selectedVariantId, qty, {
-    title: `${product.title} | ${selectedVariant.title}`,
-    price: selectedVariant.price.amount,
-    image: product.images?.edges?.[0]?.node?.url || undefined,
-  });
+ addToCart(selectedVariantId, qty, {
+  handle: router.query.handle as string, // ✅ Required for /favourites
+  title: `${product.title} | ${selectedVariant.title}`,
+  price: selectedVariant.price.amount,
+  image: product.images?.edges?.[0]?.node?.url || undefined,
+  metafields: product.metafields, // ✅ Required for filters
+});
+
 
   openDrawer();
 }}

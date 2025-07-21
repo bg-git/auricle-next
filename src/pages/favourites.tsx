@@ -121,7 +121,7 @@ return item.metafields
 
   return (
     <>
-      <Seo title="My Favourites | AURICLE" />
+      <Seo title="MY FAVOURITES | AURICLE" />
 
       <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '16px 16px 0' }}>
         <h1 style={{ fontSize: '30px', fontWeight: 900 }}>My Favourites</h1>
