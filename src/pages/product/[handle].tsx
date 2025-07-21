@@ -332,7 +332,7 @@ const formattedPrice = rawPrice % 1 === 0 ? rawPrice.toFixed(0) : rawPrice.toFix
   }
 
   addToCart(selectedVariantId, qty, {
-    title: `${product.title} - ${selectedVariant.title}`,
+    title: `${product.title} | ${selectedVariant.title}`,
     price: selectedVariant.price.amount,
     image: product.images?.edges?.[0]?.node?.url || undefined,
   });

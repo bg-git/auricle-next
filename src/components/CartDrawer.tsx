@@ -9,7 +9,6 @@ export default function CartDrawer() {
     isDrawerOpen,
     closeDrawer,
     updateQuantity,
-    removeFromCart,
   } = useCart();
 
   useEffect(() => {
@@ -39,54 +38,44 @@ export default function CartDrawer() {
           ) : (
             <ul className="cart-items">
               {cartItems.map((item) => (
-                <li key={item.variantId} className="cart-item">
-                  <div className="cart-item-content">
-                    {item.image && (
-  <div className="cart-item-image-wrapper">
-    <Image
-      src={item.image}
-      alt={item.title || ''}
-      fill
-    />
-  </div>
-)}
+                <li key={item.variantId} className="cart-item-overlay">
+  <div className="cart-image-full">
+    {item.image && (
+      <Image
+        src={item.image}
+        alt={item.title || ''}
+        width={600}
+        height={750}
+        style={{ objectFit: 'cover', width: '100%', height: 'auto', display: 'block' }}
+      />
+    )}
 
-                    <div className="cart-item-details">
-                      <div className="cart-item-title">
-                        {item.title || 'Untitled Product'}
-                      </div>
-                      <div className="cart-item-controls">
-                        <div className="quantity-controls">
-                          <button
-                            onClick={() =>
-                              updateQuantity(item.variantId, item.quantity - 1)
-                            }
-                          >
-                            −
-                          </button>
-                          <span>{item.quantity}</span>
-                          <button
-                            onClick={() =>
-                              updateQuantity(item.variantId, item.quantity + 1)
-                            }
-                          >
-                            +
-                          </button>
-                        </div>
-                        <div className="cart-price">£{item.price}</div>
-                        <button
-                          className="cart-remove"
-                          onClick={() => removeFromCart(item.variantId)}
-                        >
-                          x
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </li>
+    <div className="cart-image-overlay">
+      <div className="overlay-title">{item.title || 'Untitled Product'}</div>
+      <div className="overlay-controls">
+        <div className="quantity-controls">
+          <button onClick={() => updateQuantity(item.variantId, item.quantity - 1)}>−</button>
+          <span>{item.quantity}</span>
+          <button onClick={() => updateQuantity(item.variantId, item.quantity + 1)}>+</button>
+        </div>
+        <div className="cart-price">£{item.price}</div>
+      </div>
+    </div>
+  </div>
+</li>
+
               ))}
             </ul>
           )}
+{cartItems.length > 0 && (
+  <div className="cart-subtotal">
+    Subtotal: £
+    {cartItems
+      .reduce((sum, item) => sum + (parseFloat(item.price || '0') * item.quantity), 0)
+      .toFixed(2)}
+    
+  </div>
+)}
 
           <a
   className={`checkout-button ${checkoutUrl ? '' : 'disabled'}`}
@@ -95,7 +84,7 @@ export default function CartDrawer() {
     if (!checkoutUrl) e.preventDefault();
   }}
 >
-  Checkout
+  CHECKOUT
 </a>
 
         </div>
