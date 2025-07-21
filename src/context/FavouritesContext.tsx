@@ -50,8 +50,14 @@ export const FavouritesProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const toggleFavourite = (item: FavouriteItem) => {
-    isFavourite(item.handle) ? removeFavourite(item.handle) : addFavourite(item);
-  };
+  if (isFavourite(item.handle)) {
+    removeFavourite(item.handle);
+  } else {
+    addFavourite(item);
+  }
+};
+
+
 
   const isFavourite = (handle: string) => {
     return favourites.some((f) => f.handle === handle);
