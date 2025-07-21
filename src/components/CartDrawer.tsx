@@ -1,6 +1,7 @@
 import { useCart } from '@/context/CartContext';
 import Image from 'next/image';
 import { useEffect } from 'react';
+import { useFavourites } from '@/context/FavouritesContext';
 
 const formatPrice = (price: string | undefined) => {
   const num = parseFloat(price || '0');
@@ -15,6 +16,9 @@ export default function CartDrawer() {
     closeDrawer,
     updateQuantity,
   } = useCart();
+
+  const { addFavourite } = useFavourites();
+
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -124,14 +128,32 @@ export default function CartDrawer() {
           )}
 
           <a
-            className={`checkout-button ${checkoutUrl ? '' : 'disabled'}`}
-            href={checkoutUrl || '#'}
-            onClick={(e) => {
-              if (!checkoutUrl) e.preventDefault();
-            }}
-          >
-            CHECKOUT
-          </a>
+  className={`checkout-button ${checkoutUrl ? '' : 'disabled'}`}
+  href={checkoutUrl || '#'}
+  onClick={(e) => {
+    if (!checkoutUrl) {
+      e.preventDefault();
+      return;
+    }
+
+    cartItems.forEach((item) => {
+      if (item.handle) {
+        addFavourite({
+          handle: item.handle,
+          title: item.title || '',
+          image: item.image,
+          price: item.price,
+          metafields: item.metafields,
+          orderAgain: true, // ✅ This sets the flag
+        });
+      }
+    });
+  }}
+>
+  CHECKOUT
+</a>
+
+
           <p
   style={{
     fontSize: '12px',
