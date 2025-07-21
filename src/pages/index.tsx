@@ -11,7 +11,7 @@ export default function Home() {
       />
 
       <main className="home-page">
-       {/* <section className="info-grid">
+        {/*<section className="info-grid">
           <Link href="#" className="info-link">
             <div className="info-block">NEW HERE?<br />GET YOUR FIRST-TIMER DISCOUNT</div>
           </Link>
@@ -79,7 +79,7 @@ export default function Home() {
                 sizes="(max-width: 800px) 50vw, 600px"
               />
               <div className="overlay">
-                <h2 className="overlay-title">RINGS</h2>
+                <h2 className="overlay-title">RINGS & HOOPS</h2>
                 <p className="overlay-subtitle">View our collection of rings</p>
                 <div className="overlay-buttons">
                   <Link href="/collection/rings" className="button">VIEW ALL RINGS &#x27F6;</Link>
@@ -98,10 +98,10 @@ export default function Home() {
                 sizes="(max-width: 800px) 50vw, 600px"
               />
               <div className="overlay">
-                <h2 className="overlay-title">BASE</h2>
-                <p className="overlay-subtitle">View our collection of labret bases</p>
+                <h2 className="overlay-title">BACKS & BARS</h2>
+                <p className="overlay-subtitle">View our collection of backs & bars</p>
                 <div className="overlay-buttons">
-                  <Link href="/collection/base" className="button">VIEW ALL LABRET BASES &#x27F6;</Link>
+                  <Link href="/collection/base" className="button">VIEW ALL BACKS & BARS &#x27F6;</Link>
                 </div>
               </div>
             </div>

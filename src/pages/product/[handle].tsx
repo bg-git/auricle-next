@@ -2,7 +2,8 @@ import type { GetStaticProps, GetStaticPaths, GetStaticPropsContext } from 'next
 import { shopifyFetch } from '@/lib/shopify';
 import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import Seo from '@/components/Seo';
 import Link from 'next/link';
 
@@ -56,10 +57,18 @@ interface ProductPageProps {
 
 export default function ProductPage({ product }: ProductPageProps) {
   const { addToCart, openDrawer } = useCart();
-  const [selectedVariantId, setSelectedVariantId] = useState(
-    product.variants?.edges?.[0]?.node?.id || null
-  );
+  const router = useRouter();
+
+const [selectedVariantId, setSelectedVariantId] = useState(
+  product.variants?.edges?.[0]?.node?.id || null
+);
 const [qty, setQty] = useState(1);
+
+useEffect(() => {
+  setSelectedVariantId(product.variants?.edges?.[0]?.node?.id || null);
+  setQty(1);
+}, [router.asPath, product.variants?.edges]);
+
   if (!product) {
     return <div style={{ padding: '16px' }}>Product not found.</div>;
   }

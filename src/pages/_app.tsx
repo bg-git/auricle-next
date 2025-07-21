@@ -2,6 +2,7 @@ import type { AppProps } from 'next/app';
 import Head from 'next/head'; // ✅ Add this
 import '@/styles/globals.css';
 import '@/styles/pages/home.scss';
+import '@/styles/pages/footer.scss';
 import '@/styles/pages/product.scss';
 import '@/styles/pages/collection.scss';
 import '@/styles/pages/CartDrawer.scss';
@@ -10,16 +11,21 @@ import '@/styles/pages/sign-in.scss';
 import '@/styles/pages/account.scss';
 import '@/styles/pages/studio-list.scss';
 import '@/styles/pages/studio-page.scss';
+import '@/styles/pages/favourites.scss';
 import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 import { CartProvider } from '@/context/CartContext';
 import { AuthProvider } from '@/context/AuthContext';
 import CartDrawer from '@/components/CartDrawer';
+import { FavouritesProvider } from '@/context/FavouritesContext';
 
 export default function MyApp({ Component, pageProps }: AppProps) {
   return (
     <AuthProvider>
+      <FavouritesProvider>
       <CartProvider>
         <Head>
+          <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
           <meta name="theme-color" content="#ffffff" />
           <link rel="icon" href="/favicon.ico" />
           <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
@@ -32,8 +38,10 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         </Head>
         <Header />
         <Component {...pageProps} />
+        <Footer />
         <CartDrawer />
       </CartProvider>
+      </FavouritesProvider>
     </AuthProvider>
   );
 }

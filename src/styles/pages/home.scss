@@ -17,7 +17,6 @@
   font-weight: 900;
   margin-bottom: 12px;
 }
-
 .hero-sub {
   font-size: 16px;
   font-weight: 500;
@@ -184,9 +183,9 @@
 
 .custom-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 24px;
-  margin-top: 48px;
+  margin-top: 0px;
 
   @media (max-width: 799px) {
     grid-template-columns: 1fr;

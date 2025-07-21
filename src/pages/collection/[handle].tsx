@@ -9,6 +9,8 @@ import Image from 'next/image';
 import { useState } from 'react';
 import Seo from '@/components/Seo';
 import { useEffect } from 'react';
+import FavouriteToggle from '@/components/FavouriteToggle';
+
 
 // Types
 
@@ -209,29 +211,36 @@ const metalColourMatch = selectedMetalColours.length ? selectedMetalColours.incl
           {filteredProducts.map((product, index) => {
   const image = product.images?.edges?.[0]?.node;
 
-  return (
-    <Link href={`/product/${product.handle}`} key={product.id} className="product-card">
-  <div className="product-card-inner">
-    <div style={{ background: '#f9f9f9' }}>
-      <Image
-  src={image?.url || '/placeholder.png'}
-  alt=""
-  width={1200}
-  height={1500}
-  priority={index === 0}
-  fetchPriority={index === 0 ? 'high' : undefined}
-  style={{ objectFit: 'cover', width: '100%', height: 'auto', display: 'block' }}
-  sizes="(min-width: 1400px) 350px, (min-width: 1024px) 25vw, (min-width: 768px) 50vw, 100vw"
-/>
+return (
+  <Link href={`/product/${product.handle}`} key={product.id} className="product-card">
+    <div className="product-card-inner">
+  <div className="product-image-wrapper">
+    <Image
+      src={image?.url || '/placeholder.png'}
+      alt=""
+      width={1200}
+      height={1500}
+      priority={index === 0}
+      fetchPriority={index === 0 ? 'high' : undefined}
+      style={{ objectFit: 'cover', width: '100%', height: 'auto', display: 'block' }}
+      sizes="(min-width: 1400px) 350px, (min-width: 1024px) 25vw, (min-width: 768px) 50vw, 100vw"
+    />
 
-    </div>
-    <h2 style={{ marginTop: '8px', fontSize: '13px', fontWeight: 400 }}>
-      {product.title}
-    </h2>
+    <FavouriteToggle
+      id={product.id}
+      title={product.title}
+      image={image?.url}
+    />
   </div>
-</Link>
 
-  );
+  <h2 style={{ marginTop: '8px', fontSize: '13px', fontWeight: 400 }}>
+    {product.title}
+  </h2>
+</div>
+
+  </Link>
+);
+
 })}
 
         </section>

@@ -2,6 +2,11 @@ import { useCart } from '@/context/CartContext';
 import Image from 'next/image';
 import { useEffect } from 'react';
 
+const formatPrice = (price: string | undefined) => {
+  const num = parseFloat(price || '0');
+  return num % 1 === 0 ? num.toFixed(0) : num.toFixed(2);
+};
+
 export default function CartDrawer() {
   const {
     cartItems,
@@ -53,7 +58,7 @@ export default function CartDrawer() {
             <p className="empty-message">Your cart is empty.</p>
           ) : (
             <ul className="cart-items">
-              {cartItems.map((item) => (
+               {[...cartItems].reverse().map((item) => (
                 <li key={item.variantId} className="cart-item-overlay">
                   <div className="cart-image-full">
                     {item.image && (
@@ -93,7 +98,8 @@ export default function CartDrawer() {
                             +
                           </button>
                         </div>
-                        <div className="cart-price">£{item.price}</div>
+                        <div className="cart-price">£{formatPrice(item.price)}</div>
+
                       </div>
                     </div>
                   </div>
@@ -104,15 +110,17 @@ export default function CartDrawer() {
 
           {cartItems.length > 0 && (
             <div className="cart-subtotal">
-              Subtotal: £
-              {cartItems
-                .reduce(
-                  (sum, item) =>
-                    sum + parseFloat(item.price || '0') * item.quantity,
-                  0
-                )
-                .toFixed(2)}
-            </div>
+  Subtotal: £
+  {formatPrice(
+    cartItems
+      .reduce(
+        (sum, item) => sum + parseFloat(item.price || '0') * item.quantity,
+        0
+      )
+      .toString()
+  )}
+</div>
+
           )}
 
           <a
