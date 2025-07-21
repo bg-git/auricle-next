@@ -141,7 +141,7 @@ export default function Header() {
             whiteSpace: 'nowrap',
           }}
         >
-          {['ALL ENDS & GEMS', 'CHAINS & CHARMS', 'BACKS & BARS', 'RINGS & HOOPS'].map((label) => (
+          {['ENDS & GEMS', 'CHAINS & CHARMS', 'BACKS & BARS', 'RINGS & HOOPS'].map((label) => (
             <Link
               key={label}
               href={`/collection/${label.toLowerCase().replace(/ & /g, '-').replace(/\s+/g, '-')}`}

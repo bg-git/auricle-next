@@ -345,6 +345,17 @@ const formattedPrice = rawPrice % 1 === 0 ? rawPrice.toFixed(0) : rawPrice.toFix
                 </button>
               </div>
             </div>
+<p
+  style={{
+    fontSize: '12px',
+    color: '#888',
+    marginTop: '10px',
+    marginBottom: '16px',
+    textAlign: 'right',
+  }}
+>
+  VAT & shipping calculated at checkout
+</p>
 
 
             <div style={{ marginTop: '32px' }}>
