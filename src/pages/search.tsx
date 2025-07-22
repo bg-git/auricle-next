@@ -14,7 +14,7 @@ type ProductLite = {
 
 // This runs at build time
 export async function getStaticProps() {
-  const { data } = await shopifyFetch({
+  const data = await shopifyFetch({
     query: GET_ALL_PRODUCTS,
     variables: { first: 250 },
   });
@@ -66,26 +66,36 @@ export default function SearchPage({ products }: { products: ProductLite[] }) {
     <div style={{ padding: '32px 16px', maxWidth: '1400px', margin: '0 auto' }}>
       <h1 style={{ fontSize: '24px', marginBottom: '16px' }}>Search Products</h1>
 
-      <input
-        type="text"
-        placeholder="Search by name or SKU..."
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        style={{
-          width: '100%',
-          maxWidth: '500px',
-          padding: '12px',
-          fontSize: '16px',
-          border: '1px solid #ccc',
-          borderRadius: '4px',
-          marginBottom: '24px',
-        }}
-      />
-<p>Matching products: {filtered.length}</p>
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px' }}>
+  <input
+    type="text"
+    placeholder="Search by name or SKU..."
+    value={query}
+    onChange={(e) => setQuery(e.target.value)}
+    style={{
+      width: '100%',
+      maxWidth: '600px',
+      padding: '12px',
+      fontSize: '16px',
+      border: '1px solid #181818',
+      borderRadius: '0',
+      outline: 'none',
+    }}
+  />
+</div>
 
-      {query && filtered.length === 0 && (
-        <p style={{ marginTop: '8px' }}>No results found.</p>
-      )}
+{query && (
+  <>
+    {filtered.length === 0 ? (
+      <p style={{ marginTop: '8px' }}>No results found.</p>
+    ) : (
+      <p style={{ marginTop: '8px' }}>
+        Matching products: {filtered.length}
+      </p>
+    )}
+  </>
+)}
+
 
       <div
         style={{

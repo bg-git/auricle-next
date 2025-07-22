@@ -35,10 +35,15 @@ export default function MyApp({ Component, pageProps }: AppProps) {
           <meta name="msapplication-TileColor" content="#ffffff" />
           <meta name="theme-color" content="#ffffff" />
         </Head>
-        <Header />
-        <Component {...pageProps} />
-        <Footer />
-        <CartDrawer />
+        <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+  <Header />
+  <main style={{ flex: '1 0 auto' }}>
+    <Component {...pageProps} />
+  </main>
+  <Footer />
+</div>
+<CartDrawer />
+
       </CartProvider>
       </FavouritesProvider>
     </AuthProvider>
