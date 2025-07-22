@@ -114,23 +114,14 @@ export default function SearchPage({ products }: { products: ProductLite[] }) {
         </>
       )}
 
-      <div
-  style={{
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-    gap: '24px',
-    marginTop: '16px',
-  }}
->
-
+      <div className="search-results">
         {filtered.map((product) => (
           <Link
-  key={product.id}
-  href={`/product/${product.handle}`}
-  prefetch={true}
-  style={{ textDecoration: 'none', color: '#000' }}
->
-
+            key={product.id}
+            href={`/product/${product.handle}`}
+            prefetch={true}
+            style={{ textDecoration: 'none', color: '#000' }}
+          >
             <div>
               {product.image ? (
                 <Image

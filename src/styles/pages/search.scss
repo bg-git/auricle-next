@@ -1,0 +1,13 @@
+.search-results {
+  display: grid;
+  gap: 24px;
+  margin-top: 16px;
+
+  // Mobile first
+  grid-template-columns: repeat(2, 1fr);
+
+  // Desktop (1024px+)
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
