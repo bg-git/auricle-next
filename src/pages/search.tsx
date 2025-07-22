@@ -81,7 +81,15 @@ export default function SearchPage({ products }: { products: ProductLite[] }) {
   };
 
   return (
-    <div style={{ padding: '32px 16px', maxWidth: '1400px', margin: '0 auto' }}>
+    <div className="page-content">
+
+    <div style={{
+  padding: '32px 16px',
+  maxWidth: '1400px',
+  margin: '0 auto',
+  minHeight: '600px' // ✅ ensures footer is pushed down
+}}>
+
       <h1 style={{ fontSize: '24px', marginBottom: '16px' }}>SEARCH</h1>
 
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px' }}>
@@ -160,6 +168,7 @@ export default function SearchPage({ products }: { products: ProductLite[] }) {
           </Link>
         ))}
       </div>
+    </div>
     </div>
   );
 }

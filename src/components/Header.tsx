@@ -18,6 +18,7 @@ const { favourites } = useFavourites();
         style={{
           width: '100%',
           background: '#181818',
+          borderTop: '1px solid #fff',
           height: '40px',
           display: 'flex',
           alignItems: 'center',
