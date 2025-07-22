@@ -169,22 +169,29 @@ const { favourites } = useFavourites();
             whiteSpace: 'nowrap',
           }}
         >
-          {['ENDS & GEMS', 'CHAINS & CHARMS', 'BACKS & BARS', 'RINGS & HOOPS'].map((label) => (
-            <Link
-              key={label}
-              href={`/collection/${label.toLowerCase().replace(/ & /g, '-').replace(/\s+/g, '-')}`}
-              style={{
-                padding: '16px 12px',
-                fontSize: '16px',
-                color: '#000',
-                fontWeight: '600',
-                textDecoration: 'none',
-                flexShrink: 0,
-              }}
-            >
-              {label}
-            </Link>
-          ))}
+          {[
+  { label: 'ENDS & GEMS', href: '/collection/ends-gems' },
+  { label: 'CHAINS & CHARMS', href: '/collection/chains-charms' },
+  { label: 'BACKS & BARS', href: '/collection/backs-bars' },
+  { label: 'RINGS & HOOPS', href: '/collection/rings-hoops' },
+  { label: 'SEARCH', href: '/search' },
+].map(({ label, href }) => (
+  <Link
+    key={label}
+    href={href}
+    style={{
+      padding: '16px 12px',
+      fontSize: '16px',
+      color: '#000',
+      fontWeight: '600',
+      textDecoration: 'none',
+      flexShrink: 0,
+    }}
+  >
+    {label}
+  </Link>
+))}
+
         </div>
       </nav>
     </>
