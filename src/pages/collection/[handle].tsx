@@ -179,7 +179,7 @@ const metalColourMatch = selectedMetalColours.length ? selectedMetalColours.incl
 
   {Array.isArray(deepLinks) && deepLinks.length > 0 && (
     <div style={{ marginTop: '16px', marginBottom: '24px' }}>
-      <p style={{ fontSize: '14px', fontWeight: 600, marginBottom: '8px' }}>Quick Links</p>
+      <p style={{ fontSize: '14px', fontWeight: 600, marginBottom: '8px' }}>Also see</p>
       <div
         style={{
           display: 'flex',
@@ -191,8 +191,8 @@ const metalColourMatch = selectedMetalColours.length ? selectedMetalColours.incl
           <Link key={href} href={href} legacyBehavior>
             <a
               style={{
-                flex: '1 0 auto',             // ✅ allow shrinking
-                whiteSpace: 'nowrap',         // ✅ prevent text wrapping
+                flex: '1 0 auto',
+                whiteSpace: 'nowrap',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 padding: '10px 16px',
@@ -289,16 +289,20 @@ return (
       </main>
 
   {collectionDescription && (
+  <div
+    style={{
+      padding: '24px 16px',
+      maxWidth: '1400px',
+      margin: '32px auto 0',
+    }}
+  >
     <div
-      style={{
-        padding: '24px 16px',
-        maxWidth: '870px',
-        margin: '32px auto 0',
-      }}
-    >
-      <p style={{ fontSize: '14px', lineHeight: '1.6' }}>{collectionDescription}</p>
-    </div>
-  )}
+      style={{ fontSize: '14px', lineHeight: '1.6' }}
+      dangerouslySetInnerHTML={{ __html: collectionDescription }}
+    />
+  </div>
+)}
+
     </>
   );
 }
@@ -317,7 +321,7 @@ export const getStaticProps: GetStaticProps<CollectionPageProps> = async (
       collectionByHandle(handle: $handle) {
         id
         title
-        description
+        descriptionHtml
         metafields(identifiers: [
           { namespace: "custom", key: "title" },
           { namespace: "custom", key: "description" },
@@ -403,7 +407,7 @@ return {
   props: {
     products,
     title: data.collectionByHandle.title,
-    collectionDescription: data.collectionByHandle.description || null,
+    collectionDescription: data.collectionByHandle.descriptionHtml || null,
     seoTitle,
     seoDescription,
     deepLinks,
