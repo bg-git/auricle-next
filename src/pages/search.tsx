@@ -82,12 +82,12 @@ export default function SearchPage({ products }: { products: ProductLite[] }) {
 
   return (
     <div style={{ padding: '32px 16px', maxWidth: '1400px', margin: '0 auto' }}>
-      <h1 style={{ fontSize: '24px', marginBottom: '16px' }}>Search Products</h1>
+      <h1 style={{ fontSize: '24px', marginBottom: '16px' }}>SEARCH</h1>
 
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px' }}>
         <input
           type="text"
-          placeholder="Search by name or SKU..."
+          placeholder="Search by product name or SKU..."
           value={query}
           onChange={handleInputChange}
           style={{
@@ -115,13 +115,14 @@ export default function SearchPage({ products }: { products: ProductLite[] }) {
       )}
 
       <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
-          gap: '24px',
-          marginTop: '16px',
-        }}
-      >
+  style={{
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+    gap: '24px',
+    marginTop: '16px',
+  }}
+>
+
         {filtered.map((product) => (
           <Link
   key={product.id}
