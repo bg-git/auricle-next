@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+
+Disallow: /account
+Disallow: /register
+Disallow: /sign-in
+Disallow: /cart
+Disallow: /api/
+Disallow: /studio/
+Disallow: /admin/
+
+Sitemap: https://www.auricle.co.uk/sitemap.xml

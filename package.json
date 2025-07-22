@@ -5,10 +5,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "npm run sitemap && next build",
     "start": "next start",
     "lint": "next lint",
-    "crawl:yell": "node --loader ts-node/esm crawl-yell.ts"
+     "sitemap": "node --loader ts-node/esm scripts/generate-sitemap.ts"
+
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.52.0",
@@ -21,7 +22,8 @@
     "react-dom": "^19.0.0",
     "remark": "^15.0.1",
     "remark-html": "^16.0.1",
-    "sass": "^1.89.2"
+    "sass": "^1.89.2",
+    "sitemap": "^8.0.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
