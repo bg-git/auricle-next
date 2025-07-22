@@ -174,37 +174,45 @@ const metalColourMatch = selectedMetalColours.length ? selectedMetalColours.incl
       <Seo title={seoTitle || title} description={seoDescription || undefined} />
 
 
-      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '16px 16px 0' }}>
-        <h1 style={{ fontSize: '30px', fontWeight: 900 }}>{title}</h1>
-        {collectionDescription && (
-  <div style={{ marginTop: '12px', fontSize: '14px', lineHeight: '1.6', maxWidth: '800px' }}>
-    <p>{collectionDescription}</p>
-  </div>
-)}
-        {Array.isArray(deepLinks) && deepLinks.length > 0 && (
-  <div style={{ marginTop: '16px', marginBottom: '24px' }}>
-    <p style={{ fontSize: '14px', fontWeight: 600, marginBottom: '8px' }}>Quick Links</p>
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-      {deepLinks.map(({ label, href }) => (
-        <Link key={href} href={href} legacyBehavior>
-          <a style={{
-            padding: '10px 20px',
-            fontSize: '20px',
-            background: '#f0f0f0',
-            borderRadius: '4px',
-            border: '1px solid #e0e0e0',
-            textDecoration: 'none',
-            color: '#000'
-          }}>
-            {label}
-          </a>
-        </Link>
-      ))}
-    </div>
-  </div>
-)}
+      <div style={{ maxWidth: '870px', margin: '0 auto', padding: '16px 16px 0' }}>
+  <h1 style={{ fontSize: '30px', fontWeight: 900 }}>{title}</h1>
 
+  {Array.isArray(deepLinks) && deepLinks.length > 0 && (
+    <div style={{ marginTop: '16px', marginBottom: '24px' }}>
+      <p style={{ fontSize: '14px', fontWeight: 600, marginBottom: '8px' }}>Quick Links</p>
+      <div
+        style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: '8px',
+        }}
+      >
+        {deepLinks.map(({ label, href }) => (
+          <Link key={href} href={href} legacyBehavior>
+            <a
+              style={{
+                flex: '1 0 auto',             // ✅ allow shrinking
+                whiteSpace: 'nowrap',         // ✅ prevent text wrapping
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                padding: '10px 16px',
+                fontSize: '14px',
+                background: '#f0f0f0',
+                borderRadius: '4px',
+                border: '1px solid #e0e0e0',
+                textDecoration: 'none',
+                color: '#000',
+              }}
+            >
+              {label}
+            </a>
+          </Link>
+        ))}
       </div>
+    </div>
+  )}
+</div>
+
 
       <main className="collection-page">
         <aside className="filters-desktop">
@@ -279,6 +287,18 @@ return (
 
         )}
       </main>
+
+  {collectionDescription && (
+    <div
+      style={{
+        padding: '24px 16px',
+        maxWidth: '870px',
+        margin: '32px auto 0',
+      }}
+    >
+      <p style={{ fontSize: '14px', lineHeight: '1.6' }}>{collectionDescription}</p>
+    </div>
+  )}
     </>
   );
 }

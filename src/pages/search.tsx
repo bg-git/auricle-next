@@ -85,9 +85,9 @@ export default function SearchPage({ products }: { products: ProductLite[] }) {
 
     <div style={{
   padding: '32px 16px',
-  maxWidth: '1400px',
+  maxWidth: '870px',
   margin: '0 auto',
-  minHeight: '600px' // ✅ ensures footer is pushed down
+  minHeight: '600px' 
 }}>
 
       <h1 style={{ fontSize: '24px', marginBottom: '16px' }}>SEARCH</h1>
@@ -100,7 +100,7 @@ export default function SearchPage({ products }: { products: ProductLite[] }) {
           onChange={handleInputChange}
           style={{
             width: '100%',
-            maxWidth: '600px',
+            maxWidth: '870px',
             padding: '12px',
             fontSize: '16px',
             border: '1px solid #181818',
