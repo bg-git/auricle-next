@@ -1,4 +1,5 @@
 import { GetServerSideProps } from 'next';
+import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 
 interface Studio {
@@ -81,7 +82,9 @@ export default function StudioPage({ studio }: { studio: Studio }) {
 
         <div className="studio-claim">
           <p>Own this studio?</p>
-          <a href="/contact" className="claim-button">Claim this listing</a>
+          <Link href="/contact" className="claim-button">
+            Claim this listing
+          </Link>
         </div>
       </div>
     </div>
