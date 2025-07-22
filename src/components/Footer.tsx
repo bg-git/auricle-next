@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Link from 'next/link';
 
 const sections = [
   {
@@ -62,7 +63,11 @@ export default function Footer() {
         <ul className="footer-links">
           {section.links.map((link) => (
             <li key={link.href}>
-              <a href={link.href}>{link.label}</a>
+              {link.href.startsWith('/') ? (
+                <Link href={link.href}>{link.label}</Link>
+              ) : (
+                <a href={link.href}>{link.label}</a>
+              )}
             </li>
           ))}
         </ul>
