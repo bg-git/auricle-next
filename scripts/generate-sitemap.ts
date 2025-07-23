@@ -1,9 +1,13 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import fs from 'fs';
 import path from 'path';
 import { SitemapStream, streamToPromise } from 'sitemap';
-import { shopifyFetch } from '@/lib/shopify'; // adjust if your path is different
+import { shopifyFetch } from '../src/lib/shopify.js';
 
-const DOMAIN = 'https://www.auricle.co.uk';
+
+const DOMAIN = process.env.SITE_DOMAIN || 'http://localhost:3000';
 
 async function fetchShopifyHandles(type: 'products' | 'collections') {
   const query = `
