@@ -191,7 +191,7 @@ const metalColourMatch = selectedMetalColours.length ? selectedMetalColours.incl
           "offers": {
             "@type": "Offer",
             "priceCurrency": "GBP",
-            "price": "0.00",
+            "price": "0.01",
             "availability": "https://schema.org/InStock"
           }
         }
@@ -199,6 +199,8 @@ const metalColourMatch = selectedMetalColours.length ? selectedMetalColours.incl
     })
   }}
 />
+
+
 
 
       <div style={{ maxWidth: '870px', margin: '0 auto', padding: '16px 16px 0' }}>
