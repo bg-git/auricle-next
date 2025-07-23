@@ -11,6 +11,7 @@
   transition: right 0.3s ease-in-out;
   display: flex;
   flex-direction: column;
+  pointer-events: auto;
 
   &.open {
     right: 0;
@@ -109,6 +110,7 @@
   z-index: 999;
   display: flex;
   justify-content: flex-end;
+  pointer-events: none;
 }
 
 .cart-item-content {
