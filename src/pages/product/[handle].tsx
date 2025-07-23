@@ -31,6 +31,7 @@ interface ProductVariantNode {
 interface Product {
   id: string;
   title: string;
+  handle: string; // ✅ This is the missing property
   descriptionHtml: string;
   priceRange: {
     minVariantPrice: {
@@ -56,6 +57,7 @@ interface Product {
 interface ProductPageProps {
   product: Product;
 }
+
 
 export default function ProductPage({ product }: ProductPageProps) {
   const { addToCart, openDrawer } = useCart();
@@ -156,6 +158,37 @@ const formattedPrice = rawPrice % 1 === 0 ? rawPrice.toFixed(0) : rawPrice.toFix
     title={getFieldValue('title') || product.title}
     description={getFieldValue('description') || `Buy ${product.title} in 14k gold or titanium.`}
   />
+
+  <script
+  type="application/ld+json"
+  dangerouslySetInnerHTML={{
+    __html: JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Product",
+      "name": product.title,
+      "image": product.images?.edges?.map(img => img.node.url).filter(Boolean),
+      "description": product.metafields?.find(m => m.key === 'description')?.value || '',
+      "sku": product.metafields?.find(m => m.key === 'sku')?.value || '',
+      "brand": {
+        "@type": "Brand",
+        "name": "AURICLE"
+      },
+      "offers": {
+        "@type": "Offer",
+        "url": `https://www.auricle.co.uk/product/${product.handle}`,
+        "priceCurrency": "GBP",
+        "price": "0.01", // placeholder
+        "availability": "https://schema.org/InStock",
+        "priceSpecification": {
+          "@type": "UnitPriceSpecification",
+          "priceCurrency": "GBP",
+          "price": "0.01"
+        }
+      }
+    })
+  }}
+/>
+
       <main style={{ maxWidth: '1400px', margin: '0 auto', padding: '16px' }}>
         <div className="product-layout">
           <div className="product-image" style={{ position: 'relative' }}>
