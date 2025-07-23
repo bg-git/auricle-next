@@ -37,7 +37,7 @@ export default function CartDrawer() {
   if (!isDrawerOpen) return null;
 
   return (
-    <div className="cart-backdrop" onClick={closeDrawer}>
+    <div className="cart-backdrop">
       <div
         className="cart-drawer open"
         role="dialog"
