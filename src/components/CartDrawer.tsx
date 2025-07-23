@@ -34,7 +34,16 @@ export default function CartDrawer() {
     };
   }, [isDrawerOpen, closeDrawer]);
 
-  if (!isDrawerOpen) return null;
+ return (
+  <div className={`cart-backdrop ${isDrawerOpen ? 'open' : ''}`} onClick={closeDrawer}>
+    <div
+      className={`cart-drawer ${isDrawerOpen ? 'open' : ''}`}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="cart-drawer-title"
+      onClick={(e) => e.stopPropagation()}
+    >
+      
 
   return (
     <div className="cart-backdrop">
@@ -158,7 +167,7 @@ export default function CartDrawer() {
 >
   VAT & shipping calculated at checkout
 </p>
-
+</div></div>);
         </div>
       </div>
     </div>

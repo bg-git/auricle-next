@@ -315,10 +315,16 @@ return (
 </button>
 
 
-        {showFilters && (
-  <div className={`filter-drawer-backdrop open`} onClick={() => setShowFilters(false)}>
-    <div className="filter-drawer open" onClick={(e) => e.stopPropagation()}>
-      <button className="filter-drawer-close" onClick={() => setShowFilters(false)}>Close</button>
+        <div
+  className={`filter-drawer-backdrop ${showFilters ? 'open' : ''}`}
+  onClick={() => setShowFilters(false)}
+>
+  <div
+    className={`filter-drawer ${showFilters ? 'open' : ''}`}
+    onClick={(e) => e.stopPropagation()}
+  >
+
+      <button className="filter-drawer-close" onClick={() => setShowFilters(false)}>DONE</button>
 
       {renderFilterSection('Metal', metalOptions, selectedMetals, setSelectedMetals)}
       {renderFilterSection('Finish', finishOptions, selectedFinishes, setSelectedFinishes)}
@@ -328,7 +334,7 @@ return (
       {renderFilterSection('Metal Colour', metalColourOptions, selectedMetalColours, setSelectedMetalColours)}
     </div>
   </div>
-)}
+
 
       </main>
 
