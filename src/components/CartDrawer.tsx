@@ -25,23 +25,21 @@ export default function CartDrawer() {
       if (e.key === 'Escape') closeDrawer();
     };
 
-    document.addEventListener('keydown', handleEscape);
-
-    // 🔒 Lock scroll when drawer is open
-   if (isDrawerOpen) {
-  document.body.style.overflow = 'hidden';
-  document.documentElement.style.overflow = 'hidden'; // <html>
-} else {
-  document.body.style.overflow = '';
-  document.documentElement.style.overflow = '';
-}
+    if (isDrawerOpen) {
+      document.addEventListener('keydown', handleEscape);
+      // 🔒 Lock scroll when drawer is open
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden'; // <html>
+    } else {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+    }
 
     return () => {
-  document.removeEventListener('keydown', handleEscape);
-  document.body.style.overflow = '';
-  document.documentElement.style.overflow = '';
-};
-
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+    };
   }, [isDrawerOpen, closeDrawer]);
 
   if (!isDrawerOpen) return null;
