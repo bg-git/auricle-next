@@ -94,4 +94,4 @@ Simple. Sharp. Studio-ready.**
 
 
 
-*Want to become a stockist? Apply now via [auricle.co.uk](https://auricle.co.uk)*  
+*Want to become a stockist? Apply now via [our registration page](/register)*

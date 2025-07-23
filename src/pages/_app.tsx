@@ -14,6 +14,8 @@ import '@/styles/pages/studio-page.scss';
 import '@/styles/pages/search.scss';
 import '@/styles/pages/filters.scss';
 import '@/styles/pages/resetPassword.scss';
+import '@/styles/pages/blog-page.scss';
+import '@/styles/pages/blog.scss';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { CartProvider } from '@/context/CartContext';

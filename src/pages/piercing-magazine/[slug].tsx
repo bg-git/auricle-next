@@ -109,54 +109,6 @@ export default function BlogPost({ title, description, content, image, slug, pre
           </div>
         </article>
 
-        <style jsx>{`
-          .blog-post h1 {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 24px;
-          }
-
-          .blog-layout {
-            display: flex;
-            flex-direction: column;
-          }
-
-          .blog-image {
-            margin-bottom: 16px;
-          }
-
-          .blog-nav {
-            margin-top: 40px;
-            display: flex;
-            justify-content: space-between;
-            font-size: 14px;
-          }
-
-          .blog-content p,
-          .blog-content ul,
-          .blog-content ol {
-            margin-bottom: 16px;
-            line-height: 1.6;
-            font-size: 14px;
-          }
-
-          @media (min-width: 800px) {
-            .blog-layout {
-              flex-direction: row-reverse;
-              gap: 40px;
-            }
-
-            .blog-image {
-              flex: 1;
-              max-width: 400px;
-              margin-bottom: 0;
-            }
-
-            .blog-content {
-              flex: 2;
-            }
-          }
-        `}</style>
       </main>
     </>
   );
