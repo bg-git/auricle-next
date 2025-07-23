@@ -159,16 +159,17 @@ const formattedPrice = rawPrice % 1 === 0 ? rawPrice.toFixed(0) : rawPrice.toFix
     description={getFieldValue('description') || `Buy ${product.title} in 14k gold or titanium.`}
   />
 
-  <script
+<script
   type="application/ld+json"
   dangerouslySetInnerHTML={{
     __html: JSON.stringify({
       "@context": "https://schema.org",
       "@type": "Product",
       "name": product.title,
-      "image": product.images?.edges?.map(img => img.node.url).filter(Boolean),
-      "description": product.metafields?.find(m => m.key === 'description')?.value || '',
-      "sku": product.metafields?.find(m => m.key === 'sku')?.value || '',
+      "image": product.images?.edges?.map(img => img?.node?.url).filter(Boolean),
+      "description":
+        product.metafields?.find((m) => m?.key === "description")?.value || "",
+      "sku": product.metafields?.find((m) => m?.key === "sku")?.value || "",
       "brand": {
         "@type": "Brand",
         "name": "AURICLE"
@@ -177,7 +178,7 @@ const formattedPrice = rawPrice % 1 === 0 ? rawPrice.toFixed(0) : rawPrice.toFix
         "@type": "Offer",
         "url": `https://www.auricle.co.uk/product/${product.handle}`,
         "priceCurrency": "GBP",
-        "price": "0.01", // placeholder
+        "price": "0.01",
         "availability": "https://schema.org/InStock",
         "priceSpecification": {
           "@type": "UnitPriceSpecification",
@@ -188,6 +189,7 @@ const formattedPrice = rawPrice % 1 === 0 ? rawPrice.toFixed(0) : rawPrice.toFix
     })
   }}
 />
+
 
       <main style={{ maxWidth: '1400px', margin: '0 auto', padding: '16px' }}>
         <div className="product-layout">
