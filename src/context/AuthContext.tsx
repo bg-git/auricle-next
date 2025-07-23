@@ -1,9 +1,18 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/router';
 
+interface ShopifyCustomer {
+  id: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  tags?: string[];
+  [key: string]: unknown;
+}
+
 interface AuthContextType {
   isAuthenticated: boolean;
-  user: any | null;
+  user: ShopifyCustomer | null;
   signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   signOut: () => void;
   loading: boolean;
@@ -13,7 +22,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState<any | null>(null);
+  const [user, setUser] = useState<ShopifyCustomer | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -84,9 +93,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } else {
         return { success: false, error: data.error || 'Sign in failed' };
       }
-    } catch (error) {
-      return { success: false, error: 'Network error' };
-    }
+    } catch {
+  return { success: false, error: 'Network error' };
+}
   };
 
   const signOut = () => {

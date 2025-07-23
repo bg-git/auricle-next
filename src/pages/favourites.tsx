@@ -3,7 +3,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Seo from '@/components/Seo';
 import FavouriteToggle from '@/components/FavouriteToggle';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 type Metafield = {
   key: string;

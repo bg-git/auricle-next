@@ -7,6 +7,7 @@ import { useRouter } from 'next/router';
 import Seo from '@/components/Seo';
 import Link from 'next/link';
 import FavouriteToggle from '@/components/FavouriteToggle';
+import { useAuth } from '@/context/AuthContext'; 
 
 
 
@@ -76,6 +77,9 @@ useEffect(() => {
   if (!product) {
     return <div style={{ padding: '16px' }}>Product not found.</div>;
   }
+const { user } = useAuth();
+const isApproved = user?.tags?.includes('Approved');
+
 
   const selectedVariant = product.variants?.edges?.find(v => v.node.id === selectedVariantId)?.node;
 const rawPrice = selectedVariant
@@ -217,192 +221,209 @@ const formattedPrice = rawPrice % 1 === 0 ? rawPrice.toFixed(0) : rawPrice.toFix
 
           <div className="product-info">
             <h1 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '4px' }}>{product.title}</h1>
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <p style={{ fontSize: '14px', fontWeight: 500 }}>
-                £{formattedPrice}
-              </p>
-            </div>
-{variantOptions.length > 0 && (
-  <div style={{ marginTop: '24px' }}>
-    <p style={{ fontSize: '14px', fontWeight: 500, marginBottom: '8px' }}>Available in:</p>
-    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-      {variantOptions.map((variant) => {
-        const isCurrent = variant.label === currentVariantLabel;
-
-        return isCurrent ? (
-          <span
-            key={variant.label}
-            style={{
-              padding: '8px 12px',
-              borderRadius: '5px',
-              background: '#000',
-              color: '#fff',
-              fontSize: '14px',
-              fontWeight: 500,
-              border: '2px solid #000',
-            }}
-          >
-            {variant.label}
-          </span>
-        ) : (
-          <Link
-            key={variant.url}
-            href={variant.url}
-            style={{
-              padding: '8px 12px',
-              borderRadius: '5px',
-              background: '#fff',
-              color: '#000',
-              fontSize: '14px',
-              fontWeight: 500,
-              border: '1px solid #ccc',
-              textDecoration: 'none',
-              transition: 'all 0.2s',
-            }}
-          >
-            {variant.label}
-          </Link>
-        );
-      })}
+            {isApproved ? (
+  <>
+    {/* Price */}
+    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+      <p style={{ fontSize: '14px', fontWeight: 500 }}>
+        £{formattedPrice}
+      </p>
     </div>
-  </div>
-)}
 
-{product.variants?.edges?.length > 1 && (
-  <div className="variant-wrapper">
-    <p className="variant-label">Select an option:</p>
-    <div className="variant-grid">
-      {product.variants.edges.map(({ node }) => {
-        const isSelected = selectedVariantId === node.id;
+    {/* Variant options */}
+    {variantOptions.length > 0 && (
+      <div style={{ marginTop: '24px' }}>
+        <p style={{ fontSize: '14px', fontWeight: 500, marginBottom: '8px' }}>Available in:</p>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          {variantOptions.map((variant) => {
+            const isCurrent = variant.label === currentVariantLabel;
+            return isCurrent ? (
+              <span
+                key={variant.label}
+                style={{
+                  padding: '8px 12px',
+                  borderRadius: '5px',
+                  background: '#000',
+                  color: '#fff',
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  border: '2px solid #000',
+                }}
+              >
+                {variant.label}
+              </span>
+            ) : (
+              <Link
+                key={variant.url}
+                href={variant.url}
+                style={{
+                  padding: '8px 12px',
+                  borderRadius: '5px',
+                  background: '#fff',
+                  color: '#000',
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  border: '1px solid #ccc',
+                  textDecoration: 'none',
+                  transition: 'all 0.2s',
+                }}
+              >
+                {variant.label}
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+    )}
 
-        return (
+    {/* Variant buttons */}
+    {product.variants?.edges?.length > 1 && (
+      <div className="variant-wrapper">
+        <p className="variant-label">Select an option:</p>
+        <div className="variant-grid">
+          {product.variants.edges.map(({ node }) => {
+            const isSelected = selectedVariantId === node.id;
+            return (
+              <button
+                key={node.id}
+                onClick={() => setSelectedVariantId(node.id)}
+                className={`variant-button${isSelected ? ' selected' : ''}`}
+              >
+                {node.title}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    )}
+
+    {/* Quantity + Add to Cart */}
+    <div className="desktop-add-to-cart" style={{ marginTop: '24px' }}>
+      <div style={{ display: 'flex', gap: '12px' }}>
+        <label htmlFor="qty" style={{ position: 'absolute', left: '-9999px' }}>Quantity</label>
+        <div
+          style={{
+            flex: '0 0 120px',
+            display: 'flex',
+            alignItems: 'center',
+            border: '1px solid #ccc',
+            borderRadius: '4px',
+            overflow: 'hidden',
+            paddingInline: '4px',
+          }}
+        >
           <button
-            key={node.id}
-            onClick={() => setSelectedVariantId(node.id)}
-            className={`variant-button${isSelected ? ' selected' : ''}`}
+            style={{
+              width: '48px',
+              height: '48px',
+              minWidth: '48px',
+              minHeight: '48px',
+              background: '#fff',
+              border: 'none',
+              fontSize: '20px',
+              cursor: 'pointer',
+            }}
+            onClick={() => setQty((prev) => Math.max(1, prev - 1))}
           >
-            {node.title}
+            −
           </button>
-        );
-      })}
+          <span
+            id="qty"
+            style={{
+              width: '100%',
+              height: '40px',
+              textAlign: 'center',
+              fontSize: '14px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              userSelect: 'none',
+            }}
+          >
+            {qty}
+          </span>
+          <button
+            style={{
+              width: '48px',
+              height: '48px',
+              minWidth: '48px',
+              minHeight: '48px',
+              fontSize: '20px',
+              background: '#fff',
+              border: 'none',
+              cursor: 'pointer',
+            }}
+            onClick={() => setQty((prev) => prev + 1)}
+          >
+            +
+          </button>
+        </div>
+
+        <button
+          style={{
+            flex: '1',
+            height: '48px',
+            minHeight: '48px',
+            background: '#000',
+            color: '#fff',
+            border: 'none',
+            fontSize: '14px',
+            fontWeight: 900,
+            cursor: 'pointer',
+            borderRadius: '4px',
+            whiteSpace: 'nowrap',
+          }}
+          onClick={() => {
+            if (!selectedVariantId || !selectedVariant) {
+              console.warn('No variant selected');
+              return;
+            }
+
+            addToCart(selectedVariantId, qty, {
+              handle: router.query.handle as string,
+              title: `${product.title} | ${selectedVariant.title}`,
+              price: selectedVariant.price.amount,
+              image: product.images?.edges?.[0]?.node?.url || undefined,
+              metafields: product.metafields,
+            });
+
+            openDrawer();
+          }}
+        >
+          ADD TO BAG
+        </button>
+      </div>
     </div>
-  </div>
-)}
 
-
-            <div className="desktop-add-to-cart" style={{ marginTop: '24px' }}>
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <label htmlFor="qty" style={{ position: 'absolute', left: '-9999px' }}>Quantity</label>
-
-                <div
-                  style={{
-                    flex: '0 0 120px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    border: '1px solid #ccc',
-                    borderRadius: '4px',
-                    overflow: 'hidden',
-                    paddingInline: '4px',
-                  }}
-                >
-                  <button
-                    style={{
-                      width: '48px',
-                      height: '48px',
-                      minWidth: '48px',
-                      minHeight: '48px',
-                      background: '#fff',
-                      border: 'none',
-                      fontSize: '20px',
-                      cursor: 'pointer',
-                    }}
-                    onClick={() => setQty((prev) => Math.max(1, prev - 1))}
-
-                  >
-                    −
-                  </button>
-                  <span
-                   id="qty"
+    {/* VAT Note */}
+    <p
+      style={{
+        fontSize: '12px',
+        color: '#888',
+        marginTop: '10px',
+        marginBottom: '16px',
+        textAlign: 'right',
+      }}
+    >
+      VAT & shipping calculated at checkout
+    </p>
+  </>
+) : (
+  <div
   style={{
-    width: '100%',
-    height: '40px',
+    marginTop: '24px',
+    padding: '16px',
+    background: '#f9f9f9',
+    border: '1px solid #ddd',
     textAlign: 'center',
     fontSize: '14px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    userSelect: 'none',
   }}
 >
-  {qty}
-</span>
+  <p style={{ fontWeight: 600 }}>CATALOGUE VIEW</p><br />
+  <p>Sing in to your wholesale account to view pricing.</p></div>
 
-                  <button
-                    style={{
-                      width: '48px',
-                      height: '48px',
-                      minWidth: '48px',
-                      minHeight: '48px',
-                      fontSize: '20px',
-                      background: '#fff',
-                      border: 'none',
-                      cursor: 'pointer',
-                    }}
-                    onClick={() => setQty((prev) => prev + 1)}
+)}
 
-                  >
-                    +
-                  </button>
-                </div>
-
-                <button
-                  style={{
-                    flex: '1',
-                    height: '48px',
-                    minHeight: '48px',
-                    background: '#000',
-                    color: '#fff',
-                    border: 'none',
-                    fontSize: '14px',
-                    fontWeight: 900,
-                    cursor: 'pointer',
-                    borderRadius: '4px',
-                    whiteSpace: 'nowrap',
-                  }}
-                  onClick={() => {
-  if (!selectedVariantId || !selectedVariant) {
-    console.warn('No variant selected');
-    return;
-  }
-
- addToCart(selectedVariantId, qty, {
-  handle: router.query.handle as string, // ✅ Required for /favourites
-  title: `${product.title} | ${selectedVariant.title}`,
-  price: selectedVariant.price.amount,
-  image: product.images?.edges?.[0]?.node?.url || undefined,
-  metafields: product.metafields, // ✅ Required for filters
-});
-
-
-  openDrawer();
-}}
-
-                >
-                  ADD TO BAG
-                </button>
-              </div>
-            </div>
-<p
-  style={{
-    fontSize: '12px',
-    color: '#888',
-    marginTop: '10px',
-    marginBottom: '16px',
-    textAlign: 'right',
-  }}
->
-  VAT & shipping calculated at checkout
-</p>
 
 
             <div style={{ marginTop: '32px' }}>
