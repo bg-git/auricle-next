@@ -50,11 +50,14 @@ export default function CartDrawer() {
     <div className="cart-backdrop" onClick={closeDrawer}>
       <div
         className="cart-drawer open"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="cart-drawer-title"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="cart-drawer-inner">
           <div className="cart-header">
-            <h2>MY BAG</h2>
+            <h2 id="cart-drawer-title">MY BAG</h2>
             <button onClick={closeDrawer}>&times;</button>
           </div>
 
