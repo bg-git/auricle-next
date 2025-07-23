@@ -1,13 +1,10 @@
 import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 
 export default function SignIn() {
-  const [form, setForm] = useState({
-    email: '',
-    password: '',
-  });
-
+  const [form, setForm] = useState({ email: '', password: '' });
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
   const { signIn } = useAuth();
@@ -32,16 +29,15 @@ export default function SignIn() {
     if (result.success) {
       setStatus('success');
       setForm({ email: '', password: '' });
-      // Redirect to account page after successful sign in
       setTimeout(() => {
         router.push('/account');
       }, 100);
     } else {
       setStatus('error');
-      setErrorMessage('You credentials are incorrect. Please try again.');
+      setErrorMessage('Your credentials are incorrect. Please try again.');
     }
   };
-  
+
   const handleForgotSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setForgotStatus('submitting');
@@ -60,7 +56,8 @@ export default function SignIn() {
         setForgotStatus('success');
         setForgotMsg('Password reset email sent! Please check your inbox.');
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+      console.error('Forgot password error:', err);
       setForgotStatus('error');
       setForgotMsg('Network error.');
     }
@@ -73,6 +70,7 @@ export default function SignIn() {
           <h1>SIGN IN</h1>
           <p>Access your business account</p>
         </div>
+
         {!showForgot ? (
           <form className="sign-in-form" onSubmit={handleSubmit}>
             <label>
@@ -102,7 +100,14 @@ export default function SignIn() {
             <div style={{ margin: '8px 0' }}>
               <button
                 type="button"
-                style={{ background: 'none', border: 'none', color: '#333333', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#333333',
+                  cursor: 'pointer',
+                  padding: 0,
+                  textDecoration: 'underline',
+                }}
                 onClick={() => setShowForgot(true)}
               >
                 Forgot Password?
@@ -110,10 +115,19 @@ export default function SignIn() {
             </div>
 
             <button type="submit" disabled={status === 'submitting'}>
-              {status === 'submitting' ? 'Signing in…' : 'Sign In'}
+              {status === 'submitting' ? 'Signing in…' : 'SIGN IN'}
             </button>
 
-            {status === 'success' && <p className="success-msg">Signed in successfully! Redirecting to account...</p>}
+            <p>
+              Don&apos;t have an account?{' '}
+              <Link href="/register" style={{ color: '#000', textDecoration: 'underline' }}>
+                Register
+              </Link>
+            </p>
+
+            {status === 'success' && (
+              <p className="success-msg">Signed in successfully! Redirecting to account...</p>
+            )}
             {status === 'error' && <p className="error-msg">{errorMessage}</p>}
           </form>
         ) : (
@@ -124,20 +138,35 @@ export default function SignIn() {
                 type="email"
                 placeholder="Enter your email"
                 value={forgotEmail}
-                onChange={e => setForgotEmail(e.target.value)}
+                onChange={(e) => setForgotEmail(e.target.value)}
                 required
                 style={{ width: '100%', marginBottom: 4 }}
               />
             </label>
-            <button type="submit" disabled={forgotStatus === 'submitting'} style={{ width: '100%' }}>
+            <button
+              type="submit"
+              disabled={forgotStatus === 'submitting'}
+              style={{ width: '100%' }}
+            >
               {forgotStatus === 'submitting' ? 'Sending…' : 'Send Reset Email'}
             </button>
-            {forgotStatus === 'success' && <div style={{ color: 'green', marginTop: 4 }}>{forgotMsg}</div>}
-            {forgotStatus === 'error' && <div style={{ color: 'red', marginTop: 4 }}>{forgotMsg}</div>}
+            {forgotStatus === 'success' && (
+              <div style={{ color: 'green', marginTop: 4 }}>{forgotMsg}</div>
+            )}
+            {forgotStatus === 'error' && (
+              <div style={{ color: 'red', marginTop: 4 }}>{forgotMsg}</div>
+            )}
             <div style={{ marginTop: 12 }}>
               <button
                 type="button"
-                style={{ background: 'none', border: 'none', color: '#333333', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#333333',
+                  cursor: 'pointer',
+                  padding: 0,
+                  textDecoration: 'underline',
+                }}
                 onClick={() => setShowForgot(false)}
               >
                 Back to Sign In

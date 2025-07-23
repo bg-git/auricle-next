@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 
 export default function Register() {
   const [form, setForm] = useState({
@@ -93,9 +94,14 @@ export default function Register() {
           </label>
 
           <button type="submit" disabled={status === 'submitting'}>
-            {status === 'submitting' ? 'Submitting…' : 'Register'}
+            {status === 'submitting' ? 'Submitting…' : 'REGISTER'}
           </button>
-
+          <p>
+  Already have an account?{' '}
+  <Link href="/sign-in" style={{ color: '#000', textDecoration: 'underline' }}>
+    Sign In
+  </Link>
+</p>
           {status === 'success' && <p className="success-msg">✅ Registration successful! Redirecting to sign in…</p>}
           {status === 'error' && <p className="error-msg">❌Registration Failed, Please try again.</p>}
         </form>
