@@ -169,21 +169,50 @@ return item.metafields
           ))}
         </section>
 
-        <div className="mobile-filter-toggle">
-          <button onClick={() => setShowFilters(true)}>Filters</button>
-        </div>
+        <button
+  className="filter-drawer-toggle"
+  onClick={() => setShowFilters(true)}
+  aria-label="Open filters"
+>
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#181818" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg">
+    <line x1="4" y1="21" x2="4" y2="14"/>
+    <line x1="4" y1="10" x2="4" y2="3"/>
+    <line x1="12" y1="21" x2="12" y2="12"/>
+    <line x1="12" y1="8" x2="12" y2="3"/>
+    <line x1="20" y1="21" x2="20" y2="16"/>
+    <line x1="20" y1="12" x2="20" y2="3"/>
+    <circle cx="4" cy="12" r="2"/>
+    <circle cx="12" cy="10" r="2"/>
+    <circle cx="20" cy="14" r="2"/>
+  </svg>
+</button>
 
-        {showFilters && (
-          <div className={`mobile-filter-drawer ${showFilters ? 'open' : ''}`}>
-            <button onClick={() => setShowFilters(false)}>Close</button>
-            {renderFilterSection('Metal', extractOptions('metal'), selectedMetals, setSelectedMetals)}
-            {renderFilterSection('Finish', extractOptions('finish'), selectedFinishes, setSelectedFinishes)}
-            {renderFilterSection('Gem Colour', extractOptions('gem_colour'), selectedGemColours, setSelectedGemColours)}
-            {renderFilterSection('Gem Type', extractOptions('gem_type'), selectedGemTypes, setSelectedGemTypes)}
-            {renderFilterSection('Fitting', extractOptions('fitting'), selectedFittings, setSelectedFittings)}
-            {renderFilterSection('Metal Colour', extractOptions('metal_colour'), selectedMetalColours, setSelectedMetalColours)}
-          </div>
-        )}
+        <div
+  className={`filter-drawer-backdrop ${showFilters ? 'open' : ''}`}
+  onClick={() => setShowFilters(false)}
+>
+  <div
+    className={`filter-drawer ${showFilters ? 'open' : ''}`}
+    onClick={(e) => e.stopPropagation()}
+  >
+    <div style={{ marginBottom: '24px' }}>
+      <button
+        className="filter-drawer-close"
+        onClick={() => setShowFilters(false)}
+      >
+        Done
+      </button>
+    </div>
+
+    {renderFilterSection('Metal', extractOptions('metal'), selectedMetals, setSelectedMetals)}
+    {renderFilterSection('Finish', extractOptions('finish'), selectedFinishes, setSelectedFinishes)}
+    {renderFilterSection('Gem Colour', extractOptions('gem_colour'), selectedGemColours, setSelectedGemColours)}
+    {renderFilterSection('Gem Type', extractOptions('gem_type'), selectedGemTypes, setSelectedGemTypes)}
+    {renderFilterSection('Fitting', extractOptions('fitting'), selectedFittings, setSelectedFittings)}
+    {renderFilterSection('Metal Colour', extractOptions('metal_colour'), selectedMetalColours, setSelectedMetalColours)}
+  </div>
+</div>
+
       </main>
     </>
   );
