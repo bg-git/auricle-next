@@ -8,7 +8,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
 import Seo from '@/components/Seo';
-import { useEffect } from 'react';
 import FavouriteToggle from '@/components/FavouriteToggle';
 
 
