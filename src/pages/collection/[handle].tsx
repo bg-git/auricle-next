@@ -52,10 +52,12 @@ type CollectionPageProps = {
   seoDescription?: string;
   collectionDescription?: string;
   deepLinks?: { label: string; href: string }[];
+  collectionImage?: string;
+  handle: string;
 };
 
 
-export default function CollectionPage({ products, title, seoTitle, seoDescription, collectionDescription, deepLinks }: CollectionPageProps) {
+export default function CollectionPage({ products, title, seoTitle, seoDescription, collectionDescription, deepLinks, collectionImage, handle }: CollectionPageProps) {
   const getMetafieldValue = (product: Product, key: string): string | null => {
     const validMetafields = (product.metafields || []).filter((f): f is Metafield => f != null);
     const field = validMetafields.find((f) => f.key === key);
@@ -172,22 +174,26 @@ const metalColourMatch = selectedMetalColours.length ? selectedMetalColours.incl
       "@type": "ItemList",
       "name": title,
       "description": seoDescription || "",
-      "url": `https://www.auricle.co.uk/collection/${encodeURIComponent(title.toLowerCase().replace(/\s+/g, '-'))}`,
+      "url": `https://www.auricle.co.uk/collection/${handle}`,
+      ...(collectionImage && { image: collectionImage }),
       "itemListElement": products.map((product, index) => ({
-        "@type": "Product",
+        "@type": "ListItem",
         "position": index + 1,
-        "name": product.title,
         "url": `https://www.auricle.co.uk/product/${product.handle}`,
-        "image": product.images?.edges?.[0]?.node?.url || undefined,
-        "brand": {
-          "@type": "Brand",
-          "name": "AURICLE"
-        },
-        
-      })),
-    }),
+        "item": {
+          "@type": "Product",
+          "name": product.title,
+          "image": product.images?.edges?.[0]?.node?.url || undefined,
+          "brand": {
+            "@type": "Brand",
+            "name": "AURICLE"
+          }
+        }
+      }))
+    })
   }}
 />
+
 
 
       <div style={{ maxWidth: '870px', margin: '0 auto', padding: '16px 16px 0' }}>
@@ -338,6 +344,10 @@ export const getStaticProps: GetStaticProps<CollectionPageProps> = async (
         id
         title
         descriptionHtml
+        image {
+    url
+    altText
+  }
         metafields(identifiers: [
           { namespace: "custom", key: "title" },
           { namespace: "custom", key: "description" },
@@ -392,6 +402,7 @@ export const getStaticProps: GetStaticProps<CollectionPageProps> = async (
   );
 
   const rawMetafields = data.collectionByHandle.metafields || [];
+  const collectionImage = data.collectionByHandle.image?.url || null;
 const validMetafields = rawMetafields.filter(
   (f: unknown): f is { key: string; value: string } =>
 
@@ -427,6 +438,8 @@ return {
     seoTitle,
     seoDescription,
     deepLinks,
+    collectionImage,
+    handle,
   },
   revalidate: 60,
 };
