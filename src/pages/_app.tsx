@@ -60,7 +60,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
           <meta name="msapplication-TileColor" content="#ffffff" />
           <meta name="theme-color" content="#ffffff" />
         </Head>
-        <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100dvh' }}>
   <Header />
   <main style={{ flex: '1 0 auto' }}>
     <Component {...pageProps} />
