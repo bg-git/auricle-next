@@ -42,13 +42,6 @@ return item.metafields
   const [selectedMetalColours, setSelectedMetalColours] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
 
-  useEffect(() => {
-    document.body.style.overflow = showFilters ? 'hidden' : '';
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [showFilters]);
-
   const toggle = (
     value: string,
     selected: string[],
