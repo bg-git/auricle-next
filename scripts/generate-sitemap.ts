@@ -1,11 +1,11 @@
-import dotenv from 'dotenv';
-dotenv.config();
-
+import 'dotenv/config';
 import fs from 'fs';
 import path from 'path';
 import { SitemapStream, streamToPromise } from 'sitemap';
 import { shopifyFetch } from '../src/lib/shopify.js';
 
+
+console.log('SHOPIFY_STORE_DOMAIN:', process.env.SHOPIFY_STORE_DOMAIN);
 
 const DOMAIN = process.env.SITE_DOMAIN || 'http://localhost:3000';
 
