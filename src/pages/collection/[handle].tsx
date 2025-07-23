@@ -172,6 +172,30 @@ const metalColourMatch = selectedMetalColours.length ? selectedMetalColours.incl
   return (
     <>
       <Seo title={seoTitle || title} description={seoDescription || undefined} />
+<script
+  type="application/ld+json"
+  dangerouslySetInnerHTML={{
+    __html: JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      "name": title,
+      "description": seoDescription || "",
+      "url": `https://www.auricle.co.uk/collection/${encodeURIComponent(title.toLowerCase().replace(/\s+/g, '-'))}`,
+      "itemListElement": products.map((product, index) => ({
+        "@type": "Product",
+        "position": index + 1,
+        "name": product.title,
+        "url": `https://www.auricle.co.uk/product/${product.handle}`,
+        "image": product.images?.edges?.[0]?.node?.url || undefined,
+        "brand": {
+          "@type": "Brand",
+          "name": "AURICLE"
+        },
+        
+      })),
+    }),
+  }}
+/>
 
 
       <div style={{ maxWidth: '870px', margin: '0 auto', padding: '16px 16px 0' }}>
