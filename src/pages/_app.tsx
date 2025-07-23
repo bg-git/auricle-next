@@ -13,6 +13,7 @@ import '@/styles/pages/studio-list.scss';
 import '@/styles/pages/studio-page.scss';
 import '@/styles/pages/search.scss';
 import '@/styles/pages/filters.scss';
+import '@/styles/pages/resetPassword.scss';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { CartProvider } from '@/context/CartContext';
