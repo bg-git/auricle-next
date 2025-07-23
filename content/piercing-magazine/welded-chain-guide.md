@@ -2,6 +2,7 @@
 title: "Welded Chain Aftercare Guide"
 description: "Best practices for healing welded chain piercings safely and effectively."
 image: "/images/blog/Childrens_ear_piercing_near_me.jpg"
+date: 2025-07-22
 ---
 
 ## What is welded chain?

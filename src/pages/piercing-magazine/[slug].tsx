@@ -195,15 +195,15 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
     : null;
 
   return {
-    props: {
-      title: data.title || slug,
-      description: data.description || null,
-      content: marked.parse(content),
-      image: data.image || '/placeholder.png',
-      slug,
-      prev,
-      next,
-      datePublished: data.date || null,
-    },
-  };
+  props: {
+    title: data.title || slug,
+    description: data.description || null,
+    content: marked.parse(content),
+    image: data.image || '/placeholder.png',
+    slug,
+    prev,
+    next,
+    datePublished: data.date ? new Date(data.date).toISOString() : null,
+  },
+};
 };
