@@ -1,7 +1,5 @@
 import type { AppProps } from 'next/app';
-import Head from 'next/head'; // ✅ Add this
-import { useEffect } from 'react';
-import { useRouter } from 'next/router';
+import Head from 'next/head'; 
 import '@/styles/globals.css';
 import '@/styles/pages/home.scss';
 import '@/styles/pages/footer.scss';
@@ -23,23 +21,7 @@ import CartDrawer from '@/components/CartDrawer';
 import { FavouritesProvider } from '@/context/FavouritesContext';
 
 export default function MyApp({ Component, pageProps }: AppProps) {
-  const router = useRouter();
 
-  useEffect(() => {
-    const handleRouteChange = () => {
-      if (typeof window !== 'undefined') {
-        window.scrollTo(0, 0);
-      }
-    };
-
-    router.events.on('routeChangeComplete', handleRouteChange);
-    router.events.on('hashChangeComplete', handleRouteChange);
-
-    return () => {
-      router.events.off('routeChangeComplete', handleRouteChange);
-      router.events.off('hashChangeComplete', handleRouteChange);
-    };
-  }, [router]);
 
   return (
     <AuthProvider>
