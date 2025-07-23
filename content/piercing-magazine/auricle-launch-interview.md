@@ -2,6 +2,7 @@
 title: "The Wholesale Piercing Jewellery Brand Redefining Dainty"
 description: "An exclusive interview with AURICLE – a wholesale boutique piercing jewellery brand offering 14k gold and ASTM F136 titanium to professional piercers."
 image: "/images/blog/auricle-jewellery-launch.jpg"
+date: 2025-07-22
 ---
 
 

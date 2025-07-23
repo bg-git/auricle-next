@@ -15,9 +15,10 @@ interface BlogPostProps {
   slug: string;
   prev?: { slug: string; title: string };
   next?: { slug: string; title: string };
+  datePublished?: string;
 }
 
-export default function BlogPost({ title, description, content, image, slug, prev, next }: BlogPostProps) {
+export default function BlogPost({ title, description, content, image, slug, prev, next, datePublished }: BlogPostProps) {
   return (
     <>
       <Head>
@@ -32,6 +33,43 @@ export default function BlogPost({ title, description, content, image, slug, pre
         <meta name="twitter:title" content={title} />
         <meta name="twitter:description" content={description || ''} />
         <meta name="twitter:image" content={image || '/placeholder.png'} />
+
+        <script
+  type="application/ld+json"
+  dangerouslySetInnerHTML={{
+    __html: JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": title,
+      "description": description || `Read ${title} on the AURICLE piercing magazine.`,
+      "datePublished": datePublished || new Date().toISOString(),// Optional: set manually if available in frontmatter
+      "dateModified": new Date().toISOString(), // Same here
+      "author": {
+        "@type": "Person",
+        "name": "Wayne Grant"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "AURICLE",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://www.auricle.co.uk/auricle-logo.png"
+        }
+      },
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": `https://www.auricle.co.uk/piercing-magazine/${slug}`
+      },
+      ...(image && {
+        image: {
+          "@type": "ImageObject",
+          "url": image,
+        }
+      })
+    })
+  }}
+/>
+
       </Head>
 
       <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '16px' }}>
@@ -165,6 +203,7 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
       slug,
       prev,
       next,
+      datePublished: data.date || null,
     },
   };
 };
