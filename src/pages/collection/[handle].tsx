@@ -187,13 +187,18 @@ const metalColourMatch = selectedMetalColours.length ? selectedMetalColours.incl
           "brand": {
             "@type": "Brand",
             "name": "AURICLE"
+          },
+          "offers": {
+            "@type": "Offer",
+            "priceCurrency": "GBP",
+            "price": "0.00",
+            "availability": "https://schema.org/InStock"
           }
         }
       }))
     })
   }}
 />
-
 
 
       <div style={{ maxWidth: '870px', margin: '0 auto', padding: '16px 16px 0' }}>
