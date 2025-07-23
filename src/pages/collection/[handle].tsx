@@ -97,13 +97,6 @@ export default function CollectionPage({ products, title, seoTitle, seoDescripti
 
   const [showFilters, setShowFilters] = useState(false);
 
-useEffect(() => {
-  document.body.style.overflow = showFilters ? 'hidden' : '';
-  return () => {
-    document.body.style.overflow = '';
-  };
-}, [showFilters]);
-
   const toggle = (
     value: string,
     selected: string[],

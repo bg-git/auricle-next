@@ -3,7 +3,8 @@
   top: 0;
   right: -100%;
   width: 320px;
-  height: 100vh;
+  height: 100vh; // fallback for browsers without dvh support
+  height: 100dvh;
   background: #fff;
   box-shadow: -4px 0 12px rgba(0, 0, 0, 0.05);
   z-index: 1000;

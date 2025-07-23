@@ -25,23 +25,13 @@ export default function CartDrawer() {
       if (e.key === 'Escape') closeDrawer();
     };
 
-    document.addEventListener('keydown', handleEscape);
-
-    // 🔒 Lock scroll when drawer is open
-   if (isDrawerOpen) {
-  document.body.style.overflow = 'hidden';
-  document.documentElement.style.overflow = 'hidden'; // <html>
-} else {
-  document.body.style.overflow = '';
-  document.documentElement.style.overflow = '';
-}
+    if (isDrawerOpen) {
+      document.addEventListener('keydown', handleEscape);
+    }
 
     return () => {
-  document.removeEventListener('keydown', handleEscape);
-  document.body.style.overflow = '';
-  document.documentElement.style.overflow = '';
-};
-
+      document.removeEventListener('keydown', handleEscape);
+    };
   }, [isDrawerOpen, closeDrawer]);
 
   if (!isDrawerOpen) return null;
@@ -50,11 +40,14 @@ export default function CartDrawer() {
     <div className="cart-backdrop" onClick={closeDrawer}>
       <div
         className="cart-drawer open"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="cart-drawer-title"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="cart-drawer-inner">
           <div className="cart-header">
-            <h2>MY BAG</h2>
+            <h2 id="cart-drawer-title">MY BAG</h2>
             <button onClick={closeDrawer}>&times;</button>
           </div>
 
