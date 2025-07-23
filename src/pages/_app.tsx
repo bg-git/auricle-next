@@ -25,24 +25,27 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   const router = useRouter();
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && 'scrollRestoration' in window.history) {
-      window.history.scrollRestoration = 'manual';
-    }
-  }, []);
+    let shouldScroll = true;
 
-  useEffect(() => {
+    router.beforePopState(() => {
+      shouldScroll = false;
+      return true;
+    });
+
     const handleRouteChange = () => {
-      if (typeof window !== 'undefined') {
+      if (shouldScroll && typeof window !== 'undefined') {
         window.scrollTo(0, 0);
       }
+      shouldScroll = true;
     };
 
     router.events.on('routeChangeComplete', handleRouteChange);
 
     return () => {
+      router.beforePopState(() => true);
       router.events.off('routeChangeComplete', handleRouteChange);
     };
-  }, [router.events]);
+  }, [router]);
 
   return (
     <AuthProvider>
