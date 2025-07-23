@@ -4,7 +4,7 @@
   right: 0;
   height: 100dvh;
   width: 100%;
-  max-width: 400px;
+  max-width: 320px;
   background: #fff;
   box-shadow: -4px 0 12px rgba(0, 0, 0, 0.05);
   z-index: 1000;
@@ -12,6 +12,7 @@
   opacity: 0;
   transition: transform 0.10s ease-out, opacity 0.10s ease-out;
   pointer-events: none;
+  border-left: 1px solid #181818;
 }
 
 .cart-drawer.open {
