@@ -22,14 +22,16 @@ import { CartProvider } from '@/context/CartContext';
 import { AuthProvider } from '@/context/AuthContext';
 import CartDrawer from '@/components/CartDrawer';
 import { FavouritesProvider } from '@/context/FavouritesContext';
+import { ToastProvider } from '@/context/ToastContext';
 
 export default function MyApp({ Component, pageProps }: AppProps) {
 
 
   return (
-    <AuthProvider>
-      <FavouritesProvider>
-        <CartProvider>
+    <ToastProvider>
+      <AuthProvider>
+        <FavouritesProvider>
+          <CartProvider>
           <Head>
             <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
             <meta name="theme-color" content="#ffffff" />
@@ -53,5 +55,6 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         </CartProvider>
       </FavouritesProvider>
     </AuthProvider>
+  </ToastProvider>
   );
 }
