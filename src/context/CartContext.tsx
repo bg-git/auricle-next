@@ -54,7 +54,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }
     const desiredQty = existing ? existing.quantity + quantity : quantity;
     if (desiredQty > maxQty && maxQty !== Infinity) {
-      showToast(`We only have ${maxQty} available. Take them all while you can.`);
+      showToast(`More coming soon 😉`);
     }
     const finalQty = Math.min(desiredQty, maxQty);
     const updatedItems = existing
@@ -112,7 +112,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
     if (newQty > maxQty && maxQty !== Infinity) {
-      showToast(`We only have ${maxQty} available. Take them all while you can.`);
+      showToast(`We only have ${maxQty} available. Sorry 😞`);
       return;
     }
     const updated = cartItems

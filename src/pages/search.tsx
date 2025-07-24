@@ -128,7 +128,7 @@ export default function SearchPage({ products }: { products: ProductLite[] }) {
             key={product.id}
             href={`/product/${product.handle}`}
             prefetch={true}
-            style={{ textDecoration: 'none', color: '#000' }}
+            style={{ textDecoration: 'none', color: '#181818' }}
           >
             <div>
               {product.image ? (

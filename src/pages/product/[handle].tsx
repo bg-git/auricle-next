@@ -278,11 +278,11 @@ const formattedPrice = rawPrice % 1 === 0 ? rawPrice.toFixed(0) : rawPrice.toFix
                 style={{
                   padding: '8px 12px',
                   borderRadius: '5px',
-                  background: '#000',
+                  background: '#181818',
                   color: '#fff',
                   fontSize: '14px',
                   fontWeight: 500,
-                  border: '2px solid #000',
+                  border: '2px solid #181818',
                 }}
               >
                 {variant.label}
@@ -295,7 +295,7 @@ const formattedPrice = rawPrice % 1 === 0 ? rawPrice.toFixed(0) : rawPrice.toFix
                   padding: '8px 12px',
                   borderRadius: '5px',
                   background: '#fff',
-                  color: '#000',
+                  color: '#181818',
                   fontSize: '14px',
                   fontWeight: 500,
                   border: '1px solid #ccc',
@@ -394,7 +394,7 @@ const formattedPrice = rawPrice % 1 === 0 ? rawPrice.toFixed(0) : rawPrice.toFix
                 return;
               }
               if (qty >= maxQty) {
-                showToast(`We only have ${maxQty} available. Take them all while you can.`);
+                showToast(`We only have ${maxQty} available. Sorry 😞`);
                 return;
               }
               setQty((prev) => prev + 1);
@@ -409,7 +409,7 @@ const formattedPrice = rawPrice % 1 === 0 ? rawPrice.toFixed(0) : rawPrice.toFix
             flex: '1',
             height: '48px',
             minHeight: '48px',
-            background: '#000',
+            background: '#181818',
             color: '#fff',
             border: 'none',
             fontSize: '14px',

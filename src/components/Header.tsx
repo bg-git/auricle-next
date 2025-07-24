@@ -140,7 +140,7 @@ const { favourites } = useFavourites();
       margin: 0,
       fontSize: '14px',
       fontWeight: 500,
-      color: '#000',
+      color: '#181818',
       cursor: 'pointer',
       textDecoration: 'none',
     }}
@@ -185,7 +185,7 @@ const { favourites } = useFavourites();
     style={{
       padding: '16px 12px',
       fontSize: '16px',
-      color: '#000',
+      color: '#181818',
       fontWeight: '600',
       textDecoration: 'none',
       flexShrink: 0,

@@ -98,7 +98,7 @@ export default function Register() {
           </button>
           <p>
   Already have an account?{' '}
-  <Link href="/sign-in" style={{ color: '#000', textDecoration: 'underline' }}>
+  <Link href="/sign-in" style={{ color: '#181818', textDecoration: 'underline' }}>
     Sign In
   </Link>
 </p>

@@ -61,14 +61,14 @@ button {
   -moz-appearance: none;
   appearance: none;
   background-color: transparent;
-  color: #000;
+  color: #181818;
   border: none;
 }
 
 input[type='number'] {
   -moz-appearance: textfield;
   appearance: textfield;
-  color: #000;
+  color: #181818;
 }
 
 .variant-wrapper {
@@ -94,14 +94,14 @@ input[type='number'] {
   font-weight: 500;
   cursor: pointer;
   background: #fff;
-  color: #000;
+  color: #181818;
   border: 1px solid #ccc; // prevent layout shift
   transition: all 0.2s ease;
 
   &.selected {
-    background: #000;
+    background: #181818;
     color: #fff;
-    border-color: #000;
+    border-color: #181818;
   }
 }
 .favourite-toggle {

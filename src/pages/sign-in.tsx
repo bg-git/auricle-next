@@ -120,7 +120,7 @@ export default function SignIn() {
 
             <p>
               Don&apos;t have an account?{' '}
-              <Link href="/register" style={{ color: '#000', textDecoration: 'underline' }}>
+              <Link href="/register" style={{ color: '#181818', textDecoration: 'underline' }}>
                 Register
               </Link>
             </p>

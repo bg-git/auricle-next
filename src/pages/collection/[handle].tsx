@@ -149,8 +149,8 @@ const metalColourMatch = selectedMetalColours.length ? selectedMetalColours.incl
               width: '100%',
               padding: '8px 12px',
               marginBottom: '6px',
-              background: selected.includes(option) ? '#000' : '#f9f9f9',
-              color: selected.includes(option) ? '#fff' : '#000',
+              background: selected.includes(option) ? '#181818' : '#f9f9f9',
+              color: selected.includes(option) ? '#fff' : '#181818',
               border: '1px solid #e0e0e0',
               fontSize: '14px',
               cursor: 'pointer',
@@ -230,7 +230,7 @@ const metalColourMatch = selectedMetalColours.length ? selectedMetalColours.incl
                 borderRadius: '4px',
                 border: '1px solid #e0e0e0',
                 textDecoration: 'none',
-                color: '#000',
+                color: '#181818',
               }}
             >
               {label}
