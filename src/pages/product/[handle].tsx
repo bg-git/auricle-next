@@ -71,12 +71,21 @@ export default function ProductPage({ product }: ProductPageProps) {
 const [selectedVariantId, setSelectedVariantId] = useState(
   product.variants?.edges?.[0]?.node?.id || null
 );
-const [qty, setQty] = useState(1);
+const initialQty =
+  product.variants?.edges?.[0]?.node?.quantityAvailable > 0 ? 1 : 0;
+const [qty, setQty] = useState(initialQty);
 
 useEffect(() => {
   setSelectedVariantId(product.variants?.edges?.[0]?.node?.id || null);
-  setQty(1);
+  const first = product.variants?.edges?.[0]?.node;
+  setQty(first && first.quantityAvailable > 0 ? 1 : 0);
 }, [router.asPath, product.variants?.edges]);
+
+useEffect(() => {
+  const variant = product.variants?.edges.find(v => v.node.id === selectedVariantId)?.node;
+  if (!variant) return;
+  setQty(variant.quantityAvailable > 0 ? 1 : 0);
+}, [selectedVariantId]);
 
 const { user, refreshUser } = useAuth();
 const hasRefreshed = useRef(false);
@@ -349,7 +358,7 @@ const formattedPrice = rawPrice % 1 === 0 ? rawPrice.toFixed(0) : rawPrice.toFix
               fontSize: '20px',
               cursor: 'pointer',
             }}
-            onClick={() => setQty((prev) => Math.max(1, prev - 1))}
+            onClick={() => setQty((prev) => Math.max(isSoldOut ? 0 : 1, prev - 1))}
           >
             −
           </button>
@@ -380,6 +389,10 @@ const formattedPrice = rawPrice % 1 === 0 ? rawPrice.toFixed(0) : rawPrice.toFix
               cursor: 'pointer',
             }}
             onClick={() => {
+              if (maxQty <= 0) {
+                showToast('SOLD OUT. More coming soon.');
+                return;
+              }
               if (qty >= maxQty) {
                 showToast(`We only have ${maxQty} available. Take them all while you can.`);
                 return;
@@ -406,7 +419,10 @@ const formattedPrice = rawPrice % 1 === 0 ? rawPrice.toFixed(0) : rawPrice.toFix
             whiteSpace: 'nowrap',
           }}
           onClick={() => {
-    if (isSoldOut) return;          // Prevent action when sold out
+    if (isSoldOut) {
+      showToast('SOLD OUT. More coming soon.');
+      return;          // Prevent action when sold out
+    }
     if (!selectedVariantId || !selectedVariant) {
       console.warn('No variant selected');
       return;
