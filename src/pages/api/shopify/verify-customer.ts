@@ -16,18 +16,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const query = `
-    query customer($customerAccessToken: String!) {
-      customer(customerAccessToken: $customerAccessToken) {
-        id
-        firstName
-        lastName
-        email
-        phone
-        acceptsMarketing
-        createdAt
-        updatedAt
+      query customer($customerAccessToken: String!) {
+        customer(customerAccessToken: $customerAccessToken) {
+          id
+          firstName
+          lastName
+          email
+          phone
+          acceptsMarketing
+          createdAt
+          updatedAt
+          metafield(namespace: "custom", key: "approved") {
+            value
+          }
+        }
       }
-    }
   `;
 
   const variables = {
@@ -50,9 +53,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(401).json({ success: false, error: 'Invalid token' });
     }
 
-    return res.status(200).json({ 
-      success: true, 
-      customer: json.data.customer 
+    const customer = json.data.customer;
+
+    return res.status(200).json({
+      success: true,
+      customer: {
+        ...customer,
+        approved: customer.metafield?.value === 'Approved',
+      },
     });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'An unknown error occurred';
