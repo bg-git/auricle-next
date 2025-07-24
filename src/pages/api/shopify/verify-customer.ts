@@ -55,11 +55,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const customer = json.data.customer;
 
+    const isApproved = (val?: string | null) => {
+      if (!val) return false;
+      return ['approved', 'true', '1', 'yes'].includes(val.trim().toLowerCase());
+    };
+
     return res.status(200).json({
       success: true,
       customer: {
         ...customer,
-        approved: customer.metafield?.value === 'Approved',
+        approved: isApproved(customer.metafield?.value),
       },
     });
   } catch (error: unknown) {
