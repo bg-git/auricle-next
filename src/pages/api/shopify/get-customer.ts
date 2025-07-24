@@ -101,14 +101,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     }
 
+    const isApproved = (val?: string | null) => {
+      if (!val) return false;
+      return ['approved', 'true', '1', 'yes'].includes(val.trim().toLowerCase());
+    };
+
     return res.status(200).json({
-  success: true,
-  customer: {
-    ...customer,
-    note,
-    approved: customer.metafield?.value === 'Approved', // ✅ include approval flag
-  }
-});
+      success: true,
+      customer: {
+        ...customer,
+        note,
+        approved: isApproved(customer.metafield?.value),
+      },
+    });
 
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'An unknown error occurred';
