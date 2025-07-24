@@ -2,7 +2,7 @@ import type { GetStaticProps, GetStaticPaths, GetStaticPropsContext } from 'next
 import { shopifyFetch } from '@/lib/shopify';
 import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import Seo from '@/components/Seo';
 import Link from 'next/link';
@@ -75,13 +75,14 @@ useEffect(() => {
 }, [router.asPath, product.variants?.edges]);
 
 const { user, refreshUser } = useAuth();
+const hasRefreshed = useRef(false);
 
 useEffect(() => {
-  if (user && !user.approved) {
+  if (user && !user.approved && !hasRefreshed.current) {
+    hasRefreshed.current = true;
     refreshUser();
   }
-// eslint-disable-next-line react-hooks/exhaustive-deps
-}, []);
+}, [user, refreshUser]);
 
 if (!product) {
   return <div style={{ padding: '16px' }}>Product not found.</div>;
