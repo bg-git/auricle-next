@@ -7,7 +7,8 @@ import { useRouter } from 'next/router';
 import Seo from '@/components/Seo';
 import Link from 'next/link';
 import FavouriteToggle from '@/components/FavouriteToggle';
-import { useAuth } from '@/context/AuthContext'; 
+import { useAuth } from '@/context/AuthContext';
+import { useToast } from '@/context/ToastContext';
 
 
 
@@ -64,6 +65,7 @@ interface ProductPageProps {
 
 export default function ProductPage({ product }: ProductPageProps) {
   const { addToCart, openDrawer } = useCart();
+  const { showToast } = useToast();
   const router = useRouter();
 
 const [selectedVariantId, setSelectedVariantId] = useState(
@@ -103,6 +105,8 @@ if (!product) {
 const isSoldOut =
   !selectedVariant?.availableForSale ||
   selectedVariant.quantityAvailable <= 0;
+
+const maxQty = selectedVariant?.quantityAvailable ?? 9999;
 
 const rawPrice = selectedVariant
   ? parseFloat(selectedVariant.price.amount)
@@ -375,7 +379,13 @@ const formattedPrice = rawPrice % 1 === 0 ? rawPrice.toFixed(0) : rawPrice.toFix
               border: 'none',
               cursor: 'pointer',
             }}
-            onClick={() => setQty((prev) => prev + 1)}
+            onClick={() => {
+              if (qty >= maxQty) {
+                showToast(`We only have ${maxQty} available. Take them all while you can.`);
+                return;
+              }
+              setQty((prev) => prev + 1);
+            }}
           >
             +
           </button>
@@ -407,6 +417,7 @@ const formattedPrice = rawPrice % 1 === 0 ? rawPrice.toFixed(0) : rawPrice.toFix
       price: selectedVariant.price.amount,
       image: product.images?.edges?.[0]?.node?.url || undefined,
       metafields: product.metafields,
+      quantityAvailable: selectedVariant.quantityAvailable,
     });
     openDrawer();
   }}

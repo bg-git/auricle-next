@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
 import { useFavourites } from '@/context/FavouritesContext';
+import { useToast } from '@/context/ToastContext';
 
 export interface CartItem {
   variantId: string;
@@ -9,6 +10,7 @@ export interface CartItem {
   image?: string;
   handle?: string;
   metafields?: { key: string; value: string }[];
+  quantityAvailable?: number;
 }
 
 interface CartContextType {
@@ -34,6 +36,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const { addFavourite, isFavourite } = useFavourites();
+  const { showToast } = useToast();
 
   const openDrawer = () => setIsDrawerOpen(true);
   const closeDrawer = () => setIsDrawerOpen(false);
@@ -44,13 +47,19 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     meta: Omit<CartItem, 'variantId' | 'quantity'> = {}
   ) => {
     const existing = cartItems.find((item) => item.variantId === variantId);
+    const maxQty = meta.quantityAvailable ?? existing?.quantityAvailable ?? Infinity;
+    const desiredQty = existing ? existing.quantity + quantity : quantity;
+    if (desiredQty > maxQty && maxQty !== Infinity) {
+      showToast(`We only have ${maxQty} available. Take them all while you can.`);
+    }
+    const finalQty = Math.min(desiredQty, maxQty);
     const updatedItems = existing
       ? cartItems.map((item) =>
           item.variantId === variantId
-            ? { ...item, quantity: item.quantity + quantity }
+            ? { ...item, quantity: finalQty, quantityAvailable: maxQty }
             : item
         )
-      : [...cartItems, { variantId, quantity, ...meta }];
+      : [...cartItems, { variantId, quantity: finalQty, ...meta }];
 
     setCartItems(updatedItems);
     if (meta?.handle) {
@@ -91,11 +100,18 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const updateQuantity = (variantId: string, newQty: number) => {
+    const item = cartItems.find((i) => i.variantId === variantId);
+    if (!item) return;
+    const maxQty = item.quantityAvailable ?? Infinity;
+    if (newQty > maxQty && maxQty !== Infinity) {
+      showToast(`We only have ${maxQty} available. Take them all while you can.`);
+      return;
+    }
     const updated = cartItems
-      .map((item) =>
-        item.variantId === variantId ? { ...item, quantity: newQty } : item
+      .map((i) =>
+        i.variantId === variantId ? { ...i, quantity: newQty } : i
       )
-      .filter((item) => item.quantity > 0);
+      .filter((i) => i.quantity > 0);
 
     setCartItems(updated);
   };
