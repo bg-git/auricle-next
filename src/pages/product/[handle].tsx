@@ -23,6 +23,8 @@ interface ProductVariantNode {
   price: {
     amount: string;
   };
+  availableForSale: boolean;
+  quantityAvailable: number; 
   selectedOptions: {
     name: string;
     value: string;
@@ -32,7 +34,7 @@ interface ProductVariantNode {
 interface Product {
   id: string;
   title: string;
-  handle: string; // ✅ This is the missing property
+  handle: string;
   descriptionHtml: string;
   priceRange: {
     minVariantPrice: {
@@ -94,7 +96,14 @@ if (!product) {
   }
 
 
-  const selectedVariant = product.variants?.edges?.find(v => v.node.id === selectedVariantId)?.node;
+  const selectedVariant = product.variants?.edges?.find(
+  v => v.node.id === selectedVariantId
+)?.node;
+
+const isSoldOut =
+  !selectedVariant?.availableForSale ||
+  selectedVariant.quantityAvailable <= 0;
+
 const rawPrice = selectedVariant
   ? parseFloat(selectedVariant.price.amount)
   : parseFloat(product.priceRange.minVariantPrice.amount);
@@ -387,24 +396,23 @@ const formattedPrice = rawPrice % 1 === 0 ? rawPrice.toFixed(0) : rawPrice.toFix
             whiteSpace: 'nowrap',
           }}
           onClick={() => {
-            if (!selectedVariantId || !selectedVariant) {
-              console.warn('No variant selected');
-              return;
-            }
-
-            addToCart(selectedVariantId, qty, {
-              handle: router.query.handle as string,
-              title: `${product.title} | ${selectedVariant.title}`,
-              price: selectedVariant.price.amount,
-              image: product.images?.edges?.[0]?.node?.url || undefined,
-              metafields: product.metafields,
-            });
-
-            openDrawer();
-          }}
-        >
-          ADD TO BAG
-        </button>
+    if (isSoldOut) return;          // Prevent action when sold out
+    if (!selectedVariantId || !selectedVariant) {
+      console.warn('No variant selected');
+      return;
+    }
+    addToCart(selectedVariantId, qty, {
+      handle: router.query.handle as string,
+      title: `${product.title} | ${selectedVariant.title}`,
+      price: selectedVariant.price.amount,
+      image: product.images?.edges?.[0]?.node?.url || undefined,
+      metafields: product.metafields,
+    });
+    openDrawer();
+  }}
+>
+  {isSoldOut ? 'SOLD OUT' : 'ADD TO BAG'}
+</button>
       </div>
     </div>
 
@@ -529,6 +537,8 @@ export const getStaticProps: GetStaticProps<ProductPageProps> = async (
               price {
                 amount
               }
+                availableForSale
+              quantityAvailable 
               selectedOptions {
                 name
                 value
