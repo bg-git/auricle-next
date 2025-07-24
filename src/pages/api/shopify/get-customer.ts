@@ -87,6 +87,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const customer = json.data.customer;
 
     let note = '';
+    let tags: string[] = [];
     if (customer.email) {
       const adminRes = await fetch(`https://${SHOPIFY_DOMAIN}/admin/api/2023-01/customers/search.json?query=email:${encodeURIComponent(customer.email)}`, {
         method: 'GET',
@@ -97,21 +98,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
       const adminJson = await adminRes.json();
       if (adminJson.customers && adminJson.customers.length > 0) {
-        note = adminJson.customers[0].note || '';
+        const adminCustomer = adminJson.customers[0];
+        note = adminCustomer.note || '';
+        if (adminCustomer.tags) {
+          tags = adminCustomer.tags.split(',').map((t: string) => t.trim()).filter(Boolean);
+        }
       }
     }
 
-    const isApproved = (val?: string | null) => {
-      if (!val) return false;
-      return ['approved', 'true', '1', 'yes'].includes(val.trim().toLowerCase());
-    };
+    const isApproved = (t: string[]) =>
+      t.map((tag) => tag.toLowerCase()).includes('approved');
 
     return res.status(200).json({
       success: true,
       customer: {
         ...customer,
         note,
-        approved: isApproved(customer.metafield?.value),
+        tags,
+        approved: isApproved(tags),
       },
     });
 
