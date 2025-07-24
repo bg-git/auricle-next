@@ -20,7 +20,7 @@ export default function PiercingMagazineIndex({ posts }: { posts: BlogPreview[] 
     description="Read expert articles about body piercing, aftercare, and jewellery from the AURICLE team."
   />
 
-  <h1>Piercing Magazine</h1>
+  <h1>PIERCING MAGAZINE</h1>
 
   <div className="blog-grid">
     {posts.map(({ slug, title, description, image }) => (

@@ -27,6 +27,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         acceptsMarketing
         createdAt
         updatedAt
+        metafield(namespace: "custom", key: "approved") {
+      value
+    }
         defaultAddress {
           id
           firstName
@@ -98,10 +101,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     }
 
-    return res.status(200).json({ 
-      success: true, 
-      customer: { ...customer, note }
-    });
+    return res.status(200).json({
+  success: true,
+  customer: {
+    ...customer,
+    note,
+    approved: customer.metafield?.value === 'Approved', // ✅ include approval flag
+  }
+});
+
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'An unknown error occurred';
     return res.status(500).json({ success: false, error: message });

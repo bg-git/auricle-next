@@ -74,11 +74,23 @@ useEffect(() => {
   setQty(1);
 }, [router.asPath, product.variants?.edges]);
 
+const { user, refreshUser } = useAuth();
+
+useEffect(() => {
+  if (user && !user.approved) {
+    refreshUser();
+  }
+// eslint-disable-next-line react-hooks/exhaustive-deps
+}, []);
+
+if (!product) {
+  return <div style={{ padding: '16px' }}>Product not found.</div>;
+}
+
+
   if (!product) {
     return <div style={{ padding: '16px' }}>Product not found.</div>;
   }
-const { user } = useAuth();
-const isApproved = user?.tags?.includes('Approved');
 
 
   const selectedVariant = product.variants?.edges?.find(v => v.node.id === selectedVariantId)?.node;
@@ -221,7 +233,7 @@ const formattedPrice = rawPrice % 1 === 0 ? rawPrice.toFixed(0) : rawPrice.toFix
 
           <div className="product-info">
             <h1 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '4px' }}>{product.title}</h1>
-            {isApproved ? (
+            {user?.approved ? (
   <>
     {/* Price */}
     <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -420,7 +432,7 @@ const formattedPrice = rawPrice % 1 === 0 ? rawPrice.toFixed(0) : rawPrice.toFix
   }}
 >
   <p style={{ fontWeight: 600 }}>CATALOGUE VIEW</p><br />
-  <p>Sing in to your wholesale account to view pricing.</p></div>
+  <p>Sign in to your wholesale account to view pricing.</p></div>
 
 )}
 

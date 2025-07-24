@@ -177,6 +177,7 @@ const { favourites } = useFavourites();
   { label: 'RINGS & HOOPS', href: '/collection/rings-hoops' },
   { label: 'SEARCH', href: '/search' },
   { label: 'MAGAZINE', href: '/piercing-magazine' },
+  
 ].map(({ label, href }) => (
   <Link
     key={label}

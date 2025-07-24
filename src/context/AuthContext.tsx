@@ -16,6 +16,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   signOut: () => void;
   loading: boolean;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -104,9 +105,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     router.push('/');
   };
+const refreshUser = async () => {
+  const token = localStorage.getItem('authToken');
+  if (!token) return;
+
+  try {
+    const res = await fetch('/api/shopify/get-customer', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token }),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      setUser(data.customer);
+    }
+  } catch (err) {
+    console.error('Failed to refresh user:', err);
+  }
+};
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, signIn, signOut, loading }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, signIn, signOut, loading, refreshUser, }}>
       {children}
     </AuthContext.Provider>
   );
