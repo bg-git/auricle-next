@@ -49,7 +49,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     const existing = cartItems.find((item) => item.variantId === variantId);
     const maxQty = meta.quantityAvailable ?? existing?.quantityAvailable ?? Infinity;
     if (maxQty <= 0) {
-      showToast('SOLD OUT. More coming soon.');
+      showToast('More coming soon.');
       return;
     }
     const desiredQty = existing ? existing.quantity + quantity : quantity;
@@ -108,7 +108,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     if (!item) return;
     const maxQty = item.quantityAvailable ?? Infinity;
     if (maxQty <= 0) {
-      showToast('SOLD OUT. More coming soon.');
+      showToast('More coming soon.');
       return;
     }
     if (newQty > maxQty && maxQty !== Infinity) {

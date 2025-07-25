@@ -390,7 +390,7 @@ const formattedPrice = rawPrice % 1 === 0 ? rawPrice.toFixed(0) : rawPrice.toFix
             }}
             onClick={() => {
               if (maxQty <= 0) {
-                showToast('SOLD OUT. More coming soon.');
+                showToast('More coming soon 😉');
                 return;
               }
               if (qty >= maxQty) {
