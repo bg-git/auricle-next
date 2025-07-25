@@ -476,12 +476,14 @@ const formattedPrice = rawPrice % 1 === 0 ? rawPrice.toFixed(0) : rawPrice.toFix
 
             <div style={{ marginTop: '32px' }}>
               <h2 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '8px' }}>Details</h2>
-              <table style={{
-                width: '100%',
-                borderCollapse: 'collapse',
-                fontSize: '14px',
-                border: '1px solid #e0e0e0',
-              }}>
+              <table
+                style={{
+                  width: '100%',
+                  borderCollapse: 'collapse',
+                  fontSize: '14px',
+                  border: '1px solid #e0e0e0',
+                }}
+              >
                 <tbody>
                   {Object.entries(fieldLabels).map(([key, label]) => {
                     const value = getFieldValue(key);
@@ -494,6 +496,13 @@ const formattedPrice = rawPrice % 1 === 0 ? rawPrice.toFixed(0) : rawPrice.toFix
                   })}
                 </tbody>
               </table>
+
+              {product.descriptionHtml && (
+                <div
+                  style={{ marginTop: '24px', fontSize: '14px', lineHeight: '1.6' }}
+                  dangerouslySetInnerHTML={{ __html: product.descriptionHtml }}
+                />
+              )}
             </div>
           </div>
         </div>
