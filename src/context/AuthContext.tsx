@@ -22,13 +22,28 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState<ShopifyCustomer | null>(null);
-  const [loading, setLoading] = useState(true);
+  const initialHeaders =
+    typeof window !== 'undefined'
+      ? (window as any)?.__NEXT_DATA__?.props?.headers
+      : undefined;
+
+  const headerAuthenticated = initialHeaders?.['x-customer-authenticated'] === 'true';
+  const headerEmail = initialHeaders?.['x-customer-email'];
+
+  const [isAuthenticated, setIsAuthenticated] = useState(headerAuthenticated);
+  const [user, setUser] = useState<ShopifyCustomer | null>(
+    headerAuthenticated && headerEmail ? { email: headerEmail, id: '' } : null
+  );
+  const [loading, setLoading] = useState(!headerAuthenticated);
   const router = useRouter();
 
-  // Check authentication status on mount
+  // Check authentication status on mount when headers are missing
   useEffect(() => {
+    if (headerAuthenticated) {
+      // state already populated from headers
+      return;
+    }
+
     const checkAuth = async () => {
       try {
         const response = await fetch('/api/shopify/verify-customer', {
@@ -54,7 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     checkAuth();
-  }, []);
+  }, [headerAuthenticated]);
 
   const signIn = async (email: string, password: string) => {
     try {
