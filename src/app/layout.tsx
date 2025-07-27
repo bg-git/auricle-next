@@ -24,8 +24,8 @@ import { FavouritesProvider } from '@/context/FavouritesContext';
 import { ToastProvider } from '@/context/ToastContext';
 import { ReactNode } from 'react';
 
-export default function RootLayout({ children }: { children: ReactNode }) {
-  const headerList = headers();
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  const headerList = await headers();
   const authHeaders = {
     'x-customer-authenticated': headerList.get('x-customer-authenticated') ?? undefined,
     'x-customer-email': headerList.get('x-customer-email') ?? undefined,

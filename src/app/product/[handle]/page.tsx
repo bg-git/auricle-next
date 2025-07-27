@@ -7,7 +7,7 @@ import ProductClient, { Product } from '@/components/ProductClient';
 export default async function Page({
   params,
 }: PageProps<{ handle: string }>) {
-  const header = headers();
+  const header = await headers();
   const isAuthenticated = header.get('x-customer-authenticated') === 'true';
 
   const query = `
