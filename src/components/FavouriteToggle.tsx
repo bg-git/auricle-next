@@ -1,3 +1,4 @@
+'use client'
 import { useFavourites } from '@/context/FavouritesContext';
 import { useEffect, useState } from 'react';
 
