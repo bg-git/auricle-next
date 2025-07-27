@@ -28,29 +28,24 @@ export default function AccountPage() {
 
   // Fetch customer info and orders on mount
   useEffect(() => {
-    const fetchData = async () => {
-      setDataLoading(true);
-      setDataError(null);
-      try {
-        const token = localStorage.getItem("authToken");
-        if (!token) throw new Error("No auth token found");
+      const fetchData = async () => {
+        setDataLoading(true);
+        setDataError(null);
+        try {
+          // Fetch customer info (profile + addresses)
+          const customerRes = await fetch("/api/shopify/get-customer", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+          });
+          if (!customerRes.ok) throw new Error("Failed to fetch customer info");
+          const customerData = await customerRes.json();
+          setCustomer(customerData.customer);
 
-        // Fetch customer info (profile + addresses)
-        const customerRes = await fetch("/api/shopify/get-customer", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token }),
-        });
-        if (!customerRes.ok) throw new Error("Failed to fetch customer info");
-        const customerData = await customerRes.json();
-        setCustomer(customerData.customer);
-
-        // Fetch orders
-        const ordersRes = await fetch("/api/shopify/get-orders", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token }),
-        });
+          // Fetch orders
+          const ordersRes = await fetch("/api/shopify/get-orders", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+          });
         if (!ordersRes.ok) throw new Error("Failed to fetch orders");
         const ordersData = await ordersRes.json();
         setOrders(ordersData.orders || []);
@@ -157,15 +152,11 @@ export default function AccountPage() {
           <AddressForm
             type="edit"
             address={deliveryAddress}
-            token={localStorage.getItem("authToken")}
             onAddressUpdated={async () => {
               // Re-fetch customer data after update
-              const token = localStorage.getItem("authToken");
-              if (!token) return;
               const res = await fetch("/api/shopify/get-customer", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ token }),
               });
               if (res.ok) {
                 const data = await res.json();
@@ -182,15 +173,11 @@ export default function AccountPage() {
           <AddressForm
             type="edit"
             address={shippingAddress}
-            token={localStorage.getItem("authToken")}
             onAddressUpdated={async () => {
               // Re-fetch customer data after update
-              const token = localStorage.getItem("authToken");
-              if (!token) return;
               const res = await fetch("/api/shopify/get-customer", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ token }),
               });
               if (res.ok) {
                 const data = await res.json();
@@ -256,14 +243,13 @@ function AccountSettingsForm({ customer }: { customer: any }) {
     // Don't update password fields
   };
 
-  const fetchLatestCustomer = async (token: string) => {
-    setRefreshing(true);
-    try {
-      const res = await fetch("/api/shopify/get-customer", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token }),
-      });
+const fetchLatestCustomer = async () => {
+  setRefreshing(true);
+  try {
+    const res = await fetch("/api/shopify/get-customer", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    });
       if (res.ok) {
         const data = await res.json();
         updateCustomerState(data.customer);
@@ -281,24 +267,22 @@ function AccountSettingsForm({ customer }: { customer: any }) {
       return;
     }
     setLoading(true);
-    try {
-      const token = localStorage.getItem("authToken");
-      if (!token) throw new Error("No auth token found");
-      const payload: any = { token, firstName, lastName, phone, note: website };
-      if (password) payload.password = password;
-      const res = await fetch("/api/shopify/update-customer", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        setError(data.error || "Failed to update account");
-      } else {
-        setSuccess("Account updated successfully.");
-        // Re-fetch latest customer info
-        await fetchLatestCustomer(token);
-      }
+      try {
+        const payload: any = { firstName, lastName, phone, note: website };
+        if (password) payload.password = password;
+        const res = await fetch("/api/shopify/update-customer", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          setError(data.error || "Failed to update account");
+        } else {
+          setSuccess("Account updated successfully.");
+          // Re-fetch latest customer info
+          await fetchLatestCustomer();
+        }
     } catch (err: any) {
       setError(err.message || "Unknown error");
     } finally {
@@ -388,10 +372,9 @@ function AccountSettingsForm({ customer }: { customer: any }) {
   );
 }
 
-function AddressForm({ type, address, token, onAddressUpdated }: {
+function AddressForm({ type, address, onAddressUpdated }: {
   type: "edit",
   address: any,
-  token: string | null,
   onAddressUpdated: () => void
 }) {
   const [form, setForm] = useState({
@@ -434,16 +417,14 @@ function AddressForm({ type, address, token, onAddressUpdated }: {
     setError(null);
     setSuccess(null);
     setLoading(true);
-    try {
-      if (!token) throw new Error("No auth token found");
-      const payload: any = {
-        token,
-        address: {
-          firstName: form.firstName,
-          lastName: form.lastName,
-          company: form.company,
-          address1: form.address1,
-          address2: form.address2,
+      try {
+        const payload: any = {
+          address: {
+            firstName: form.firstName,
+            lastName: form.lastName,
+            company: form.company,
+            address1: form.address1,
+            address2: form.address2,
           city: form.city,
           province: form.province,
           country: form.country,
@@ -451,12 +432,12 @@ function AddressForm({ type, address, token, onAddressUpdated }: {
           phone: form.phone,
         },
       };
-      if (address?.id) payload.addressId = address.id;
-      const res = await fetch("/api/shopify/update-address", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+        if (address?.id) payload.addressId = address.id;
+        const res = await fetch("/api/shopify/update-address", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
       const data = await res.json();
       if (!res.ok || !data.success) {
         setError(data.error || "Failed to update address");

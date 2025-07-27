@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { COOKIE_NAME, setCustomerCookie } from '@/lib/cookies';
 
 const SHOPIFY_DOMAIN = process.env.SHOPIFY_STORE_DOMAIN!;
 const STOREFRONT_TOKEN = process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN!;
@@ -10,10 +11,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ success: false, error: 'Method not allowed' });
   }
 
-  const { token } = req.body;
+  const token = req.cookies[COOKIE_NAME];
 
   if (!token) {
-    return res.status(400).json({ success: false, error: 'Token is required' });
+    return res.status(401).json({ success: false, error: 'Not authenticated' });
   }
 
   const query = `
@@ -109,6 +110,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const isApproved = (t: string[]) =>
       t.map((tag) => tag.toLowerCase()).includes('approved');
 
+    setCustomerCookie(res, token);
     return res.status(200).json({
       success: true,
       customer: {
