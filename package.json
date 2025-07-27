@@ -5,10 +5,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "npm run sitemap && next build",
+    "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-     "sitemap": "node --loader ts-node/esm scripts/generate-sitemap.ts"
+    "lint": "next lint"
 
   },
   "dependencies": {

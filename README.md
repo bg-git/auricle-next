@@ -12,10 +12,9 @@ SHOPIFY_STOREFRONT_ACCESS_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 SHOPIFY_ADMIN_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 NEXT_PUBLIC_SUPABASE_URL=https://your-supabase-url.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=public-anon-key
-SITE_DOMAIN=https://www.example.com   # used for sitemap generation
 ```
 
-The Shopify variables are required to query the Storefront API and perform customer actions. The Supabase keys enable authentication features. `SITE_DOMAIN` is optional but recommended so that the sitemap generator produces correct URLs.
+The Shopify variables are required to query the Storefront API and perform customer actions. The Supabase keys enable authentication features.
 
 ## Development
 
@@ -37,7 +36,7 @@ Create an optimized production build with:
 yarn build
 ```
 
-This runs the sitemap generator and compiles the Next.js application into the `.next` folder.
+This compiles the Next.js application into the `.next` folder.
 You can then start the production server locally with:
 
 ```bash
