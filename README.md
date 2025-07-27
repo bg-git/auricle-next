@@ -1,40 +1,52 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+# Auricle Next.js Storefront
 
-## Getting Started
+This repository contains the source code for **Auricle**, a Shopify powered ecommerce storefront built with [Next.js](https://nextjs.org/). It integrates with the Shopify Storefront API to fetch product and collection data and includes a small blog powered by local markdown files.
 
-First, run the development server:
+## Requirements
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+Before running the project you must provide the following environment variables in a `.env.local` file at the project root:
+
+```
+SHOPIFY_STORE_DOMAIN=your-shop.myshopify.com
+SHOPIFY_STOREFRONT_ACCESS_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+SHOPIFY_ADMIN_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+NEXT_PUBLIC_SUPABASE_URL=https://your-supabase-url.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=public-anon-key
+SITE_DOMAIN=https://www.example.com   # used for sitemap generation
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The Shopify variables are required to query the Storefront API and perform customer actions. The Supabase keys enable authentication features. `SITE_DOMAIN` is optional but recommended so that the sitemap generator produces correct URLs.
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+## Development
 
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+1. Install dependencies:
+   ```bash
+   yarn install
+   ```
+2. Start the development server:
+   ```bash
+   yarn dev
+   ```
+   The site will be available at [http://localhost:3000](http://localhost:3000).
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
+## Building
 
-This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Create an optimized production build with:
 
-## Learn More
+```bash
+yarn build
+```
 
-To learn more about Next.js, take a look at the following resources:
+This runs the sitemap generator and compiles the Next.js application into the `.next` folder.
+You can then start the production server locally with:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn-pages-router) - an interactive Next.js tutorial.
+```bash
+yarn start
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Deployment
 
-## Deploy on Vercel
+The project can be deployed to any Node.js environment that supports Next.js.
+Common options include [Vercel](https://vercel.com/) or a custom server.
+Ensure that the environment variables listed above are provided in your deployment platform.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
