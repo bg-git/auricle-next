@@ -1,3 +1,4 @@
+'use client'
 import { createContext, useContext, useState, ReactNode } from 'react';
 import { useFavourites } from '@/context/FavouritesContext';
 import { useToast } from '@/context/ToastContext';
