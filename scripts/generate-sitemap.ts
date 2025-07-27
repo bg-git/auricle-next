@@ -2,7 +2,7 @@ import 'dotenv/config';
 import fs from 'fs';
 import path from 'path';
 import { SitemapStream, streamToPromise } from 'sitemap';
-import { shopifyFetch } from '../src/lib/shopify.js';
+import { shopifyFetch } from '../src/lib/shopify.ts';
 
 
 console.log('SHOPIFY_STORE_DOMAIN:', process.env.SHOPIFY_STORE_DOMAIN);
