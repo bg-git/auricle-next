@@ -1,6 +1,6 @@
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
-import type { PageProps } from 'next';
+import type PageProps from 'next';
 import { shopifyFetch } from '@/lib/shopify';
 import ProductClient, { Product } from '@/components/ProductClient';
 
