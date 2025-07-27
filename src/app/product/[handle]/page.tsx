@@ -1,13 +1,12 @@
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
+import type { PageProps } from 'next';
 import { shopifyFetch } from '@/lib/shopify';
 import ProductClient, { Product } from '@/components/ProductClient';
 
-interface ProductPageProps {
-  params: { handle: string };
-}
-
-export default async function Page({ params }: ProductPageProps) {
+export default async function Page({
+  params,
+}: PageProps<{ handle: string }>) {
   const header = headers();
   const isAuthenticated = header.get('x-customer-authenticated') === 'true';
 
