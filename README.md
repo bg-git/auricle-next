@@ -36,7 +36,7 @@ Create an optimized production build with:
 yarn build
 ```
 
-This compiles the Next.js application into the `.next` folder.
+next-sitemap automatically runs after `yarn build` to create `sitemap.xml` and `robots.txt`.
 You can then start the production server locally with:
 
 ```bash
