@@ -31,29 +31,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const token = localStorage.getItem('authToken');
-        if (token) {
-          // Verify token with Shopify
-          const response = await fetch('/api/shopify/verify-customer', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token }),
-          });
+        const response = await fetch('/api/shopify/verify-customer', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+        });
 
-          if (response.ok) {
-            const userData = await response.json();
-            setUser(userData.customer);
-            setIsAuthenticated(true);
-          } else {
-            // Token is invalid, clear it
-            localStorage.removeItem('authToken');
-            setIsAuthenticated(false);
-            setUser(null);
-          }
+        if (response.ok) {
+          const userData = await response.json();
+          setUser(userData.customer);
+          setIsAuthenticated(true);
+        } else {
+          setIsAuthenticated(false);
+          setUser(null);
         }
       } catch (error) {
         console.error('Auth check failed:', error);
-        localStorage.removeItem('authToken');
         setIsAuthenticated(false);
         setUser(null);
       } finally {
@@ -75,14 +67,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        localStorage.setItem('authToken', data.accessToken);
         setIsAuthenticated(true);
-        
+
         // Fetch user data
         const userResponse = await fetch('/api/shopify/get-customer', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token: data.accessToken }),
         });
 
         if (userResponse.ok) {
@@ -99,21 +89,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 }
   };
 
-  const signOut = () => {
-    localStorage.removeItem('authToken');
+  const signOut = async () => {
+    await fetch('/api/shopify/logout', { method: 'POST' });
     setIsAuthenticated(false);
     setUser(null);
     router.push('/');
   };
 const refreshUser = async () => {
-  const token = localStorage.getItem('authToken');
-  if (!token) return;
 
   try {
     const res = await fetch('/api/shopify/get-customer', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token }),
     });
 
     if (res.ok) {

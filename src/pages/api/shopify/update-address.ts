@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { COOKIE_NAME, setCustomerCookie } from '@/lib/cookies';
 
 const SHOPIFY_DOMAIN = process.env.SHOPIFY_STORE_DOMAIN!;
 const STOREFRONT_TOKEN = process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN!;
@@ -9,7 +10,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ success: false, error: 'Method not allowed' });
   }
 
-  const { token, address, addressId } = req.body;
+  const { address, addressId } = req.body;
+  const token = req.cookies[COOKIE_NAME];
 
   if (!token || !address) {
     return res.status(400).json({ success: false, error: 'Token and address are required' });
@@ -81,6 +83,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ success: false, error: message });
     }
 
+    setCustomerCookie(res, token);
     return res.status(200).json({ success: true, address: data.customerAddress });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'An unknown error occurred';

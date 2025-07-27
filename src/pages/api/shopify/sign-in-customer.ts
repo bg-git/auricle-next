@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { setCustomerCookie } from '@/lib/cookies';
 
 const SHOPIFY_DOMAIN = process.env.SHOPIFY_STORE_DOMAIN!;
 const STOREFRONT_TOKEN = process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN!;
@@ -57,8 +58,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ success: false, error: message });
     }
 
-    const { accessToken, expiresAt } = json.data.customerAccessTokenCreate.customerAccessToken;
-    return res.status(200).json({ success: true, accessToken, expiresAt });
+    const { accessToken } = json.data.customerAccessTokenCreate.customerAccessToken;
+    setCustomerCookie(res, accessToken);
+    return res.status(200).json({ success: true });
   } catch (error: unknown) {
     const message =
       error instanceof Error ? error.message : 'An unknown error occurred';
