@@ -34,6 +34,7 @@
     "eslint": "^9",
     "eslint-config-next": "15.3.5",
     "ts-node": "^10.9.2",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "next-sitemap": "^5.7.0"
   }
 }
