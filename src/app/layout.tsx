@@ -1,4 +1,4 @@
-'use client'
+import { headers } from 'next/headers';
 import '@/styles/globals.css';
 import '@/styles/pages/home.scss';
 import '@/styles/pages/footer.scss';
@@ -25,12 +25,17 @@ import { ToastProvider } from '@/context/ToastContext';
 import { ReactNode } from 'react';
 
 export default function RootLayout({ children }: { children: ReactNode }) {
+  const headerList = headers();
+  const authHeaders = {
+    'x-customer-authenticated': headerList.get('x-customer-authenticated') ?? undefined,
+    'x-customer-email': headerList.get('x-customer-email') ?? undefined,
+  };
   return (
     <html lang="en">
       <head />
       <body>
         <ToastProvider>
-          <AuthProvider>
+          <AuthProvider initialHeaders={authHeaders}>
             <FavouritesProvider>
               <CartProvider>
                 <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100dvh' }}>

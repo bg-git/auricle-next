@@ -1,4 +1,5 @@
-import type { AppProps } from 'next/app';
+import type { AppProps, AppContext } from 'next/app';
+import App from 'next/app';
 import Head from 'next/head'; 
 import '@/styles/globals.css';
 import '@/styles/pages/home.scss';
@@ -24,12 +25,12 @@ import CartDrawer from '@/components/CartDrawer';
 import { FavouritesProvider } from '@/context/FavouritesContext';
 import { ToastProvider } from '@/context/ToastContext';
 
-export default function MyApp({ Component, pageProps }: AppProps) {
+export default function MyApp({ Component, pageProps }: AppProps<{ headers?: Record<string, string | undefined> }>) {
 
 
   return (
     <ToastProvider>
-      <AuthProvider>
+      <AuthProvider initialHeaders={pageProps.headers}>
         <FavouritesProvider>
           <CartProvider>
           <Head>
@@ -58,3 +59,15 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   </ToastProvider>
   );
 }
+
+MyApp.getInitialProps = async (appContext: AppContext) => {
+  const appProps = await App.getInitialProps(appContext);
+  const req = appContext.ctx.req;
+  const headers = req
+    ? {
+        'x-customer-authenticated': req.headers['x-customer-authenticated'] as string | undefined,
+        'x-customer-email': req.headers['x-customer-email'] as string | undefined,
+      }
+    : undefined;
+  return { ...appProps, pageProps: { ...appProps.pageProps, headers } };
+};

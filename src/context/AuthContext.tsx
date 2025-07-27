@@ -21,14 +21,19 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const initialHeaders =
-    typeof window !== 'undefined'
-      ? (window as any)?.__NEXT_DATA__?.props?.headers
-      : undefined;
+interface AuthProviderProps {
+  children: ReactNode;
+  initialHeaders?: Record<string, string | undefined>;
+}
 
-  const headerAuthenticated = initialHeaders?.['x-customer-authenticated'] === 'true';
-  const headerEmail = initialHeaders?.['x-customer-email'];
+export function AuthProvider({ children, initialHeaders }: AuthProviderProps) {
+  const headersData =
+    initialHeaders ??
+    (typeof window !== 'undefined'
+      ? (window as any)?.__NEXT_DATA__?.props?.headers
+      : undefined);
+  const headerAuthenticated = headersData?.['x-customer-authenticated'] === 'true';
+  const headerEmail = headersData?.['x-customer-email'];
 
   const [isAuthenticated, setIsAuthenticated] = useState(headerAuthenticated);
   const [user, setUser] = useState<ShopifyCustomer | null>(
