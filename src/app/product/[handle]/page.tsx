@@ -3,11 +3,11 @@ import { notFound } from 'next/navigation';
 import { shopifyFetch } from '@/lib/shopify';
 import ProductClient, { Product } from '@/components/ProductClient';
 
-interface PageProps {
+interface ProductPageProps {
   params: { handle: string };
 }
 
-export default async function Page({ params }: PageProps) {
+export default async function Page({ params }: ProductPageProps) {
   const header = headers();
   const isAuthenticated = header.get('x-customer-authenticated') === 'true';
 
