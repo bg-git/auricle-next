@@ -41,6 +41,25 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const openDrawer = () => setIsDrawerOpen(true);
   const closeDrawer = () => setIsDrawerOpen(false);
 
+  const syncShopifyCheckout = async (items: CartItem[]) => {
+    if (items.length === 0) {
+      setCheckoutUrl(null);
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/create-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items }),
+      });
+      const data = await res.json();
+      setCheckoutUrl(data.checkoutUrl);
+    } catch (err) {
+      console.error('Checkout error:', err);
+    }
+  };
+
   const addToCart = (
     variantId: string,
     quantity: number,
@@ -89,18 +108,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       });
     }
 
-    fetch('/api/create-checkout', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ items: updatedItems }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setCheckoutUrl(data.checkoutUrl);
-      })
-      .catch((err) => {
-        console.error('Checkout error:', err);
-      });
+    syncShopifyCheckout(updatedItems);
   };
 
   const updateQuantity = (variantId: string, newQty: number) => {
@@ -122,11 +130,13 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       .filter((i) => i.quantity > 0);
 
     setCartItems(updated);
+    syncShopifyCheckout(updated);
   };
 
   const removeFromCart = (variantId: string) => {
     const updated = cartItems.filter((item) => item.variantId !== variantId);
     setCartItems(updated);
+    syncShopifyCheckout(updated);
   };
 
   return (
