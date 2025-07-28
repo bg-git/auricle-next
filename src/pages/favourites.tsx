@@ -135,7 +135,7 @@ return item.metafields
           {renderFilterSection('Metal Colour', extractOptions('metal_colour'), selectedMetalColours, setSelectedMetalColours)}
         </aside>
 
-        <section className="product-grid">
+        <section id="product-grid" className="product-grid">
           {filteredItems.map((item, index) => (
             <Link href={`/product/${item.handle}`} key={item.handle} className="product-card">
               <div className="product-card-inner">

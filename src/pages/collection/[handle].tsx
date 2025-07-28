@@ -265,7 +265,8 @@ const metalColourMatch = selectedMetalColours.length ? selectedMetalColours.incl
 
         </aside>
 
-        <section className="product-grid">
+        <section id="product-grid" className="product-grid">
+
           {filteredProducts.map((product, index) => {
   const image = product.images?.edges?.[0]?.node;
 
