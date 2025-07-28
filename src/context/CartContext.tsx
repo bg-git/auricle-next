@@ -49,9 +49,12 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     const storedItems = localStorage.getItem(ITEMS_KEY);
     const storedId = localStorage.getItem(CHECKOUT_ID_KEY);
 
+    let parsedItems: CartItem[] = [];
+
     if (storedItems) {
       try {
-        setCartItems(JSON.parse(storedItems));
+        parsedItems = JSON.parse(storedItems);
+        setCartItems(parsedItems);
       } catch {
         setCartItems([]);
       }
@@ -68,11 +71,20 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         .then((data) => {
           const cart = data.cart;
           if (!cart || cart.status !== 'ACTIVE') {
-            setCartItems([]);
-            setCheckoutId(null);
-            setCheckoutUrl(null);
-            localStorage.removeItem(ITEMS_KEY);
-            localStorage.removeItem(CHECKOUT_ID_KEY);
+            fetch('/api/create-checkout', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ items: parsedItems }),
+            })
+              .then((res) => res.json())
+              .then((data) => {
+                setCheckoutId(data.checkoutId);
+                setCheckoutUrl(data.checkoutUrl);
+              })
+              .catch(() => {
+                setCheckoutId(null);
+                setCheckoutUrl(null);
+              });
             return;
           }
 
