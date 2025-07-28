@@ -16,21 +16,21 @@ export async function verifyCustomerSession(token: string): Promise<ShopifyCusto
   const ADMIN_API_KEY = process.env.SHOPIFY_ADMIN_API_KEY!;
 
   const query = `
-      query customer($customerAccessToken: String!) {
-        customer(customerAccessToken: $customerAccessToken) {
-          id
-          firstName
-          lastName
-          email
-          phone
-          acceptsMarketing
-          createdAt
-          updatedAt
-          metafield(namespace: "custom", key: "approved") {
-            value
-          }
+    query customer($customerAccessToken: String!) {
+      customer(customerAccessToken: $customerAccessToken) {
+        id
+        firstName
+        lastName
+        email
+        phone
+        acceptsMarketing
+        createdAt
+        updatedAt
+        metafield(namespace: "custom", key: "approved") {
+          value
         }
       }
+    }
   `;
 
   const variables = { customerAccessToken: token };
@@ -62,8 +62,9 @@ export async function verifyCustomerSession(token: string): Promise<ShopifyCusto
             'Content-Type': 'application/json',
             'X-Shopify-Access-Token': ADMIN_API_KEY,
           },
-        },
+        }
       );
+
       const adminJson = await adminRes.json();
       if (adminJson.customers && adminJson.customers.length > 0) {
         const adminCustomer = adminJson.customers[0];
