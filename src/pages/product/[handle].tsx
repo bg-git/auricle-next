@@ -10,6 +10,7 @@ import Link from 'next/link';
 import FavouriteToggle from '@/components/FavouriteToggle';
 import { useToast } from '@/context/ToastContext';
 import { verifyCustomerSession, type ShopifyCustomer } from '@/lib/verifyCustomerSession';
+import { useMemo } from 'react';
 
 
 
@@ -77,17 +78,24 @@ const initialQty =
   product.variants?.edges?.[0]?.node?.quantityAvailable > 0 ? 1 : 0;
 const [qty, setQty] = useState(initialQty);
 
-useEffect(() => {
-  setSelectedVariantId(product.variants?.edges?.[0]?.node?.id || null);
-  const first = product.variants?.edges?.[0]?.node;
-  setQty(first && first.quantityAvailable > 0 ? 1 : 0);
-}, [router.asPath, product.variants?.edges]);
+
+const variantEdges = useMemo(() => product.variants?.edges || [], [product]);
+
 
 useEffect(() => {
-  const variant = product.variants?.edges.find(v => v.node.id === selectedVariantId)?.node;
+  const first = variantEdges?.[0]?.node;
+  setSelectedVariantId(first?.id || null);
+  setQty(first && first.quantityAvailable > 0 ? 1 : 0);
+}, [router.asPath, product.id, variantEdges]); 
+
+
+
+useEffect(() => {
+  const variant = variantEdges.find(v => v.node.id === selectedVariantId)?.node;
   if (!variant) return;
   setQty(variant.quantityAvailable > 0 ? 1 : 0);
-}, [selectedVariantId]);
+}, [selectedVariantId, variantEdges]);
+
 
 const user = customer;
 
@@ -508,7 +516,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const cookies = parse(context.req.headers.cookie || '');
   const token = cookies.customer_session || null;
 
-  let customer = null;
+  let customer: ShopifyCustomer | null = null;
   if (token) {
     customer = await verifyCustomerSession(token);
   }
@@ -583,11 +591,12 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     return { notFound: true };
   }
 
-  return {
-    props: {
-      product: data.productByHandle,
-      customer,
-    },
-  };
+return {
+  props: {
+    product: data.productByHandle,
+    customer: customer || null,
+  },
+};
+
 };
 

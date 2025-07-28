@@ -8,11 +8,11 @@
     "build": "npm run sitemap && next build",
     "start": "next start",
     "lint": "next lint",
-     "sitemap": "node --loader ts-node/esm scripts/generate-sitemap.ts"
-
+    "sitemap": "node --loader ts-node/esm scripts/generate-sitemap.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.52.0",
+    "cookie": "^1.0.2",
     "dotenv": "^17.2.0",
     "gray-matter": "^4.0.3",
     "marked": "^15.0.12",
