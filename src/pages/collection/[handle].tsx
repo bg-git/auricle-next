@@ -97,6 +97,7 @@ export default function CollectionPage({ products, title, seoTitle, seoDescripti
   const [selectedMetalColours, setSelectedMetalColours] = useState<string[]>([]);
 
   const [showFilters, setShowFilters] = useState(false);
+  const [filtersChanged, setFiltersChanged] = useState(false);
 
   const toggle = (
     value: string,
@@ -108,6 +109,16 @@ export default function CollectionPage({ products, title, seoTitle, seoDescripti
         ? selected.filter((v) => v !== value)
         : [...selected, value]
     );
+    setFiltersChanged(true);
+  };
+
+  const closeFilterDrawer = () => {
+    setShowFilters(false);
+    if (filtersChanged) {
+      document
+        .getElementById('product-grid')?.scrollIntoView({ behavior: 'smooth' });
+      setFiltersChanged(false);
+    }
   };
 
   const filteredProducts = products.filter((p) => {
@@ -317,14 +328,14 @@ return (
 
         <div
   className={`filter-drawer-backdrop ${showFilters ? 'open' : ''}`}
-  onClick={() => setShowFilters(false)}
+  onClick={closeFilterDrawer}
 >
   <div
     className={`filter-drawer ${showFilters ? 'open' : ''}`}
     onClick={(e) => e.stopPropagation()}
   >
 
-      <button className="filter-drawer-close" onClick={() => setShowFilters(false)}>DONE</button>
+      <button className="filter-drawer-close" onClick={closeFilterDrawer}>DONE</button>
 
       {renderFilterSection('Metal', metalOptions, selectedMetals, setSelectedMetals)}
       {renderFilterSection('Finish', finishOptions, selectedFinishes, setSelectedFinishes)}
