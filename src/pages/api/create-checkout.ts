@@ -49,10 +49,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const json = await response.json();
   const cart = json.data?.cartCreate?.cart;
 
-  if (!cart?.checkoutUrl) {
+  if (!cart?.checkoutUrl || !cart?.id) {
     console.error('Shopify cartCreate error:', JSON.stringify(json, null, 2));
     return res.status(500).json({ message: 'Failed to create cart', debug: json });
   }
 
-  return res.status(200).json({ checkoutUrl: cart.checkoutUrl });
+  return res.status(200).json({ checkoutUrl: cart.checkoutUrl, checkoutId: cart.id });
 }
