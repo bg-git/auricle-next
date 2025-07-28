@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useFavourites } from '@/context/FavouritesContext';
 import { useToast } from '@/context/ToastContext';
 
@@ -30,8 +30,12 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
+const ITEMS_KEY = 'auricle-cart-items';
+const CHECKOUT_ID_KEY = 'auricle-checkout-id';
+
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [checkoutId, setCheckoutId] = useState<string | null>(null);
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
@@ -41,20 +45,99 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const openDrawer = () => setIsDrawerOpen(true);
   const closeDrawer = () => setIsDrawerOpen(false);
 
+  useEffect(() => {
+    const storedItems = localStorage.getItem(ITEMS_KEY);
+    const storedId = localStorage.getItem(CHECKOUT_ID_KEY);
+
+    if (storedItems) {
+      try {
+        setCartItems(JSON.parse(storedItems));
+      } catch {
+        setCartItems([]);
+      }
+    }
+
+    if (storedId) {
+      setCheckoutId(storedId);
+      fetch('/api/get-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: storedId }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          const cart = data.cart;
+          if (!cart || cart.status !== 'ACTIVE') {
+            setCartItems([]);
+            setCheckoutId(null);
+            setCheckoutUrl(null);
+            localStorage.removeItem(ITEMS_KEY);
+            localStorage.removeItem(CHECKOUT_ID_KEY);
+            return;
+          }
+
+          const items = (cart.lines.edges || []).map((edge: any) => ({
+            variantId: edge.node.merchandise.id,
+            quantity: edge.node.quantity,
+          }));
+          setCartItems(items);
+          setCheckoutUrl(cart.checkoutUrl);
+        })
+        .catch(() => {
+          setCheckoutId(null);
+        });
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(ITEMS_KEY, JSON.stringify(cartItems));
+    if (checkoutId) {
+      localStorage.setItem(CHECKOUT_ID_KEY, checkoutId);
+    } else {
+      localStorage.removeItem(CHECKOUT_ID_KEY);
+    }
+  }, [cartItems, checkoutId]);
+
   const syncShopifyCheckout = async (items: CartItem[]) => {
     if (items.length === 0) {
       setCheckoutUrl(null);
+      setCheckoutId(null);
       return;
     }
 
     try {
-      const res = await fetch('/api/create-checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items }),
-      });
-      const data = await res.json();
-      setCheckoutUrl(data.checkoutUrl);
+      if (!checkoutId) {
+        const res = await fetch('/api/create-checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ items }),
+        });
+        const data = await res.json();
+        setCheckoutUrl(data.checkoutUrl);
+        setCheckoutId(data.checkoutId);
+      } else {
+        const res = await fetch('/api/update-checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ checkoutId, items }),
+        });
+        const data = await res.json();
+        if (data.completed) {
+          setCartItems([]);
+          setCheckoutId(null);
+          setCheckoutUrl(null);
+          return;
+        }
+        const cart = data.cart;
+        if (cart) {
+          const updated = (cart.lines.edges || []).map((edge: any) => ({
+            variantId: edge.node.merchandise.id,
+            quantity: edge.node.quantity,
+          }));
+          setCartItems(updated);
+          setCheckoutUrl(cart.checkoutUrl);
+        }
+      }
     } catch (err) {
       console.error('Checkout error:', err);
     }
