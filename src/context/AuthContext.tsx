@@ -35,6 +35,17 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
   useEffect(() => {
     if (initialUser) return; // skip re-check if we already have initialUser
 
+    const hasCustomerSession = document.cookie
+      .split(';')
+      .some((c) => c.trim().startsWith('customer_session='));
+
+    if (!hasCustomerSession) {
+      setUser(null);
+      setIsAuthenticated(false);
+      setLoading(false);
+      return;
+    }
+
     const checkAuth = async () => {
       try {
         const response = await fetch('/api/shopify/verify-customer', {
