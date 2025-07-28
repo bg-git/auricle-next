@@ -1,14 +1,15 @@
-import type { GetStaticProps, GetStaticPaths, GetStaticPropsContext } from 'next';
+import type { GetServerSideProps } from 'next';
+import { parse } from 'cookie';
 import { shopifyFetch } from '@/lib/shopify';
 import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Seo from '@/components/Seo';
 import Link from 'next/link';
 import FavouriteToggle from '@/components/FavouriteToggle';
-import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
+import { verifyCustomerSession, type ShopifyCustomer } from '@/lib/verifyCustomerSession';
 
 
 
@@ -60,10 +61,11 @@ interface Product {
 
 interface ProductPageProps {
   product: Product;
+  customer: ShopifyCustomer | null;
 }
 
 
-export default function ProductPage({ product }: ProductPageProps) {
+export default function ProductPage({ product, customer }: ProductPageProps) {
   const { addToCart, openDrawer } = useCart();
   const { showToast } = useToast();
   const router = useRouter();
@@ -87,24 +89,11 @@ useEffect(() => {
   setQty(variant.quantityAvailable > 0 ? 1 : 0);
 }, [selectedVariantId]);
 
-const { user, refreshUser } = useAuth();
-const hasRefreshed = useRef(false);
-
-useEffect(() => {
-  if (user && !user.approved && !hasRefreshed.current) {
-    hasRefreshed.current = true;
-    refreshUser();
-  }
-}, [user, refreshUser]);
+const user = customer;
 
 if (!product) {
   return <div style={{ padding: '16px' }}>Product not found.</div>;
 }
-
-
-  if (!product) {
-    return <div style={{ padding: '16px' }}>Product not found.</div>;
-  }
 
 
   const selectedVariant = product.variants?.edges?.find(
@@ -514,37 +503,15 @@ const formattedPrice = rawPrice % 1 === 0 ? rawPrice.toFixed(0) : rawPrice.toFix
   );
 }
 
-export const getStaticPaths: GetStaticPaths = async () => {
-  const query = `
-    {
-      products(first: 250) {
-        edges {
-          node {
-            handle
-          }
-        }
-      }
-    }
-  `;
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const handle = context.params?.handle as string;
+  const cookies = parse(context.req.headers.cookie || '');
+  const token = cookies.customer_session || null;
 
-  const data = await shopifyFetch({ query });
-
-  const paths = data.products.edges.map(
-    ({ node }: { node: { handle: string } }) => ({
-      params: { handle: node.handle },
-    })
-  );
-
-  return {
-    paths,
-    fallback: 'blocking',
-  };
-};
-
-export const getStaticProps: GetStaticProps<ProductPageProps> = async (
-  context: GetStaticPropsContext
-) => {
-  const handle = context.params?.handle;
+  let customer = null;
+  if (token) {
+    customer = await verifyCustomerSession(token);
+  }
 
   const query = `
     query ProductByHandle($handle: String!) {
@@ -573,8 +540,8 @@ export const getStaticProps: GetStaticProps<ProductPageProps> = async (
               price {
                 amount
               }
-                availableForSale
-              quantityAvailable 
+              availableForSale
+              quantityAvailable
               selectedOptions {
                 name
                 value
@@ -619,7 +586,8 @@ export const getStaticProps: GetStaticProps<ProductPageProps> = async (
   return {
     props: {
       product: data.productByHandle,
+      customer,
     },
-    revalidate: 60,
   };
 };
+
