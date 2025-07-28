@@ -18,6 +18,7 @@ import '@/styles/pages/blog-page.scss';
 import '@/styles/pages/blog.scss';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import BreadcrumbSchema from '@/components/BreadcrumbSchema';
 import { CartProvider } from '@/context/CartContext';
 import { AuthProvider } from '@/context/AuthContext';
 import CartDrawer from '@/components/CartDrawer';
@@ -56,6 +57,7 @@ export default function MyApp({ Component, pageProps }: MyAppProps) {
               <main style={{ flex: '1 0 auto' }}>
                 <Component {...pageProps} />
               </main>
+              <BreadcrumbSchema />
               <Footer />
             </div>
             <CartDrawer />
