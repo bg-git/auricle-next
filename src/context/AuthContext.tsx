@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/router';
 
-interface ShopifyCustomer {
+export interface ShopifyCustomer {
   id: string;
   email: string;
   firstName?: string;
@@ -21,14 +21,20 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState<ShopifyCustomer | null>(null);
-  const [loading, setLoading] = useState(true);
+interface AuthProviderProps {
+  children: ReactNode;
+  initialUser?: ShopifyCustomer | null;
+}
+
+export function AuthProvider({ children, initialUser }: AuthProviderProps) {
+  const [user, setUser] = useState<ShopifyCustomer | null>(initialUser ?? null);
+  const [isAuthenticated, setIsAuthenticated] = useState(!!initialUser);
+  const [loading, setLoading] = useState(!initialUser);
   const router = useRouter();
 
-  // Check authentication status on mount
   useEffect(() => {
+    if (initialUser) return; // skip re-check if we already have initialUser
+
     const checkAuth = async () => {
       try {
         const response = await fetch('/api/shopify/verify-customer', {
@@ -54,7 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     checkAuth();
-  }, []);
+  }, [initialUser]);
 
   const signIn = async (email: string, password: string) => {
     try {
@@ -85,8 +91,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { success: false, error: data.error || 'Sign in failed' };
       }
     } catch {
-  return { success: false, error: 'Network error' };
-}
+      return { success: false, error: 'Network error' };
+    }
   };
 
   const signOut = async () => {
@@ -95,25 +101,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     router.push('/');
   };
-const refreshUser = async () => {
 
-  try {
-    const res = await fetch('/api/shopify/get-customer', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-    });
+  const refreshUser = async () => {
+    try {
+      const res = await fetch('/api/shopify/get-customer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
 
-    if (res.ok) {
-      const data = await res.json();
-      setUser(data.customer);
+      if (res.ok) {
+        const data = await res.json();
+        setUser(data.customer);
+      }
+    } catch (err) {
+      console.error('Failed to refresh user:', err);
     }
-  } catch (err) {
-    console.error('Failed to refresh user:', err);
-  }
-};
+  };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, signIn, signOut, loading, refreshUser, }}>
+    <AuthContext.Provider
+      value={{ isAuthenticated, user, signIn, signOut, loading, refreshUser }}
+    >
       {children}
     </AuthContext.Provider>
   );
@@ -125,4 +133,4 @@ export function useAuth() {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-} 
+}
