@@ -1,6 +1,4 @@
 import { useEffect, useState } from 'react';
-import { shopifyFetch } from '@/lib/shopify';
-import { GET_ALL_PRODUCTS } from '@/lib/shopify-queries';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -13,35 +11,10 @@ type ProductLite = {
   sku: string;
 };
 
-export async function getStaticProps() {
-  const data = await shopifyFetch({
-    query: GET_ALL_PRODUCTS,
-    variables: { first: 250 },
-  });
-
-  const products: ProductLite[] = (data?.products?.edges || [])
-    .map((edge): ProductLite => {
-      const variant = edge.node?.variants?.edges?.[0]?.node || {};
-      return {
-        id: edge.node?.id ?? '',
-        title: edge.node?.title ?? '',
-        handle: edge.node?.handle ?? '',
-        image: edge.node?.images?.edges?.[0]?.node?.url ?? null,
-        sku: variant?.sku?.trim() ?? '',
-      };
-    })
-    .filter((p) => p.id && p.title && p.handle);
-
-  return {
-    props: { products },
-    revalidate: 60 * 5,
-  };
-}
-
-export default function SearchPage({ products }: { products: ProductLite[] }) {
+export default function SearchPage() {
   const router = useRouter();
   const [query, setQuery] = useState('');
-  const [filtered, setFiltered] = useState<ProductLite[]>([]);
+  const [results, setResults] = useState<ProductLite[]>([]);
 
   // Load initial query from URL
   useEffect(() => {
@@ -49,21 +22,33 @@ export default function SearchPage({ products }: { products: ProductLite[] }) {
     setQuery(initial);
   }, [router.query.q]);
 
-  // Filter products when query changes
+  // Fetch results when query changes
   useEffect(() => {
-    const q = query.trim().toLowerCase();
-
-    if (q === '') {
-      setFiltered([]);
-    } else {
-      setFiltered(
-        products.filter((p) =>
-          (p.title || '').toLowerCase().includes(q) ||
-          (p.sku || '').toLowerCase().includes(q)
-        )
-      );
+    const q = query.trim();
+    if (!q) {
+      setResults([]);
+      return;
     }
-  }, [query, products]);
+
+    const controller = new AbortController();
+    const fetchResults = async () => {
+      try {
+        const res = await fetch(`/api/search-products?q=${encodeURIComponent(q)}`, { signal: controller.signal });
+        if (res.ok) {
+          const json = await res.json();
+          setResults(json.products || []);
+        } else {
+          console.error('Failed to search products');
+          setResults([]);
+        }
+      } catch (err: any) {
+        if (err.name !== 'AbortError') console.error('Search error:', err);
+      }
+    };
+
+    fetchResults();
+    return () => controller.abort();
+  }, [query]);
 
   // Update URL when query changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -112,18 +97,18 @@ export default function SearchPage({ products }: { products: ProductLite[] }) {
 
       {query && (
         <>
-          {filtered.length === 0 ? (
+          {results.length === 0 ? (
             <p style={{ marginTop: '8px' }}>No results found.</p>
           ) : (
             <p style={{ marginTop: '8px' }}>
-              Matching products: {filtered.length}
+              Matching products: {results.length}
             </p>
           )}
         </>
       )}
 
       <div className="search-results">
-        {filtered.map((product) => (
+        {results.map((product) => (
           <Link
             key={product.id}
             href={`/product/${product.handle}`}
