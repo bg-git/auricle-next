@@ -28,12 +28,14 @@ const runtimeCaching = [
   {
     urlPattern: /^\/(checkout|sign-in|register|reset-password|account|search)$/,
     handler: 'NetworkOnly',
-  },
+  }
 ];
 
 const pwaConfig = withPWA({
   dest: 'public',
   disable: process.env.NODE_ENV === 'development',
+  register: true,
+  skipWaiting: true,
   runtimeCaching,
   fallbacks: {
     document: '/fallback.html',
