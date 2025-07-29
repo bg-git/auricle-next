@@ -11,7 +11,17 @@ export default function BreadcrumbSchema() {
   const router = useRouter();
   const { pathname, asPath } = router;
 
-  const excluded = ['/', '/account', '/register', '/sign-in', '/reset-password', '/checkout'];
+  const excluded = [
+    '/',
+    '/account',
+    '/register',
+    '/sign-in',
+    '/reset-password',
+    '/checkout',
+    '/favourites',
+    '/search'
+  ];
+
   if (excluded.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
     return null;
   }
@@ -19,11 +29,17 @@ export default function BreadcrumbSchema() {
   const pathWithoutQuery = asPath.split('?')[0];
   const segments = pathWithoutQuery.split('/').filter(Boolean);
 
-  const breadcrumbs = segments.map((seg, index) => {
-    const label = slugToLabel[seg] || seg.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-    const url = '/' + segments.slice(0, index + 1).join('/');
-    return { label, url };
-  });
+  const breadcrumbs = [
+    { label: 'Home', url: '/' },
+    ...segments.map((seg, index) => {
+      const label = slugToLabel[seg] || seg
+        .split('-')
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+      const url = '/' + segments.slice(0, index + 1).join('/');
+      return { label, url };
+    })
+  ];
 
   const schema = {
     '@context': 'https://schema.org',
@@ -37,6 +53,9 @@ export default function BreadcrumbSchema() {
   };
 
   return (
-    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+    />
   );
 }
