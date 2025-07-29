@@ -33,44 +33,43 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
   const router = useRouter();
 
   useEffect(() => {
-    if (initialUser) return; // skip re-check if we already have initialUser
+    if (initialUser) return; // already have user from SSR
 
     const hasCustomerSession = document.cookie
       .split(';')
       .some((c) => c.trim().startsWith('customer_session='));
 
     if (!hasCustomerSession) {
-      setUser(null);
-      setIsAuthenticated(false);
+      // No session cookie present, skip verifying
       setLoading(false);
       return;
     }
 
-    const checkAuth = async () => {
+    const verify = async () => {
       try {
-        const response = await fetch('/api/shopify/verify-customer', {
+        const res = await fetch('/api/shopify/verify-customer', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
         });
 
-        if (response.ok) {
-          const userData = await response.json();
-          setUser(userData.customer);
+        if (res.ok) {
+          const data = await res.json();
+          setUser(data.customer);
           setIsAuthenticated(true);
         } else {
-          setIsAuthenticated(false);
           setUser(null);
+          setIsAuthenticated(false);
         }
       } catch (error) {
         console.error('Auth check failed:', error);
-        setIsAuthenticated(false);
         setUser(null);
+        setIsAuthenticated(false);
       } finally {
         setLoading(false);
       }
     };
 
-    checkAuth();
+    verify();
   }, [initialUser]);
 
   const signIn = async (email: string, password: string) => {
