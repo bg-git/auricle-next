@@ -29,15 +29,19 @@ const runtimeCaching = [
     urlPattern: /^\/(checkout|sign-in|register|reset-password|account|search)$/,
     handler: 'NetworkOnly',
   },
+  {
+    urlPattern: /^.*$/,
+    handler: 'NetworkOnly',
+    options: {
+      precacheFallback: { url: '/fallback.html' },
+    },
+  },
 ];
 
 const pwaConfig = withPWA({
   dest: 'public',
   disable: process.env.NODE_ENV === 'development',
   runtimeCaching,
-  fallbacks: {
-    document: '/fallback.html',
-  },
 });
 
 const nextConfig = {
