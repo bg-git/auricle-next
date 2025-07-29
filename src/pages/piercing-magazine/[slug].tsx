@@ -5,6 +5,7 @@ import { marked } from 'marked';
 import Image from 'next/image';
 import Link from 'next/link';
 import Head from 'next/head';
+import Seo from '@/components/Seo';
 import type { GetStaticProps, GetStaticPaths } from 'next';
 
 interface BlogPostProps {
@@ -21,9 +22,12 @@ interface BlogPostProps {
 export default function BlogPost({ title, description, content, image, slug, prev, next, datePublished }: BlogPostProps) {
   return (
     <>
+      <Seo
+        title={title}
+        description={description || `Read ${title} on the AURICLE piercing magazine.`}
+        canonical={`https://www.auricle.co.uk/piercing-magazine/${slug}`}
+      />
       <Head>
-        <title>{title} | AURICLE</title>
-        <meta name="description" content={description || `Read ${title} on the AURICLE piercing magazine.`} />
         <meta property="og:type" content="article" />
         <meta property="og:title" content={title} />
         <meta property="og:description" content={description || ''} />

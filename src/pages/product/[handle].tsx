@@ -204,9 +204,12 @@ const formattedPrice = rawPrice % 1 === 0 ? rawPrice.toFixed(0) : rawPrice.toFix
     
     <>
     <Seo
-    title={getFieldValue('title') || product.title}
-    description={getFieldValue('description') || `Buy ${product.title} in 14k gold or titanium.`}
-  />
+      title={getFieldValue('title') || product.title}
+      description={
+        getFieldValue('description') || `Buy ${product.title} in 14k gold or titanium.`
+      }
+      canonical={`https://www.auricle.co.uk/product/${product.handle}`}
+    />
 
 <script
   type="application/ld+json"

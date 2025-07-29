@@ -205,7 +205,11 @@ export default function CollectionPage({ products, title, seoTitle, seoDescripti
 
   return (
     <>
-      <Seo title={seoTitle || title} description={seoDescription || undefined} />
+      <Seo
+        title={seoTitle || title}
+        description={seoDescription || undefined}
+        canonical={`https://www.auricle.co.uk/collection/${handle}`}
+      />
 <script
   type="application/ld+json"
   dangerouslySetInnerHTML={{
