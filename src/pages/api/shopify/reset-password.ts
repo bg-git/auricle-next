@@ -41,8 +41,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     const result = await response.json();
-
-    console.log(result)
     const userErrors = result.data?.customerReset?.customerUserErrors;
     if (userErrors?.length) {
       return res
