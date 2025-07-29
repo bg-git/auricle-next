@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import Link from 'next/link';
 
 const sections = [
@@ -34,7 +34,7 @@ const sections = [
   },
 ];
 
-export default function Footer() {
+function Footer() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const toggle = (index: number) => {
@@ -78,3 +78,6 @@ export default function Footer() {
 
   );
 }
+
+export default memo(Footer);
+

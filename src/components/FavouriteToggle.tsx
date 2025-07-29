@@ -1,5 +1,5 @@
 import { useFavourites } from '@/context/FavouritesContext';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, memo } from 'react';
 
 interface FavouriteToggleProps {
   handle: string;
@@ -9,7 +9,7 @@ interface FavouriteToggleProps {
   metafields?: { key: string; value: string }[];
 }
 
-export default function FavouriteToggle({
+function FavouriteToggle({
   handle,
   title,
   image,
@@ -57,3 +57,6 @@ export default function FavouriteToggle({
     </button>
   );
 }
+
+export default memo(FavouriteToggle);
+
