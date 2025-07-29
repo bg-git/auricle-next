@@ -39,6 +39,14 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
 
+## Offline Support
+
+The application is configured as a Progressive Web App using `next-pwa`.
+When installed, the favourites page remains accessible even without a
+network connection because it loads data from `localStorage`.
+Account and checkout routes are excluded from the offline fallback and
+still require a connection.
+
 ## Documentation
 
 - [Product page rendering](docs/product-page.md)

@@ -1,10 +1,25 @@
 import withPWA from 'next-pwa';
+import runtimeCaching from 'next-pwa/cache';
+
+const customCaching = [
+  ...runtimeCaching,
+  {
+    urlPattern: ({ url }) => url.pathname.startsWith('/favourites'),
+    handler: 'NetworkFirst',
+    options: { cacheName: 'favourites-pages' },
+  },
+];
 
 const pwaConfig = withPWA({
   dest: 'public',
   disable: process.env.NODE_ENV === 'development',
   register: true,
   skipWaiting: true,
+  runtimeCaching: customCaching,
+  fallbacks: {
+    document: '/fallback.html',
+  },
+  navigateFallbackDenylist: [/^\/account/, /^\/checkout/],
 });
 
 const nextConfig = {
