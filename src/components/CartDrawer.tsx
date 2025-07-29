@@ -35,9 +35,9 @@ export default function CartDrawer() {
   }, [isDrawerOpen, closeDrawer]);
 
   return (
-    <div className="cart-backdrop">
+    <div className={`cart-backdrop${isDrawerOpen ? ' open' : ''}`}> 
       <div
-        className="cart-drawer open"
+        className={`cart-drawer${isDrawerOpen ? ' open' : ''}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="cart-drawer-title"
@@ -148,7 +148,7 @@ export default function CartDrawer() {
           <p
   style={{
     fontSize: '12px',
-    color: '#888',
+    color: '#595959',
     marginTop: '8px',
     marginBottom: '16px',
     textAlign: 'right',
