@@ -1,4 +1,11 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useRef,
+  ReactNode,
+} from 'react';
 import { useFavourites } from '@/context/FavouritesContext';
 import { useToast } from '@/context/ToastContext';
 
@@ -39,11 +46,31 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
+  const syncTimeout = useRef<NodeJS.Timeout | null>(null);
+  const pendingSync = useRef<Promise<void> | null>(null);
+
   const { addFavourite, isFavourite } = useFavourites();
   const { showToast } = useToast();
 
   const openDrawer = () => setIsDrawerOpen(true);
   const closeDrawer = () => setIsDrawerOpen(false);
+
+  const scheduleSync = (items: CartItem[]) => {
+    if (syncTimeout.current) {
+      clearTimeout(syncTimeout.current);
+    }
+    syncTimeout.current = setTimeout(() => {
+      pendingSync.current = syncShopifyCheckout(items).finally(() => {
+        pendingSync.current = null;
+      });
+    }, 300);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (syncTimeout.current) clearTimeout(syncTimeout.current);
+    };
+  }, []);
 
   useEffect(() => {
     const storedItems = localStorage.getItem(ITEMS_KEY);
@@ -203,7 +230,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       });
     }
 
-    syncShopifyCheckout(updatedItems);
+    scheduleSync(updatedItems);
   };
 
   const updateQuantity = (variantId: string, newQty: number) => {
@@ -225,13 +252,13 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       .filter((i) => i.quantity > 0);
 
     setCartItems(updated);
-    syncShopifyCheckout(updated);
+    scheduleSync(updated);
   };
 
   const removeFromCart = (variantId: string) => {
     const updated = cartItems.filter((item) => item.variantId !== variantId);
     setCartItems(updated);
-    syncShopifyCheckout(updated);
+    scheduleSync(updated);
   };
 
   return (
