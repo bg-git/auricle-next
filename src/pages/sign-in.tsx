@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
+import Seo from '@/components/Seo';
 
 export default function SignIn() {
   const [form, setForm] = useState({ email: '', password: '' });
@@ -64,7 +65,12 @@ export default function SignIn() {
   };
 
   return (
-    <main className="sign-in-page">
+    <>
+      <Seo
+        title="Sign In"
+        description="Sign in to your AURICLE wholesale account."
+      />
+      <main className="sign-in-page">
       <div className="sign-in-container">
         <div className="sign-in-info">
           <h1>SIGN IN</h1>
@@ -176,5 +182,6 @@ export default function SignIn() {
         )}
       </div>
     </main>
+    </>
   );
 }

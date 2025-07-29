@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
+import Seo from '@/components/Seo';
 
 export default function Register() {
   const [form, setForm] = useState({
@@ -39,7 +40,12 @@ export default function Register() {
   };
 
   return (
-    <main className="register-page">
+    <>
+      <Seo
+        title="Register"
+        description="Create a free B2B account to buy piercing jewellery from AURICLE."
+      />
+      <main className="register-page">
       <div className="register-container">
         <div className="register-info">
           <h1>REGISTER FREE</h1>
@@ -107,5 +113,6 @@ export default function Register() {
         </form>
       </div>
     </main>
+    </>
   );
 }
