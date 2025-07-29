@@ -51,7 +51,6 @@ export default function MyApp({ Component, pageProps }: MyAppProps) {
               <link rel="manifest" href="/site.webmanifest" />
               <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#181818" />
               <meta name="msapplication-TileColor" content="#ffffff" />
-              <meta name="theme-color" content="#ffffff" />
             </Head>
             <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100dvh' }}>
               <Header />
