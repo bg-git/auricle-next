@@ -309,7 +309,7 @@ return (
   <div className="product-image-wrapper">
     <Image
       src={image?.url || '/placeholder.png'}
-      alt=""
+      alt={image?.altText || product.title}
       width={1200}
       height={1500}
       priority={index === 0}
