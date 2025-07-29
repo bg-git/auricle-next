@@ -41,7 +41,7 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/b
 
 ## Environment Variables
 
-- `AUTH_COOKIE_DOMAIN` (optional) - sets the `Domain` attribute on the `customer_session` cookie when defined.
+- `AUTH_COOKIE_DOMAIN` (optional) - if set in production, this value becomes the `Domain` attribute on the `customer_session` cookie. Leave it unset during development so cookies work on `localhost`.
 
 ## Building
 
