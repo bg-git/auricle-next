@@ -1,4 +1,10 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from 'react';
 import { useRouter } from 'next/router';
 
 export interface ShopifyCustomer {
@@ -32,72 +38,56 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
   const [loading, setLoading] = useState(!initialUser);
   const router = useRouter();
 
-  useEffect(() => {
-    if (initialUser) return; // already have user from SSR
-
+  const verifySession = async () => {
     const hasCustomerSession = document.cookie
       .split(';')
       .some((c) => c.trim().startsWith('customer_session='));
 
     if (!hasCustomerSession) {
-      // No session cookie present, skip verifying
+      setIsAuthenticated(false);
+      setUser(null);
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/shopify/verify-customer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setUser(data.customer);
+        setIsAuthenticated(true);
+      } else {
+        setUser(null);
+        setIsAuthenticated(false);
+      }
+    } catch (error) {
+      console.error('Auth check failed:', error);
+      setUser(null);
+      setIsAuthenticated(false);
+    }
+  };
+
+  useEffect(() => {
+    if (initialUser) {
       setLoading(false);
       return;
     }
 
-    const verify = async () => {
-      try {
-        const res = await fetch('/api/shopify/verify-customer', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          setUser(data.customer);
-          setIsAuthenticated(true);
-        } else {
-          setUser(null);
-          setIsAuthenticated(false);
-        }
-      } catch (error) {
-        console.error('Auth check failed:', error);
-        setUser(null);
-        setIsAuthenticated(false);
-      } finally {
-        setLoading(false);
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        verifySession().finally(() => setLoading(false));
       }
     };
 
-    verify();
+    document.addEventListener('visibilitychange', handleVisibility);
+    handleVisibility();
+
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
   }, [initialUser]);
 
-  useEffect(() => {
-    const interval = setInterval(async () => {
-      const hasCustomerSession = document.cookie
-        .split(';')
-        .some((c) => c.trim().startsWith('customer_session='));
-
-      if (hasCustomerSession && initialUser) {
-        try {
-          const res = await fetch('/api/shopify/verify-customer', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-          });
-
-          if (res.ok) {
-            const data = await res.json();
-            setUser(data.customer);
-            setIsAuthenticated(true);
-          }
-        } catch {
-          // ignore failures
-        }
-      }
-    }, 5 * 60 * 1000);
-
-    return () => clearInterval(interval);
-  }, [initialUser]);
 
   const signIn = async (email: string, password: string) => {
     try {
@@ -122,6 +112,9 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
           const userData = await userResponse.json();
           setUser(userData.customer);
         }
+
+        // Verify session after sign in
+        verifySession();
 
         return { success: true };
       } else {
