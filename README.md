@@ -43,6 +43,22 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/b
 
 - `AUTH_COOKIE_DOMAIN` (optional) - sets the `Domain` attribute on the `customer_session` cookie when defined.
 
+## Building
+
+Install dependencies before creating a production build:
+
+```bash
+npm install
+# or
+yarn install
+```
+
+Then run the build command:
+
+```bash
+npm run build
+```
+
 ## Documentation
 
 - [Product page rendering](docs/product-page.md)
