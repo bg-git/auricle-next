@@ -3,7 +3,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Seo from '@/components/Seo';
 import FavouriteToggle from '@/components/FavouriteToggle';
-import { useState } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 
 type Metafield = {
   key: string;
@@ -14,25 +14,33 @@ type Metafield = {
 export default function FavouritesPage() {
   const { favourites } = useFavourites();
 
-  const getFieldValue = (
-  item: { metafields?: (Metafield | null)[] },
-  key: string
-): string | null => {
-return item.metafields
-  ?.filter((f): f is Metafield => f !== null)
-  .find((f) => f.key === key)
-  ?.value ?? null;
-};
+  const getFieldValue = useCallback(
+    (
+      item: { metafields?: (Metafield | null)[] },
+      key: string
+    ): string | null => {
+      return (
+        item.metafields
+          ?.filter((f): f is Metafield => f !== null)
+          .find((f) => f.key === key)
+          ?.value ?? null
+      );
+    },
+    []
+  );
 
 
-  const extractOptions = (key: string): string[] => {
-    const options = new Set<string>();
-    favourites.forEach((item) => {
-      const value = getFieldValue(item, key);
-      if (value) options.add(value);
-    });
-    return Array.from(options).sort();
-  };
+  const extractOptions = useCallback(
+    (key: string): string[] => {
+      const options = new Set<string>();
+      favourites.forEach((item) => {
+        const value = getFieldValue(item, key);
+        if (value) options.add(value);
+      });
+      return Array.from(options).sort();
+    },
+    [favourites, getFieldValue]
+  );
 
   const [selectedMetals, setSelectedMetals] = useState<string[]>([]);
   const [selectedFinishes, setSelectedFinishes] = useState<string[]>([]);
@@ -42,75 +50,104 @@ return item.metafields
   const [selectedMetalColours, setSelectedMetalColours] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
 
-  const toggle = (
-    value: string,
-    selected: string[],
-    setFn: React.Dispatch<React.SetStateAction<string[]>>
-  ) => {
-    setFn(
-      selected.includes(value)
-        ? selected.filter((v) => v !== value)
-        : [...selected, value]
-    );
-  };
+  const metalOptions = useMemo(() => extractOptions('metal'), [extractOptions]);
+  const finishOptions = useMemo(() => extractOptions('finish'), [extractOptions]);
+  const gemColourOptions = useMemo(() => extractOptions('gem_colour'), [extractOptions]);
+  const gemTypeOptions = useMemo(() => extractOptions('gem_type'), [extractOptions]);
+  const fittingOptions = useMemo(() => extractOptions('fitting'), [extractOptions]);
+  const metalColourOptions = useMemo(
+    () => extractOptions('metal_colour'),
+    [extractOptions]
+  );
 
-  const renderFilterSection = (
-    label: string,
-    options: string[],
-    selected: string[],
-    setFn: React.Dispatch<React.SetStateAction<string[]>>
-  ) => {
-    if (options.length === 0) return null;
-    return (
-      <div style={{ marginBottom: '24px' }}>
-        <p style={{ fontSize: '14px', fontWeight: 600, marginBottom: '8px' }}>{label}</p>
-        {options.map((option) => (
-          <button
-            key={option}
-            onClick={() => toggle(option, selected, setFn)}
-            style={{
-              display: 'block',
-              width: '100%',
-              padding: '8px 12px',
-              marginBottom: '6px',
-              background: selected.includes(option) ? '#181818' : '#f9f9f9',
-              color: selected.includes(option) ? '#fff' : '#181818',
-              border: '1px solid #e0e0e0',
-              fontSize: '14px',
-              cursor: 'pointer',
-            }}
-          >
-            {option}
-          </button>
-        ))}
-      </div>
-    );
-  };
+  const toggle = useCallback(
+    (
+      value: string,
+      selected: string[],
+      setFn: React.Dispatch<React.SetStateAction<string[]>>
+    ) => {
+      setFn(
+        selected.includes(value)
+          ? selected.filter((v) => v !== value)
+          : [...selected, value]
+      );
+    },
+    []
+  );
 
-  const filteredItems = favourites.filter((item) => {
-    const metal = getFieldValue(item, 'metal') || '';
-    const finish = getFieldValue(item, 'finish') || '';
-    const gemColour = getFieldValue(item, 'gem_colour') || '';
-    const gemType = getFieldValue(item, 'gem_type') || '';
-    const fitting = getFieldValue(item, 'fitting') || '';
-    const metalColour = getFieldValue(item, 'metal_colour') || '';
+  const renderFilterSection = useCallback(
+    (
+      label: string,
+      options: string[],
+      selected: string[],
+      setFn: React.Dispatch<React.SetStateAction<string[]>>
+    ) => {
+      if (options.length === 0) return null;
+      return (
+        <div style={{ marginBottom: '24px' }}>
+          <p style={{ fontSize: '14px', fontWeight: 600, marginBottom: '8px' }}>{label}</p>
+          {options.map((option) => (
+            <button
+              key={option}
+              onClick={() => toggle(option, selected, setFn)}
+              style={{
+                display: 'block',
+                width: '100%',
+                padding: '8px 12px',
+                marginBottom: '6px',
+                background: selected.includes(option) ? '#181818' : '#f9f9f9',
+                color: selected.includes(option) ? '#fff' : '#181818',
+                border: '1px solid #e0e0e0',
+                fontSize: '14px',
+                cursor: 'pointer',
+              }}
+            >
+              {option}
+            </button>
+          ))}
+        </div>
+      );
+    },
+    [toggle]
+  );
 
-    const metalMatch = selectedMetals.length ? selectedMetals.includes(metal) : true;
-    const finishMatch = selectedFinishes.length ? selectedFinishes.includes(finish) : true;
-    const gemColourMatch = selectedGemColours.length ? selectedGemColours.includes(gemColour) : true;
-    const gemTypeMatch = selectedGemTypes.length ? selectedGemTypes.includes(gemType) : true;
-    const fittingMatch = selectedFittings.length ? selectedFittings.includes(fitting) : true;
-    const metalColourMatch = selectedMetalColours.length ? selectedMetalColours.includes(metalColour) : true;
+  const filteredItems = useMemo(
+    () =>
+      favourites.filter((item) => {
+        const metal = getFieldValue(item, 'metal') || '';
+        const finish = getFieldValue(item, 'finish') || '';
+        const gemColour = getFieldValue(item, 'gem_colour') || '';
+        const gemType = getFieldValue(item, 'gem_type') || '';
+        const fitting = getFieldValue(item, 'fitting') || '';
+        const metalColour = getFieldValue(item, 'metal_colour') || '';
 
-    return (
-      metalMatch &&
-      finishMatch &&
-      gemColourMatch &&
-      gemTypeMatch &&
-      fittingMatch &&
-      metalColourMatch
-    );
-  });
+        const metalMatch = selectedMetals.length ? selectedMetals.includes(metal) : true;
+        const finishMatch = selectedFinishes.length ? selectedFinishes.includes(finish) : true;
+        const gemColourMatch = selectedGemColours.length ? selectedGemColours.includes(gemColour) : true;
+        const gemTypeMatch = selectedGemTypes.length ? selectedGemTypes.includes(gemType) : true;
+        const fittingMatch = selectedFittings.length ? selectedFittings.includes(fitting) : true;
+        const metalColourMatch = selectedMetalColours.length ? selectedMetalColours.includes(metalColour) : true;
+
+        return (
+          metalMatch &&
+          finishMatch &&
+          gemColourMatch &&
+          gemTypeMatch &&
+          fittingMatch &&
+          metalColourMatch
+        );
+      }),
+    [
+      favourites,
+      selectedMetals,
+      selectedFinishes,
+      selectedGemColours,
+      selectedGemTypes,
+      selectedFittings,
+      selectedMetalColours,
+      getFieldValue,
+    ]
+  );
 
   return (
     <>
@@ -127,12 +164,12 @@ return item.metafields
 
       <main className="collection-page">
         <aside className="filters-desktop">
-          {renderFilterSection('Metal', extractOptions('metal'), selectedMetals, setSelectedMetals)}
-          {renderFilterSection('Finish', extractOptions('finish'), selectedFinishes, setSelectedFinishes)}
-          {renderFilterSection('Gem Colour', extractOptions('gem_colour'), selectedGemColours, setSelectedGemColours)}
-          {renderFilterSection('Gem Type', extractOptions('gem_type'), selectedGemTypes, setSelectedGemTypes)}
-          {renderFilterSection('Fitting', extractOptions('fitting'), selectedFittings, setSelectedFittings)}
-          {renderFilterSection('Metal Colour', extractOptions('metal_colour'), selectedMetalColours, setSelectedMetalColours)}
+          {renderFilterSection('Metal', metalOptions, selectedMetals, setSelectedMetals)}
+          {renderFilterSection('Finish', finishOptions, selectedFinishes, setSelectedFinishes)}
+          {renderFilterSection('Gem Colour', gemColourOptions, selectedGemColours, setSelectedGemColours)}
+          {renderFilterSection('Gem Type', gemTypeOptions, selectedGemTypes, setSelectedGemTypes)}
+          {renderFilterSection('Fitting', fittingOptions, selectedFittings, setSelectedFittings)}
+          {renderFilterSection('Metal Colour', metalColourOptions, selectedMetalColours, setSelectedMetalColours)}
         </aside>
 
         <section id="product-grid" className="product-grid">
@@ -204,12 +241,12 @@ return item.metafields
       </button>
     </div>
 
-    {renderFilterSection('Metal', extractOptions('metal'), selectedMetals, setSelectedMetals)}
-    {renderFilterSection('Finish', extractOptions('finish'), selectedFinishes, setSelectedFinishes)}
-    {renderFilterSection('Gem Colour', extractOptions('gem_colour'), selectedGemColours, setSelectedGemColours)}
-    {renderFilterSection('Gem Type', extractOptions('gem_type'), selectedGemTypes, setSelectedGemTypes)}
-    {renderFilterSection('Fitting', extractOptions('fitting'), selectedFittings, setSelectedFittings)}
-    {renderFilterSection('Metal Colour', extractOptions('metal_colour'), selectedMetalColours, setSelectedMetalColours)}
+    {renderFilterSection('Metal', metalOptions, selectedMetals, setSelectedMetals)}
+    {renderFilterSection('Finish', finishOptions, selectedFinishes, setSelectedFinishes)}
+    {renderFilterSection('Gem Colour', gemColourOptions, selectedGemColours, setSelectedGemColours)}
+    {renderFilterSection('Gem Type', gemTypeOptions, selectedGemTypes, setSelectedGemTypes)}
+    {renderFilterSection('Fitting', fittingOptions, selectedFittings, setSelectedFittings)}
+    {renderFilterSection('Metal Colour', metalColourOptions, selectedMetalColours, setSelectedMetalColours)}
   </div>
 </div>
 
