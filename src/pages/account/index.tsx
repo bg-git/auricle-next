@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import useSWR from "swr";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/router";
 
@@ -15,10 +16,20 @@ export default function AccountPage() {
   const { isAuthenticated, user, loading } = useAuth();
   const router = useRouter();
 
-  const [customer, setCustomer] = useState<any>(null);
-  const [orders, setOrders] = useState<any[]>([]);
-  const [dataLoading, setDataLoading] = useState(true);
-  const [dataError, setDataError] = useState<string | null>(null);
+  const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
+  const {
+    data: customerData,
+    error: customerError,
+    isLoading: customerLoading,
+    mutate: mutateCustomer,
+  } = useSWR(user?.id ? "/api/shopify/get-customer" : null, fetcher);
+
+  const {
+    data: ordersData,
+    error: ordersError,
+    isLoading: ordersLoading,
+  } = useSWR(user?.id ? "/api/shopify/get-orders" : null, fetcher);
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
@@ -26,41 +37,11 @@ export default function AccountPage() {
     }
   }, [isAuthenticated, loading, router]);
 
-  // Fetch customer info and orders on mount
-  useEffect(() => {
-      const fetchData = async () => {
-        setDataLoading(true);
-        setDataError(null);
-        try {
-          // Fetch customer info (profile + addresses)
-          const customerRes = await fetch("/api/shopify/get-customer", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-          });
-          if (!customerRes.ok) throw new Error("Failed to fetch customer info");
-          const customerData = await customerRes.json();
-          setCustomer(customerData.customer);
+  const customer = customerData?.customer;
+  const orders = ordersData?.orders || [];
+  const dataError = customerError || ordersError;
 
-          // Fetch orders
-          const ordersRes = await fetch("/api/shopify/get-orders", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-          });
-        if (!ordersRes.ok) throw new Error("Failed to fetch orders");
-        const ordersData = await ordersRes.json();
-        setOrders(ordersData.orders || []);
-      } catch (err: any) {
-        setDataError(err.message || "Unknown error");
-      } finally {
-        setDataLoading(false);
-      }
-    };
-    if (isAuthenticated && !loading) {
-      fetchData();
-    }
-  }, [isAuthenticated, loading]);
-
-  if (loading || dataLoading) {
+  if (loading || customerLoading || ordersLoading) {
     return (
       <main className="account-page">
         <div style={{ textAlign: "center", padding: "50px" }}>
@@ -152,17 +133,7 @@ export default function AccountPage() {
           <AddressForm
             type="edit"
             address={deliveryAddress}
-            onAddressUpdated={async () => {
-              // Re-fetch customer data after update
-              const res = await fetch("/api/shopify/get-customer", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-              });
-              if (res.ok) {
-                const data = await res.json();
-                setCustomer(data.customer);
-              }
-            }}
+            onAddressUpdated={() => mutateCustomer()}
           />
         );
       }
@@ -173,24 +144,14 @@ export default function AccountPage() {
           <AddressForm
             type="edit"
             address={shippingAddress}
-            onAddressUpdated={async () => {
-              // Re-fetch customer data after update
-              const res = await fetch("/api/shopify/get-customer", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-              });
-              if (res.ok) {
-                const data = await res.json();
-                setCustomer(data.customer);
-              }
-            }}
+            onAddressUpdated={() => mutateCustomer()}
           />
         );
       }
 
       case "Account Settings":
         return (
-          <AccountSettingsForm customer={customer} />
+          <AccountSettingsForm customer={customer} refreshCustomer={() => mutateCustomer()} />
         );
 
       default:
@@ -222,7 +183,7 @@ export default function AccountPage() {
   );
 }
 
-function AccountSettingsForm({ customer }: { customer: any }) {
+function AccountSettingsForm({ customer, refreshCustomer }: { customer: any; refreshCustomer: () => Promise<any> }) {
   const [firstName, setFirstName] = useState(customer?.firstName || "");
   const [lastName, setLastName] = useState(customer?.lastName || "");
   const [phone, setPhone] = useState(customer?.phone || "");
@@ -246,17 +207,14 @@ function AccountSettingsForm({ customer }: { customer: any }) {
 const fetchLatestCustomer = async () => {
   setRefreshing(true);
   try {
-    const res = await fetch("/api/shopify/get-customer", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-    });
-      if (res.ok) {
-        const data = await res.json();
-        updateCustomerState(data.customer);
-      }
-    } catch {}
+    const data = await refreshCustomer();
+    if (data?.customer) {
+      updateCustomerState(data.customer);
+    }
+  } finally {
     setRefreshing(false);
-  };
+  }
+};
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -373,9 +331,9 @@ const fetchLatestCustomer = async () => {
 }
 
 function AddressForm({ type, address, onAddressUpdated }: {
-  type: "edit",
-  address: any,
-  onAddressUpdated: () => void
+  type: "edit";
+  address: any;
+  onAddressUpdated: () => Promise<any>;
 }) {
   const [form, setForm] = useState({
     firstName: address?.firstName || "",
