@@ -72,6 +72,33 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
     verify();
   }, [initialUser]);
 
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      const hasCustomerSession = document.cookie
+        .split(';')
+        .some((c) => c.trim().startsWith('customer_session='));
+
+      if (hasCustomerSession && initialUser) {
+        try {
+          const res = await fetch('/api/shopify/verify-customer', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            setUser(data.customer);
+            setIsAuthenticated(true);
+          }
+        } catch {
+          // ignore failures
+        }
+      }
+    }, 5 * 60 * 1000);
+
+    return () => clearInterval(interval);
+  }, [initialUser]);
+
   const signIn = async (email: string, password: string) => {
     try {
       const response = await fetch('/api/shopify/sign-in-customer', {
