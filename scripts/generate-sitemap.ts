@@ -5,7 +5,6 @@ import { SitemapStream, streamToPromise } from 'sitemap';
 import { shopifyFetch } from '../src/lib/shopify.js';
 
 
-console.log('SHOPIFY_STORE_DOMAIN:', process.env.SHOPIFY_STORE_DOMAIN);
 
 const DOMAIN = process.env.SITE_DOMAIN || 'http://localhost:3000';
 
@@ -83,7 +82,6 @@ async function generateSitemap() {
   smStream.end();
   const sitemap = await streamToPromise(smStream).then((data) => data.toString());
   fs.writeFileSync(path.join(process.cwd(), 'public/sitemap.xml'), sitemap);
-  console.log('✅ sitemap.xml created');
 }
 
 generateSitemap().catch((err) => {
