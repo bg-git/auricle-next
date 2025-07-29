@@ -1,11 +1,12 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import { memo } from 'react';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { useFavourites } from '@/context/FavouritesContext';
 
 
-export default function Header() {
+function Header() {
   const { openDrawer, cartItems } = useCart();
   const { isAuthenticated, user, signOut, loading } = useAuth();
   const itemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
@@ -200,3 +201,6 @@ const { favourites } = useFavourites();
     </>
   );
 }
+
+export default memo(Header);
+

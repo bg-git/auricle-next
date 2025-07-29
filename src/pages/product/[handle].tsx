@@ -131,7 +131,10 @@ const formattedPrice = rawPrice % 1 === 0 ? rawPrice.toFixed(0) : rawPrice.toFix
 
 
   const imageUrl = product.images?.edges?.[0]?.node?.url ?? '/placeholder.png';
-  const metafields = product.metafields || [];
+  const metafields = useMemo(
+    () => product.metafields || [],
+    [product.metafields]
+  );
 
   const getFieldValue = (key: string): string | null => {
     const field = metafields.find((f: Metafield) => f?.key === key);
@@ -256,7 +259,7 @@ const formattedPrice = rawPrice % 1 === 0 ? rawPrice.toFixed(0) : rawPrice.toFix
     title={product.title}
     image={imageUrl}
     price={formattedPrice}
-    metafields={product.metafields}
+    metafields={metafields}
   />
 </div>
 
