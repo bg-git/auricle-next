@@ -1,5 +1,6 @@
 import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
+import Seo from "@/components/Seo";
 
 export default function ResetPassword() {
   const router = useRouter();
@@ -74,7 +75,12 @@ export default function ResetPassword() {
   };
 
   return (
-    <main className="reset-password-page">
+    <>
+      <Seo
+        title="Reset Password"
+        description="Choose a new password for your AURICLE account."
+      />
+      <main className="reset-password-page">
       <div className="reset-password-container">
       <div className="reset-password-info">
           <h1>Reset Password</h1>
@@ -98,5 +104,6 @@ export default function ResetPassword() {
       {status === "success" && <p>Password reset! Redirecting…</p>}
       </div>
     </main>
+    </>
   );
 }
