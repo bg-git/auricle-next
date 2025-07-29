@@ -1,5 +1,7 @@
 import withPWA from 'next-pwa';
 
+// PWA configuration with offline fallback support
+
 const runtimeCaching = [
   {
     urlPattern: /^\/_next\/static\/.*$/i,
