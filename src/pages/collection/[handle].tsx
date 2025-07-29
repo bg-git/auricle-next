@@ -6,7 +6,7 @@ import type {
 import { shopifyFetch } from '@/lib/shopify';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import Seo from '@/components/Seo';
 import FavouriteToggle from '@/components/FavouriteToggle';
 
@@ -58,7 +58,7 @@ type CollectionPageProps = {
 
 
 export default function CollectionPage({ products, title, seoTitle, seoDescription, collectionDescription, deepLinks, collectionImage, handle }: CollectionPageProps) {
-  const getMetafieldValue = (product: Product, key: string): string | null => {
+  const getMetafieldValue = useCallback((product: Product, key: string): string | null => {
     const validMetafields = (product.metafields || []).filter((f): f is Metafield => f != null);
     const field = validMetafields.find((f) => f.key === key);
     if (!field?.value) return null;
@@ -69,24 +69,30 @@ export default function CollectionPage({ products, title, seoTitle, seoDescripti
     } catch {
       return field.value;
     }
-  };
+  }, []);
   
 
-  const extractOptions = (key: string): string[] => {
-    const optionsSet = new Set<string>();
-    products.forEach((p) => {
-      const value = getMetafieldValue(p, key);
-      if (value) optionsSet.add(value);
-    });
-    return Array.from(optionsSet).sort();
-  };
+  const extractOptions = useCallback(
+    (key: string): string[] => {
+      const optionsSet = new Set<string>();
+      products.forEach((p) => {
+        const value = getMetafieldValue(p, key);
+        if (value) optionsSet.add(value);
+      });
+      return Array.from(optionsSet).sort();
+    },
+    [products, getMetafieldValue]
+  );
 
-  const metalOptions = extractOptions('metal');
-  const finishOptions = extractOptions('finish');
-  const gemColourOptions = extractOptions('gem_colour');
-  const gemTypeOptions = extractOptions('gem_type');
-  const fittingOptions = extractOptions('fitting');
-  const metalColourOptions = extractOptions('metal_colour');
+  const metalOptions = useMemo(() => extractOptions('metal'), [extractOptions]);
+  const finishOptions = useMemo(() => extractOptions('finish'), [extractOptions]);
+  const gemColourOptions = useMemo(() => extractOptions('gem_colour'), [extractOptions]);
+  const gemTypeOptions = useMemo(() => extractOptions('gem_type'), [extractOptions]);
+  const fittingOptions = useMemo(() => extractOptions('fitting'), [extractOptions]);
+  const metalColourOptions = useMemo(
+    () => extractOptions('metal_colour'),
+    [extractOptions]
+  );
 
 
   const [selectedMetals, setSelectedMetals] = useState<string[]>([]);
@@ -99,80 +105,103 @@ export default function CollectionPage({ products, title, seoTitle, seoDescripti
   const [showFilters, setShowFilters] = useState(false);
   const [filtersChanged, setFiltersChanged] = useState(false);
 
-  const toggle = (
-    value: string,
-    selected: string[],
-    setFn: React.Dispatch<React.SetStateAction<string[]>>
-  ) => {
-    setFn(
-      selected.includes(value)
-        ? selected.filter((v) => v !== value)
-        : [...selected, value]
-    );
-    setFiltersChanged(true);
-  };
+  const toggle = useCallback(
+    (
+      value: string,
+      selected: string[],
+      setFn: React.Dispatch<React.SetStateAction<string[]>>
+    ) => {
+      setFn(
+        selected.includes(value)
+          ? selected.filter((v) => v !== value)
+          : [...selected, value]
+      );
+      setFiltersChanged(true);
+    },
+    [setFiltersChanged]
+  );
 
-  const closeFilterDrawer = () => {
+  const closeFilterDrawer = useCallback(() => {
     setShowFilters(false);
     if (filtersChanged) {
       document
         .getElementById('product-grid')?.scrollIntoView({ behavior: 'smooth' });
       setFiltersChanged(false);
     }
-  };
+  }, [filtersChanged]);
 
-  const filteredProducts = products.filter((p) => {
-    const metal = getMetafieldValue(p, 'metal') || '';
-    const finish = getMetafieldValue(p, 'finish') || '';
-    const gemColour = getMetafieldValue(p, 'gem_colour') || '';
-    const gemType = getMetafieldValue(p, 'gem_type') || '';
-    const fitting = getMetafieldValue(p, 'fitting') || '';
-        const metalColour = getMetafieldValue(p, 'metal_colour') || '';
+  const filteredProducts = useMemo(() =>
+    products.filter((p) => {
+      const metal = getMetafieldValue(p, 'metal') || '';
+      const finish = getMetafieldValue(p, 'finish') || '';
+      const gemColour = getMetafieldValue(p, 'gem_colour') || '';
+      const gemType = getMetafieldValue(p, 'gem_type') || '';
+      const fitting = getMetafieldValue(p, 'fitting') || '';
+      const metalColour = getMetafieldValue(p, 'metal_colour') || '';
 
-    const metalMatch = selectedMetals.length ? selectedMetals.includes(metal) : true;
-    const finishMatch = selectedFinishes.length ? selectedFinishes.includes(finish) : true;
-    const gemColourMatch = selectedGemColours.length ? selectedGemColours.includes(gemColour) : true;
-    const gemTypeMatch = selectedGemTypes.length ? selectedGemTypes.includes(gemType) : true;
-    const fittingMatch = selectedFittings.length ? selectedFittings.includes(fitting) : true;
-const metalColourMatch = selectedMetalColours.length ? selectedMetalColours.includes(metalColour) : true;
+      const metalMatch = selectedMetals.length ? selectedMetals.includes(metal) : true;
+      const finishMatch = selectedFinishes.length ? selectedFinishes.includes(finish) : true;
+      const gemColourMatch = selectedGemColours.length ? selectedGemColours.includes(gemColour) : true;
+      const gemTypeMatch = selectedGemTypes.length ? selectedGemTypes.includes(gemType) : true;
+      const fittingMatch = selectedFittings.length ? selectedFittings.includes(fitting) : true;
+      const metalColourMatch = selectedMetalColours.length ? selectedMetalColours.includes(metalColour) : true;
 
+      return (
+        metalMatch &&
+        finishMatch &&
+        gemColourMatch &&
+        gemTypeMatch &&
+        fittingMatch &&
+        metalColourMatch
+      );
+    }),
+    [
+      products,
+      selectedMetals,
+      selectedFinishes,
+      selectedGemColours,
+      selectedGemTypes,
+      selectedFittings,
+      selectedMetalColours,
+      getMetafieldValue,
+    ]
+  );
 
-    return metalMatch && finishMatch && gemColourMatch && gemTypeMatch && fittingMatch &&
-       metalColourMatch;
-  });
-
-  const renderFilterSection = (
-    label: string,
-    options: string[],
-    selected: string[],
-    setFn: React.Dispatch<React.SetStateAction<string[]>>
-  ) => {
-    if (options.length === 0) return null;
-    return (
-      <div style={{ marginBottom: '24px' }}>
-        <p style={{ fontSize: '14px', fontWeight: 600, marginBottom: '8px' }}>{label}</p>
-        {options.map((option) => (
-          <button
-            key={option}
-            onClick={() => toggle(option, selected, setFn)}
-            style={{
-              display: 'block',
-              width: '100%',
-              padding: '8px 12px',
-              marginBottom: '6px',
-              background: selected.includes(option) ? '#181818' : '#f9f9f9',
-              color: selected.includes(option) ? '#fff' : '#181818',
-              border: '1px solid #e0e0e0',
-              fontSize: '14px',
-              cursor: 'pointer',
-            }}
-          >
-            {option}
-          </button>
-        ))}
-      </div>
-    );
-  };
+  const renderFilterSection = useCallback(
+    (
+      label: string,
+      options: string[],
+      selected: string[],
+      setFn: React.Dispatch<React.SetStateAction<string[]>>
+    ) => {
+      if (options.length === 0) return null;
+      return (
+        <div style={{ marginBottom: '24px' }}>
+          <p style={{ fontSize: '14px', fontWeight: 600, marginBottom: '8px' }}>{label}</p>
+          {options.map((option) => (
+            <button
+              key={option}
+              onClick={() => toggle(option, selected, setFn)}
+              style={{
+                display: 'block',
+                width: '100%',
+                padding: '8px 12px',
+                marginBottom: '6px',
+                background: selected.includes(option) ? '#181818' : '#f9f9f9',
+                color: selected.includes(option) ? '#fff' : '#181818',
+                border: '1px solid #e0e0e0',
+                fontSize: '14px',
+                cursor: 'pointer',
+              }}
+            >
+              {option}
+            </button>
+          ))}
+        </div>
+      );
+    },
+    [toggle]
+  );
 
   return (
     <>
