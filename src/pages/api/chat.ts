@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { OpenAI } from 'openai';
+import OpenAI from 'openai';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -17,10 +17,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       model: 'gpt-4',
       messages,
       temperature: 0.7,
+      stream: true,
     });
 
-    const reply = completion.choices?.[0]?.message?.content || '';
-    res.status(200).json({ reply });
+    res.writeHead(200, {
+      'Content-Type': 'text/plain; charset=utf-8',
+      'Cache-Control': 'no-cache, no-transform',
+      Connection: 'keep-alive',
+    });
+
+    for await (const chunk of completion) {
+      const content = chunk.choices?.[0]?.delta?.content;
+      if (content) res.write(content);
+    }
+    res.end();
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'AI request failed' });
