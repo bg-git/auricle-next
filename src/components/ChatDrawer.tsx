@@ -46,14 +46,26 @@ export default function ChatDrawer() {
         body: JSON.stringify({ messages: [...messages, userMessage] }),
       });
 
-      if (!res.ok) throw new Error('Network error');
+      if (!res.ok || !res.body) throw new Error('Network error');
 
-      const data = await res.json();
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let assistantText = '';
 
-      setMessages((prev) => [
-        ...prev,
-        { role: 'assistant', content: data.reply || 'Sorry, no response.' },
-      ]);
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        assistantText += decoder.decode(value, { stream: true });
+        setMessages((prev) => {
+          const msgs = [...prev];
+          const last = msgs[msgs.length - 1];
+          if (last && last.role === 'assistant') {
+            last.content = assistantText;
+            return [...msgs];
+          }
+          return [...msgs, { role: 'assistant', content: assistantText }];
+        });
+      }
     } catch (err) {
       console.error('Chat error:', err);
     } finally {
