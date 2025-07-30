@@ -1,10 +1,20 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import OpenAI from 'openai';
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const apiKey = process.env.OPENAI_API_KEY;
+
+if (!apiKey) {
+  console.warn('OPENAI_API_KEY environment variable is not set.');
+}
+
+const openai = new OpenAI({ apiKey });
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).end();
+
+  if (!apiKey) {
+    return res.status(500).json({ error: 'OpenAI API key not configured' });
+  }
 
   const { messages } = req.body;
 
