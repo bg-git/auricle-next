@@ -99,7 +99,7 @@ useEffect(() => {
 }, [selectedVariantId, variantEdges]);
 
 
-const { user, refreshUser } = useAuth();
+const { user, refreshUser, loading } = useAuth();
 const hasRefreshed = useRef(false);
 
 useEffect(() => {
@@ -269,8 +269,8 @@ const formattedPrice = rawPrice % 1 === 0 ? rawPrice.toFixed(0) : rawPrice.toFix
 
           <div className="product-info">
             <h1 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '4px' }}>{product.title}</h1>
-            {user?.approved ? (
-  <>
+            {!loading && (user?.approved ? (
+              <>
     {/* Price */}
     <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
       <p style={{ fontSize: '14px', fontWeight: 500 }}>
@@ -469,10 +469,10 @@ const formattedPrice = rawPrice % 1 === 0 ? rawPrice.toFixed(0) : rawPrice.toFix
       VAT & shipping calculated at checkout
     </p>
   </>
-) : (
-  <div
-  style={{
-    marginTop: '24px',
+            ) : (
+              <div
+                style={{
+                  marginTop: '24px',
     padding: '16px',
     background: '#f9f9f9',
     border: '1px solid #ddd',
@@ -480,10 +480,10 @@ const formattedPrice = rawPrice % 1 === 0 ? rawPrice.toFixed(0) : rawPrice.toFix
     fontSize: '14px',
   }}
 >
-  <p style={{ fontWeight: 600 }}>CATALOGUE VIEW</p><br />
-  <p>Sign in to your wholesale account to view pricing.</p></div>
-
-)}
+              <p style={{ fontWeight: 600 }}>CATALOGUE VIEW</p><br />
+              <p>Sign in to your wholesale account to view pricing.</p>
+            </div>
+            ) )}
 
 
 

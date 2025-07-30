@@ -6,6 +6,7 @@ import {
   ReactNode,
 } from 'react';
 import { useRouter } from 'next/router';
+import { COOKIE_NAME } from '@/lib/cookies';
 
 export interface ShopifyCustomer {
   id: string;
@@ -72,7 +73,14 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
 
     const handleVisibility = () => {
       if (document.visibilityState === 'visible') {
-        verifySession().finally(() => setLoading(false));
+        const hasCookie = document.cookie
+          .split(';')
+          .some((c) => c.trim().startsWith(`${COOKIE_NAME}=`));
+        if (hasCookie) {
+          verifySession().finally(() => setLoading(false));
+        } else {
+          setLoading(false);
+        }
       }
     };
 
