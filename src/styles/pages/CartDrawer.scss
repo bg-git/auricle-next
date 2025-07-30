@@ -288,3 +288,9 @@ button {
   text-align: right;
   margin: 16px 0 8px;
 }
+// Chat drawer uses same base styles
+.chat-drawer,
+.chat-backdrop {
+  @extend .cart-drawer;
+  @extend .cart-backdrop;
+}

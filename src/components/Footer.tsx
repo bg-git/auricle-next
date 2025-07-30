@@ -1,5 +1,6 @@
 import { useState, memo } from 'react';
 import Link from 'next/link';
+import { useChatDrawer } from '@/context/ChatDrawerContext';
 
 const sections = [
   {
@@ -36,48 +37,57 @@ const sections = [
 
 function Footer() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
-
-  const toggle = (index: number) => {
-    setOpenIndex(openIndex === index ? null : index);
-  };
+  const toggle = (index: number) => setOpenIndex(openIndex === index ? null : index);
+  const { openDrawer: openChatDrawer } = useChatDrawer();
 
   return (
     <footer className="site-footer">
-  <div className="footer-inner">
-    {sections.map((section, index) => (
-      <div
-        key={section.title}
-        className="footer-section"
-        data-open={openIndex === index}
-      >
-        <button
-          className="footer-toggle"
-          onClick={() => toggle(index)}
-          aria-expanded={openIndex === index}
-        >
-          {section.title}
-          <span className="footer-toggle-icon">
-            {openIndex === index ? '−' : '+'}
-          </span>
-        </button>
-        <ul className="footer-links">
-          {section.links.map((link) => (
-            <li key={link.href}>
-              {link.href.startsWith('/') ? (
-                <Link href={link.href}>{link.label}</Link>
-              ) : (
-                <a href={link.href}>{link.label}</a>
-              )}
-            </li>
-          ))}
-        </ul>
+      <div className="footer-inner">
+        {sections.map((section, index) => (
+          <div
+            key={section.title}
+            className="footer-section"
+            data-open={openIndex === index}
+          >
+            <button
+              className="footer-toggle"
+              onClick={() => toggle(index)}
+              aria-expanded={openIndex === index}
+            >
+              {section.title}
+              <span className="footer-toggle-icon">
+                {openIndex === index ? '−' : '+'}
+              </span>
+            </button>
+            <ul className="footer-links">
+              {section.links.map((link) => (
+                <li key={link.href}>
+                  {link.label === 'Contact Us' ? (
+                    <p
+                      onClick={openChatDrawer}
+                      style={{ cursor: 'pointer', margin: 0 }}
+                    >
+                      {link.label}
+                    </p>
+                  ) : link.href.startsWith('/') ? (
+                    <Link href={link.href}>{link.label}</Link>
+                  ) : (
+                    <a
+                      href={link.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {link.label}
+                    </a>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
       </div>
-    ))}
-  </div>
-</footer>
-
+    </footer>
   );
 }
 
 export default memo(Footer);
-

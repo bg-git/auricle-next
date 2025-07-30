@@ -1,5 +1,7 @@
 import type { AppProps } from 'next/app';
-import Head from 'next/head'; 
+import Head from 'next/head';
+import dynamic from 'next/dynamic';
+
 import '@/styles/globals.css';
 import '@/styles/pages/home.scss';
 import '@/styles/pages/footer.scss';
@@ -16,16 +18,20 @@ import '@/styles/pages/filters.scss';
 import '@/styles/pages/resetPassword.scss';
 import '@/styles/pages/blog-page.scss';
 import '@/styles/pages/blog.scss';
+
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import BreadcrumbSchema from '@/components/BreadcrumbSchema';
 import { CartProvider } from '@/context/CartContext';
 import { AuthProvider } from '@/context/AuthContext';
-import dynamic from 'next/dynamic';
-const CartDrawer = dynamic(() => import('@/components/CartDrawer'), { ssr: false });
 import { FavouritesProvider } from '@/context/FavouritesContext';
 import { ToastProvider } from '@/context/ToastContext';
+import { ChatDrawerProvider } from '@/context/ChatDrawerContext';
 import type { ShopifyCustomer } from '@/lib/verifyCustomerSession';
+
+
+const CartDrawer = dynamic(() => import('@/components/CartDrawer'), { ssr: false });
+const ChatDrawer = dynamic(() => import('@/components/ChatDrawer'), { ssr: false });
 
 interface MyAppProps extends AppProps {
   pageProps: {
@@ -34,33 +40,35 @@ interface MyAppProps extends AppProps {
   };
 }
 
-
 export default function MyApp({ Component, pageProps }: MyAppProps) {
   return (
     <ToastProvider>
       <AuthProvider initialUser={pageProps.customer || null}>
         <FavouritesProvider>
           <CartProvider>
-            <Head>
-              <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-              <meta name="theme-color" content="#ffffff" />
-              <link rel="icon" href="/favicon.ico" />
-              <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-              <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-              <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-              <link rel="manifest" href="/site.webmanifest" />
-              <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#181818" />
-              <meta name="msapplication-TileColor" content="#ffffff" />
-            </Head>
-            <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100dvh' }}>
-              <Header />
-              <main style={{ flex: '1 0 auto' }}>
-                <Component {...pageProps} />
-              </main>
-              <BreadcrumbSchema />
-              <Footer />
-            </div>
-            <CartDrawer />
+            <ChatDrawerProvider>
+              <Head>
+                <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+                <meta name="theme-color" content="#ffffff" />
+                <link rel="icon" href="/favicon.ico" />
+                <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+                <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+                <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+                <link rel="manifest" href="/site.webmanifest" />
+                <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#181818" />
+                <meta name="msapplication-TileColor" content="#ffffff" />
+              </Head>
+              <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100dvh' }}>
+                <Header />
+                <main style={{ flex: '1 0 auto' }}>
+                  <Component {...pageProps} />
+                </main>
+                <BreadcrumbSchema />
+                <Footer />
+              </div>
+              <CartDrawer />
+              <ChatDrawer />
+            </ChatDrawerProvider>
           </CartProvider>
         </FavouritesProvider>
       </AuthProvider>
