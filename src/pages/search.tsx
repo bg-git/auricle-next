@@ -15,12 +15,13 @@ export default function SearchPage() {
   const router = useRouter();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<ProductLite[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // Load initial query from URL
   useEffect(() => {
     const initial = typeof router.query.q === 'string' ? router.query.q : '';
     setQuery(initial);
+    if (initial) setLoading(true);
   }, [router.query.q]);
 
   // Fetch results when query changes
@@ -62,6 +63,7 @@ export default function SearchPage() {
   // Update URL when query changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
+    setLoading(true);
     setQuery(value);
 
     router.replace(
