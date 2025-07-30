@@ -15,6 +15,7 @@ export default function SearchPage() {
   const router = useRouter();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<ProductLite[]>([]);
+  const [loading, setLoading] = useState(false);
 
   // Load initial query from URL
   useEffect(() => {
@@ -27,11 +28,13 @@ export default function SearchPage() {
     const q = query.trim();
     if (!q) {
       setResults([]);
+      setLoading(false);
       return;
     }
 
     const controller = new AbortController();
     const fetchResults = async () => {
+      setLoading(true);
       try {
         const res = await fetch(`/api/search-products?q=${encodeURIComponent(q)}`, { signal: controller.signal });
         if (res.ok) {
@@ -44,10 +47,16 @@ export default function SearchPage() {
       } catch (err: any) {
         if (err.name !== 'AbortError') console.error('Search error:', err);
       }
+      finally {
+        setLoading(false);
+      }
     };
 
     fetchResults();
-    return () => controller.abort();
+    return () => {
+      controller.abort();
+      setLoading(false);
+    };
   }, [query]);
 
   // Update URL when query changes
@@ -97,7 +106,9 @@ export default function SearchPage() {
 
       {query && (
         <>
-          {results.length === 0 ? (
+          {loading ? (
+            <p style={{ marginTop: '8px' }}>Searching...</p>
+          ) : results.length === 0 ? (
             <p style={{ marginTop: '8px' }}>No results found.</p>
           ) : (
             <p style={{ marginTop: '8px' }}>
