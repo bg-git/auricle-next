@@ -31,47 +31,37 @@ export default function ChatDrawer() {
   }, [messages]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim()) return;
+  e.preventDefault();
+  if (!input.trim()) return;
 
-    const userMessage: Message = { role: 'user', content: input };
-    setMessages((prev) => [...prev, userMessage]);
-    setInput('');
-    setIsLoading(true);
+  const userMessage: Message = { role: 'user', content: input };
+  setMessages((prev) => [...prev, userMessage]);
+  setInput('');
+  setIsLoading(true);
 
-    try {
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: [...messages, userMessage] }),
-      });
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: [...messages, userMessage] }),
+    });
 
-      if (!res.ok || !res.body) throw new Error('Network error');
+    if (!res.ok) throw new Error('Network error');
 
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let assistantText = '';
+    const data = await res.json();
+    const assistantMessage: Message = {
+      role: 'assistant',
+      content: data.reply,
+    };
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        assistantText += decoder.decode(value, { stream: true });
-        setMessages((prev) => {
-          const msgs = [...prev];
-          const last = msgs[msgs.length - 1];
-          if (last && last.role === 'assistant') {
-            last.content = assistantText;
-            return [...msgs];
-          }
-          return [...msgs, { role: 'assistant', content: assistantText }];
-        });
-      }
-    } catch (err) {
-      console.error('Chat error:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    setMessages((prev) => [...prev, assistantMessage]);
+  } catch (err) {
+    console.error('Chat error:', err);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   return (
     <div
