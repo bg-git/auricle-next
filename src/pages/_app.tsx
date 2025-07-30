@@ -1,5 +1,5 @@
-import type { AppProps } from 'next/app';
-import Head from 'next/head'; 
+import type { AppProps, AppContext, AppInitialProps } from 'next/app';
+import Head from 'next/head';
 import '@/styles/globals.css';
 import '@/styles/pages/home.scss';
 import '@/styles/pages/footer.scss';
@@ -26,6 +26,8 @@ const CartDrawer = dynamic(() => import('@/components/CartDrawer'), { ssr: false
 import { FavouritesProvider } from '@/context/FavouritesContext';
 import { ToastProvider } from '@/context/ToastContext';
 import type { ShopifyCustomer } from '@/lib/verifyCustomerSession';
+import { COOKIE_NAME, setCustomerCookie } from '@/lib/cookies';
+import App from 'next/app';
 
 interface MyAppProps extends AppProps {
   pageProps: {
@@ -67,3 +69,30 @@ export default function MyApp({ Component, pageProps }: MyAppProps) {
     </ToastProvider>
   );
 }
+
+MyApp.getInitialProps = async (
+  appCtx: AppContext
+): Promise<AppInitialProps & { pageProps: { customer?: ShopifyCustomer | null } }> => {
+  const appProps = await App.getInitialProps(appCtx);
+
+  const req = appCtx.ctx.req;
+  const res = appCtx.ctx.res;
+  let customer: ShopifyCustomer | null = null;
+
+  if (req && res) {
+    const token = req.cookies?.[COOKIE_NAME];
+    if (token) {
+      const { verifyCustomerSession } = await import('@/lib/verifyCustomerSession');
+      customer = await verifyCustomerSession(token);
+      if (customer) setCustomerCookie(res, token);
+    }
+  }
+
+  return {
+    ...appProps,
+    pageProps: {
+      ...appProps.pageProps,
+      customer,
+    },
+  };
+};
