@@ -12,6 +12,7 @@ export default function ChatDrawer() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -28,40 +29,57 @@ export default function ChatDrawer() {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages, isTyping]);
+
+  // Add opening message on first open
+  useEffect(() => {
+    if (isDrawerOpen && messages.length === 0) {
+      setMessages([
+        {
+          role: 'assistant',
+          content: "Hey, we're online. How can we help you today?",
+        },
+      ]);
+    }
+  }, [isDrawerOpen, messages.length]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  if (!input.trim()) return;
+    e.preventDefault();
+    if (!input.trim()) return;
 
-  const userMessage: Message = { role: 'user', content: input };
-  setMessages((prev) => [...prev, userMessage]);
-  setInput('');
-  setIsLoading(true);
+    const userMessage: Message = { role: 'user', content: input };
+    setMessages((prev) => [...prev, userMessage]);
+    setInput('');
+    setIsLoading(true);
+    setIsTyping(true);
 
-  try {
-    const res = await fetch('/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: [...messages, userMessage] }),
-    });
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: [...messages, userMessage] }),
+      });
 
-    if (!res.ok) throw new Error('Network error');
+      if (!res.ok) throw new Error('Network error');
 
-    const data = await res.json();
-    const assistantMessage: Message = {
-      role: 'assistant',
-      content: data.reply,
-    };
+      const data = await res.json();
+      const assistantMessage: Message = {
+        role: 'assistant',
+        content: data.reply,
+      };
 
-    setMessages((prev) => [...prev, assistantMessage]);
-  } catch (err) {
-    console.error('Chat error:', err);
-  } finally {
-    setIsLoading(false);
-  }
-};
-
+      // Simulate typing delay
+      setTimeout(() => {
+        setMessages((prev) => [...prev, assistantMessage]);
+        setIsTyping(false);
+        setIsLoading(false);
+      }, 3000);
+    } catch (err) {
+      console.error('Chat error:', err);
+      setIsTyping(false);
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div
@@ -78,11 +96,12 @@ export default function ChatDrawer() {
       >
         <div className="cart-drawer-inner">
           <div className="cart-header">
-            <h2 id="chat-drawer-title">SUPPORT</h2>
+            <h2 id="chat-drawer-title">LIVE CHAT</h2>
             <button onClick={closeDrawer} aria-label="Close chat">
               &times;
             </button>
           </div>
+          <div>Online</div>
 
           <div style={{ flex: 1, overflowY: 'auto', marginBottom: '16px' }}>
             {messages.map((msg, i) => (
@@ -97,10 +116,24 @@ export default function ChatDrawer() {
                   color: '#181818',
                 }}
               >
-                <strong>{msg.role === 'user' ? 'You' : 'Support'}:</strong>{' '}
+                <strong>{msg.role === 'user' ? 'ME' : 'AURICLE'}:</strong>{' '}
                 {msg.content}
               </div>
             ))}
+            {isTyping && (
+              <div
+                style={{
+                  background: '#ececec',
+                  padding: '8px 12px',
+                  borderRadius: '6px',
+                  marginBottom: '8px',
+                  fontSize: '14px',
+                  color: '#181818',
+                }}
+              >
+                <strong>AURICLE:</strong> Typing…
+              </div>
+            )}
             <div ref={messagesEndRef} />
           </div>
 

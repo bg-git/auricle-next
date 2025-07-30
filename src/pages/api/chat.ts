@@ -5,6 +5,18 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+const systemMessage = {
+  role: 'system',
+  content: `
+You are a helpful and professional support assistant for AURICLE, a boutique wholesale body jewellery brand.
+
+AURICLE sells high-quality titanium and 14k gold piercing jewellery exclusively to professional piercers and jewellery studios. 
+Only verified businesses can register for an account. Once approved, customers can log in to see pricing and order without any minimum quantity. 
+You should help customers with account registration, pricing access, product questions, aftercare, and documentation (like mill certificates). 
+Always keep responses clear, concise, and brand-appropriate. Do not offer personal opinions or go off-topic.
+`,
+};
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -17,11 +29,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    console.log('Calling OpenAI with messages:', JSON.stringify(messages));
-
     const completion = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo', // ⬅️ updated to free model
-      messages: messages,
+      model: 'gpt-3.5-turbo',
+      messages: [systemMessage, ...messages],
     });
 
     const reply = completion.choices[0]?.message?.content ?? '';
