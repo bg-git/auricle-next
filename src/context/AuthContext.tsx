@@ -38,7 +38,7 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
   const [loading, setLoading] = useState(!initialUser);
   const router = useRouter();
 
-  const verifySession = async () => {
+  const verifySession = async (): Promise<boolean> => {
     const hasCustomerSession = document.cookie
       .split(';')
       .some((c) => c.trim().startsWith('customer_session='));
@@ -46,7 +46,7 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
     if (!hasCustomerSession) {
       setIsAuthenticated(false);
       setUser(null);
-      return;
+      return false;
     }
 
     try {
@@ -59,14 +59,17 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
         const data = await res.json();
         setUser(data.customer);
         setIsAuthenticated(true);
+        return true;
       } else {
         setUser(null);
         setIsAuthenticated(false);
+        return false;
       }
     } catch (error) {
       console.error('Auth check failed:', error);
       setUser(null);
       setIsAuthenticated(false);
+      return false;
     }
   };
 
@@ -114,9 +117,11 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
         }
 
         // Verify session after sign in
-        verifySession();
-
-        return { success: true };
+        const verified = await verifySession();
+        if (verified) {
+          return { success: true };
+        }
+        return { success: false, error: 'Session verification failed' };
       } else {
         return { success: false, error: data.error || 'Sign in failed' };
       }
