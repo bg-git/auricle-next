@@ -35,7 +35,7 @@ export default function SignIn() {
       }, 100);
     } else {
       setStatus('error');
-      setErrorMessage('Your credentials are incorrect. Please try again.');
+      setErrorMessage(result.error || 'Your credentials are incorrect. Please try again.');
     }
   };
 
