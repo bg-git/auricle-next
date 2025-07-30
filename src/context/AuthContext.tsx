@@ -53,6 +53,7 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
       const res = await fetch('/api/shopify/verify-customer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
       });
 
       if (res.ok) {
@@ -98,6 +99,7 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
+        credentials: 'include',
       });
 
       const data = await response.json();
@@ -109,6 +111,7 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
         const userResponse = await fetch('/api/shopify/get-customer', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
         });
 
         if (userResponse.ok) {
@@ -131,7 +134,7 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
   };
 
   const signOut = async () => {
-    await fetch('/api/shopify/logout', { method: 'POST' });
+    await fetch('/api/shopify/logout', { method: 'POST', credentials: 'include' });
     setIsAuthenticated(false);
     setUser(null);
     router.push('/');
@@ -142,6 +145,7 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
       const res = await fetch('/api/shopify/get-customer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
       });
 
       if (res.ok) {
