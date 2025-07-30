@@ -1,4 +1,3 @@
-// pages/api/chat.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 import OpenAI from 'openai';
 
@@ -18,8 +17,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
+    console.log('Calling OpenAI with messages:', JSON.stringify(messages));
+
     const completion = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
+      model: 'gpt-3.5-turbo', // ⬅️ updated to free model
       messages: messages,
     });
 
