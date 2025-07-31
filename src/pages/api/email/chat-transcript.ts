@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { Resend } from 'resend';
-import ChatTranscript from '@/components/emails/ChatTranscript';
+import ChatTranscript from '@/emails/ChatTranscript';
 
 
 const resend = new Resend(process.env.RESEND_API_KEY);
