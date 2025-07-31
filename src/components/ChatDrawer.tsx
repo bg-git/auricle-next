@@ -104,7 +104,9 @@ emailSentRef.current = true;
   if (!input.trim()) return;
 
   const userMessage: Message = { role: 'user', content: input };
-  setMessages((prev) => [...prev, userMessage]);
+  const updatedMessages = [...messages, userMessage];
+
+  setMessages(updatedMessages);
   setInput('');
   setIsLoading(true);
 
@@ -112,7 +114,7 @@ emailSentRef.current = true;
     const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: [...messages, userMessage] }),
+      body: JSON.stringify({ messages: updatedMessages }),
     });
 
     if (!res.ok) throw new Error('Network error');
@@ -140,6 +142,7 @@ emailSentRef.current = true;
     setIsLoading(false);
   }
 };
+
 
 
   return (
@@ -210,7 +213,8 @@ emailSentRef.current = true;
         e.preventDefault();
         if (customerEmail.trim()) setEmailCaptured(true);
       }}
-      style={{ display: 'flex', marginTop: '8px', gap: '8px' }}
+  style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}
+
     >
       <input
   type="email"
