@@ -17,7 +17,13 @@ export default function AccountPage() {
   const router = useRouter();
 
   const fetcher = (url: string) =>
-    fetch(url, { credentials: "include" }).then((res) => res.json());
+    fetch(url, { 
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json"
+      }
+    }).then((res) => res.json());
 
   const {
     data: customerData,
