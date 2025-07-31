@@ -213,19 +213,20 @@ emailSentRef.current = true;
       style={{ display: 'flex', marginTop: '8px', gap: '8px' }}
     >
       <input
-        type="email"
-        value={customerEmail}
-        onChange={(e) => setCustomerEmail(e.target.value)}
-        placeholder="you@example.com"
-        required
-        style={{
-          flex: 1,
-          padding: '8px',
-          fontSize: '14px',
-          border: '1px solid #ccc',
-          borderRadius: '4px',
-        }}
-      />
+  type="email"
+  value={customerEmail}
+  onChange={(e) => setCustomerEmail(e.target.value)}
+  placeholder="you@example.com"
+  required
+  style={{
+    flex: 1,
+    padding: '10px 12px',
+    fontSize: '16px',
+    border: '1px solid #ccc',
+    borderRadius: '4px',
+  }}
+/>
+
       <button
         type="submit"
         style={{
@@ -262,19 +263,21 @@ emailSentRef.current = true;
 
           <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '8px' }}>
             <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask us something..."
-              style={{
-                flex: 1,
-                padding: '8px 12px',
-                fontSize: '14px',
-                border: '1px solid #ccc',
-                borderRadius: '4px',
-              }}
-              disabled={isLoading}
-            />
+  type="text"
+  value={input}
+  onChange={(e) => setInput(e.target.value)}
+  placeholder="Ask us something..."
+  style={{
+    flex: 1,
+    padding: '10px 12px',
+    fontSize: '16px', 
+    lineHeight: 1.5,
+    border: '1px solid #ccc',
+    borderRadius: '4px',
+  }}
+  disabled={isLoading}
+/>
+
             <button
               type="submit"
               style={{
