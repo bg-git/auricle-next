@@ -114,7 +114,7 @@ emailSentRef.current = true;
     const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: updatedMessages }),
+      body: JSON.stringify({ messages }),
     });
 
     if (!res.ok) throw new Error('Network error');
@@ -191,9 +191,9 @@ emailSentRef.current = true;
                 }}
               >
                 <strong>{msg.role === 'user' ? 'ME' : 'AURICLE'}:</strong>{' '}
-{msg.role === 'assistant' ? linkify(msg.content) : msg.content}
+{linkify(msg.content)}
 
-                {msg.content}
+
               </div>
             ))}
             {!isLoggedIn && !emailCaptured && (
