@@ -40,6 +40,10 @@ const [emailCaptured, setEmailCaptured] = useState(false);
   const emailSentRef = useRef(false);
   const replySound = useRef<HTMLAudioElement | null>(null);
 
+  useEffect(() => {
+    replySound.current = new Audio('/message.mp3');
+  }, []);
+
 const isLoggedIn = false; // Replace this later with real auth check
 
   useEffect(() => {
@@ -166,6 +170,7 @@ setTimeout(() => {
         aria-modal="true"
         aria-labelledby="chat-drawer-title"
       >
+        <audio ref={replySound} src="/message.mp3" preload="auto" style={{ display: 'none' }} />
         <div className="cart-drawer-inner">
   <div
     className="cart-header"
