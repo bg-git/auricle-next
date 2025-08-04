@@ -39,10 +39,15 @@ const [emailCaptured, setEmailCaptured] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const emailSentRef = useRef(false);
   const replySound = useRef<HTMLAudioElement | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     replySound.current = new Audio('/message.mp3');
   }, []);
+
+  useEffect(() => {
+    if (!isLoading) inputRef.current?.focus();
+  }, [isLoading]);
 
 const isLoggedIn = false; // Replace this later with real auth check
 
@@ -287,12 +292,13 @@ setTimeout(() => {
   style={{
     flex: 1,
     padding: '10px 12px',
-    fontSize: '16px', 
+    fontSize: '16px',
     lineHeight: 1.5,
     border: '1px solid #ccc',
     borderRadius: '4px',
   }}
   disabled={isLoading}
+  ref={inputRef}
 />
 
             <button
