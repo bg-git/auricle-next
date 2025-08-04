@@ -38,6 +38,7 @@ export default function ChatDrawer() {
 const [emailCaptured, setEmailCaptured] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const emailSentRef = useRef(false);
+  const replySound = useRef<HTMLAudioElement | null>(null);
 
 const isLoggedIn = false; // Replace this later with real auth check
 
@@ -128,14 +129,17 @@ const handleSubmit = async (e: React.FormEvent) => {
     // ⏳ Wait 3s before showing "Typing..."
     setTimeout(() => {
       setIsTyping(true);
-
+if (replySound.current) {
+      replySound.current.currentTime = 0;
+      replySound.current.play().catch(() => {});
+    }
       // ⏱️ Wait another 5s before showing the reply
       setTimeout(() => {
         setMessages((prev) => [...prev, assistantMessage]);
         setIsTyping(false);
         setIsLoading(false);
-      }, 5000);
-    }, 3000);
+      }, 6000);
+    }, 5000);
   } catch (err) {
     console.error('Chat error:', err);
     setIsTyping(false);
