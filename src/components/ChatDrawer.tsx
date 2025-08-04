@@ -214,6 +214,20 @@ setTimeout(() => {
 
               </div>
             ))}
+            {isTyping && (
+              <div
+                style={{
+                  background: '#ececec',
+                  padding: '8px 12px',
+                  borderRadius: '6px',
+                  marginBottom: '8px',
+                  fontSize: '14px',
+                  color: '#181818',
+                }}
+              >
+                <strong>AURICLE:</strong> Typing…
+              </div>
+            )}
             {!isLoggedIn && !emailCaptured && (
   <div
     style={{
@@ -265,21 +279,6 @@ setTimeout(() => {
     </form>
   </div>
 )}
-
-            {isTyping && (
-              <div
-                style={{
-                  background: '#ececec',
-                  padding: '8px 12px',
-                  borderRadius: '6px',
-                  marginBottom: '8px',
-                  fontSize: '14px',
-                  color: '#181818',
-                }}
-              >
-                <strong>AURICLE:</strong> Typing…
-              </div>
-            )}
             <div ref={messagesEndRef} />
           </div>
 
