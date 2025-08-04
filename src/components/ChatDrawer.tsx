@@ -127,19 +127,24 @@ const handleSubmit = async (e: React.FormEvent) => {
     };
 
     // ⏳ Wait 3s before showing "Typing..."
-    setTimeout(() => {
-      setIsTyping(true);
-if (replySound.current) {
+setTimeout(() => {
+  setIsTyping(true);
+
+  // ⏱️ Wait another 6s before showing the reply
+  setTimeout(() => {
+    // ✅ Trigger sound here
+    if (replySound.current) {
       replySound.current.currentTime = 0;
-      replySound.current.play().catch(() => {});
+      replySound.current.play().catch((err) => {
+        console.warn('Failed to play reply sound:', err);
+      });
     }
-      // ⏱️ Wait another 5s before showing the reply
-      setTimeout(() => {
-        setMessages((prev) => [...prev, assistantMessage]);
-        setIsTyping(false);
-        setIsLoading(false);
-      }, 6000);
-    }, 5000);
+
+    setMessages((prev) => [...prev, assistantMessage]);
+    setIsTyping(false);
+    setIsLoading(false);
+  }, 6000);
+}, 5000);
   } catch (err) {
     console.error('Chat error:', err);
     setIsTyping(false);

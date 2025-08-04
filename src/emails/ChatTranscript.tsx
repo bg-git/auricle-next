@@ -2,7 +2,7 @@ import { Html, Head, Preview, Body, Container, Heading, Text, Hr } from '@react-
 
 type ChatTranscriptProps = {
   name?: string;
-  messages: { sender: 'You' | 'AURICLE', text: string }[];
+  messages: { sender: 'ME' | 'AURICLE', text: string }[];
 };
 
 export default function ChatTranscript({ name, messages }: ChatTranscriptProps) {
