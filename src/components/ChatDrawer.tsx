@@ -99,50 +99,49 @@ emailSentRef.current = true;
   return () => clearTimeout(timeout);
 }, [messages, customerEmail]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const text = input.trim();
-    if (!text) return;
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!input.trim()) return;
 
-    const userMessage: Message = { role: 'user', content: text };
-    const updated = [...messages, userMessage];
-    setMessages((prev) => [...prev, userMessage]);
-    setInput('');
-    setIsLoading(true);
-    setIsTyping(true);
+  const userMessage: Message = { role: 'user', content: input };
+  const updatedMessages = [...messages, userMessage];
 
-    try {
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: updated }),
-      });
+  setMessages(updatedMessages);
+  setInput('');
+  setIsLoading(true);
 
-      if (!res.body) throw new Error('Missing response body');
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: updatedMessages }), // ✅ FIXED
+    });
 
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let assistant = '';
-      setMessages((prev) => [...prev, { role: 'assistant', content: '' }]);
+    if (!res.ok) throw new Error('Network error');
 
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
-        assistant += decoder.decode(value, { stream: true });
-        setMessages((prev) => {
-          const next = [...prev];
-          next[next.length - 1] = { role: 'assistant', content: assistant };
-          return next;
-        });
-      }
-    } catch (err) {
-      console.error('Chat error:', err);
-    } finally {
-      setIsTyping(false);
-      setIsLoading(false);
-    }
-  };
+    const data = await res.json();
+    const assistantMessage: Message = {
+      role: 'assistant',
+      content: data.reply,
+    };
 
+    // ⏳ Wait 3s before showing "Typing..."
+    setTimeout(() => {
+      setIsTyping(true);
+
+      // ⏱️ Wait another 5s before showing the reply
+      setTimeout(() => {
+        setMessages((prev) => [...prev, assistantMessage]);
+        setIsTyping(false);
+        setIsLoading(false);
+      }, 5000);
+    }, 3000);
+  } catch (err) {
+    console.error('Chat error:', err);
+    setIsTyping(false);
+    setIsLoading(false);
+  }
+};
 
 
   return (
