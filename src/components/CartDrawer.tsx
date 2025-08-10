@@ -15,6 +15,7 @@ export default function CartDrawer() {
     isDrawerOpen,
     closeDrawer,
     updateQuantity,
+    flushSync,
   } = useCart();
 
   const { addFavourite } = useFavourites();
@@ -121,9 +122,9 @@ export default function CartDrawer() {
           <a
   className={`checkout-button ${checkoutUrl ? '' : 'disabled'}`}
   href={checkoutUrl || '#'}
-  onClick={(e) => {
+  onClick={async (e) => {
+    e.preventDefault();
     if (!checkoutUrl) {
-      e.preventDefault();
       return;
     }
 
@@ -139,6 +140,8 @@ export default function CartDrawer() {
         });
       }
     });
+    await flushSync();
+    window.location.href = checkoutUrl;
   }}
 >
   CHECKOUT
