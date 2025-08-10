@@ -132,6 +132,11 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
 
   const signOut = async () => {
     await fetch('/api/shopify/logout', { method: 'POST', credentials: 'include' });
+
+    const domain =
+      process.env.NEXT_PUBLIC_AUTH_COOKIE_DOMAIN || window.location.hostname;
+    document.cookie = `${COOKIE_NAME}=; Domain=${domain}; Path=/; Secure; SameSite=None; Max-Age=0`;
+
     setIsAuthenticated(false);
     setUser(null);
     router.push('/');
