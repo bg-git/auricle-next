@@ -97,6 +97,8 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
       if (response.ok && data.success) {
         setIsAuthenticated(true);
 
+        document.cookie = `customer_session=${encodeURIComponent(data.accessToken)}; domain=.auricle.co.uk; path=/; Secure; SameSite=None`;
+
         // Fetch user data
         const userResponse = await fetch('/api/shopify/get-customer', {
           method: 'POST',

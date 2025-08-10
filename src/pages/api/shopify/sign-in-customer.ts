@@ -50,7 +50,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const json = await response.json();
 
-    
+
 
     if (json.errors || json.data.customerAccessTokenCreate.customerUserErrors.length > 0) {
       const message =
@@ -60,7 +60,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const { accessToken } = json.data.customerAccessTokenCreate.customerAccessToken;
     setCustomerCookie(res, accessToken);
-    return res.status(200).json({ success: true });
+    return res.status(200).json({ success: true, accessToken });
   } catch (error: unknown) {
     const message =
       error instanceof Error ? error.message : 'An unknown error occurred';
