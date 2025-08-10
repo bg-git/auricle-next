@@ -6,6 +6,7 @@ import {
   ReactNode,
 } from 'react';
 import { useRouter } from 'next/router';
+import { COOKIE_NAME, COOKIE_MAX_AGE } from '@/lib/cookies';
 
 export interface ShopifyCustomer {
   id: string;
@@ -97,7 +98,11 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
       if (response.ok && data.success) {
         setIsAuthenticated(true);
 
-        document.cookie = `customer_session=${encodeURIComponent(data.accessToken)}; domain=.auricle.co.uk; path=/; Secure; SameSite=None`;
+        const domain =
+          process.env.NEXT_PUBLIC_AUTH_COOKIE_DOMAIN || window.location.hostname;
+        document.cookie = `${COOKIE_NAME}=${encodeURIComponent(
+          data.accessToken,
+        )}; Domain=${domain}; Path=/; Secure; SameSite=None; Max-Age=${COOKIE_MAX_AGE}`;
 
         // Fetch user data
         const userResponse = await fetch('/api/shopify/get-customer', {
