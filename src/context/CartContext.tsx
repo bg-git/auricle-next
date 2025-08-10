@@ -33,7 +33,7 @@ interface CartContextType {
   isDrawerOpen: boolean;
   openDrawer: () => void;
   closeDrawer: () => void;
-  flushSync: () => Promise<void>;
+  flushSync: () => Promise<string | null>;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -46,6 +46,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [checkoutId, setCheckoutId] = useState<string | null>(null);
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const checkoutUrlRef = useRef<string | null>(checkoutUrl);
 
   const syncTimeout = useRef<NodeJS.Timeout | null>(null);
   const pendingSync = useRef<Promise<void> | null>(null);
@@ -58,6 +59,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const openDrawer = () => setIsDrawerOpen(true);
   const closeDrawer = () => setIsDrawerOpen(false);
+
+  useEffect(() => {
+    checkoutUrlRef.current = checkoutUrl;
+  }, [checkoutUrl]);
 
   const scheduleSync = (items: CartItem[]) => {
     if (syncTimeout.current) {
@@ -80,7 +85,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }, 300);
   };
 
-  const flushSync = async () => {
+  const flushSync = async (): Promise<string | null> => {
     if (syncTimeout.current) {
       clearTimeout(syncTimeout.current);
       syncTimeout.current = null;
@@ -95,6 +100,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     if (pendingSync.current) {
       await pendingSync.current;
     }
+    return checkoutUrlRef.current;
   };
 
   useEffect(() => {

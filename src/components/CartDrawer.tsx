@@ -1,6 +1,6 @@
 import { useCart } from '@/context/CartContext';
 import Image from 'next/image';
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useFavourites } from '@/context/FavouritesContext';
 
 const formatPrice = (price: string | undefined) => {
@@ -20,10 +20,7 @@ export default function CartDrawer() {
 
   const { addFavourite } = useFavourites();
 
-  const checkoutUrlRef = useRef<string | null>(checkoutUrl);
-  useEffect(() => {
-    checkoutUrlRef.current = checkoutUrl;
-  }, [checkoutUrl]);
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
 
 
   useEffect(() => {
@@ -125,31 +122,35 @@ export default function CartDrawer() {
           )}
 
           <a
-  className={`checkout-button ${checkoutUrl ? '' : 'disabled'}`}
-  href={checkoutUrl || '#'}
-  onClick={async (e) => {
-    e.preventDefault();
-    await flushSync();
-    const url = checkoutUrlRef.current;
-    if (!url) return;
+            className={`checkout-button ${
+              checkoutUrl && !isCheckingOut ? '' : 'disabled'
+            }`}
+            href={checkoutUrl || '#'}
+            onClick={async (e) => {
+              e.preventDefault();
+              if (isCheckingOut) return;
+              setIsCheckingOut(true);
+              const url = await flushSync();
+              setIsCheckingOut(false);
+              if (!url) return;
 
-    cartItems.forEach((item) => {
-      if (item.handle) {
-        addFavourite({
-          handle: item.handle,
-          title: item.title || '',
-          image: item.image,
-          price: item.price,
-          metafields: item.metafields,
-          orderAgain: true, // ✅ This sets the flag
-        });
-      }
-    });
-    window.location.href = url;
-  }}
->
-  CHECKOUT
-</a>
+              cartItems.forEach((item) => {
+                if (item.handle) {
+                  addFavourite({
+                    handle: item.handle,
+                    title: item.title || '',
+                    image: item.image,
+                    price: item.price,
+                    metafields: item.metafields,
+                    orderAgain: true, // ✅ This sets the flag
+                  });
+                }
+              });
+              window.location.href = url;
+            }}
+          >
+            {isCheckingOut ? 'LOADING…' : 'CHECKOUT'}
+          </a>
 
 
           <p
