@@ -1,6 +1,6 @@
 import { useCart } from '@/context/CartContext';
 import Image from 'next/image';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useFavourites } from '@/context/FavouritesContext';
 
 const formatPrice = (price: string | undefined) => {
@@ -19,6 +19,11 @@ export default function CartDrawer() {
   } = useCart();
 
   const { addFavourite } = useFavourites();
+
+  const checkoutUrlRef = useRef<string | null>(checkoutUrl);
+  useEffect(() => {
+    checkoutUrlRef.current = checkoutUrl;
+  }, [checkoutUrl]);
 
 
   useEffect(() => {
@@ -124,9 +129,9 @@ export default function CartDrawer() {
   href={checkoutUrl || '#'}
   onClick={async (e) => {
     e.preventDefault();
-    if (!checkoutUrl) {
-      return;
-    }
+    await flushSync();
+    const url = checkoutUrlRef.current;
+    if (!url) return;
 
     cartItems.forEach((item) => {
       if (item.handle) {
@@ -140,8 +145,7 @@ export default function CartDrawer() {
         });
       }
     });
-    await flushSync();
-    window.location.href = checkoutUrl;
+    window.location.href = url;
   }}
 >
   CHECKOUT
