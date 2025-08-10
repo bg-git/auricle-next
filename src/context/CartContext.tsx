@@ -33,6 +33,7 @@ interface CartContextType {
   isDrawerOpen: boolean;
   openDrawer: () => void;
   closeDrawer: () => void;
+  flushSync: () => Promise<void>;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -75,6 +76,23 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         pendingSync.current = null;
       });
     }, 300);
+  };
+
+  const flushSync = async () => {
+    if (syncTimeout.current) {
+      clearTimeout(syncTimeout.current);
+      syncTimeout.current = null;
+      pendingSync.current = syncShopifyCheckout(
+        cartItems,
+        syncVersion.current,
+        abortController.current?.signal
+      ).finally(() => {
+        pendingSync.current = null;
+      });
+    }
+    if (pendingSync.current) {
+      await pendingSync.current;
+    }
   };
 
   useEffect(() => {
@@ -311,6 +329,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         isDrawerOpen,
         openDrawer,
         closeDrawer,
+        flushSync,
       }}
     >
       {children}
