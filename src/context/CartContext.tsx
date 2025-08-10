@@ -51,6 +51,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const pendingSync = useRef<Promise<void> | null>(null);
   const syncVersion = useRef(0);
   const abortController = useRef<AbortController | null>(null);
+  const latestItemsRef = useRef<CartItem[]>(cartItems);
 
   const { addFavourite, isFavourite } = useFavourites();
   const { showToast } = useToast();
@@ -65,11 +66,12 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     if (abortController.current) {
       abortController.current.abort();
     }
+    latestItemsRef.current = items;
     const current = ++syncVersion.current;
     abortController.current = new AbortController();
     syncTimeout.current = setTimeout(() => {
       pendingSync.current = syncShopifyCheckout(
-        items,
+        latestItemsRef.current,
         current,
         abortController.current?.signal
       ).finally(() => {
@@ -83,7 +85,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       clearTimeout(syncTimeout.current);
       syncTimeout.current = null;
       pendingSync.current = syncShopifyCheckout(
-        cartItems,
+        latestItemsRef.current,
         syncVersion.current,
         abortController.current?.signal
       ).finally(() => {
@@ -174,6 +176,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       localStorage.removeItem(CHECKOUT_ID_KEY);
     }
   }, [cartItems, checkoutId]);
+
+  useEffect(() => {
+    latestItemsRef.current = cartItems;
+  }, [cartItems]);
 
   const syncShopifyCheckout = async (
     items: CartItem[],
