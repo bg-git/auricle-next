@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { COOKIE_NAME } from '@/lib/cookies';
 
 const SHOPIFY_DOMAIN = process.env.SHOPIFY_STORE_DOMAIN;
 const SHOPIFY_TOKEN = process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN;
@@ -30,10 +31,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
   `;
 
-  const variables = {
+  const customerAccessToken = req.cookies?.[COOKIE_NAME];
+
+  const variables: {
+    lines: { merchandiseId: string; quantity: number }[];
+    buyerIdentity: {
+      countryCode: string;
+      customerAccessToken?: string;
+    };
+  } = {
     lines,
     buyerIdentity: {
-      countryCode: "GB" // ✅ You can change this to "US", "IE", etc.
+      countryCode: "GB", // ✅ You can change this to "US", "IE", etc.
+      ...(customerAccessToken ? { customerAccessToken } : {}),
     },
   };
 
