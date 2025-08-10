@@ -48,6 +48,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const syncTimeout = useRef<NodeJS.Timeout | null>(null);
   const pendingSync = useRef<Promise<void> | null>(null);
+  const syncVersion = useRef(0);
+  const abortController = useRef<AbortController | null>(null);
 
   const { addFavourite, isFavourite } = useFavourites();
   const { showToast } = useToast();
@@ -59,8 +61,17 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     if (syncTimeout.current) {
       clearTimeout(syncTimeout.current);
     }
+    if (abortController.current) {
+      abortController.current.abort();
+    }
+    const current = ++syncVersion.current;
+    abortController.current = new AbortController();
     syncTimeout.current = setTimeout(() => {
-      pendingSync.current = syncShopifyCheckout(items).finally(() => {
+      pendingSync.current = syncShopifyCheckout(
+        items,
+        current,
+        abortController.current?.signal
+      ).finally(() => {
         pendingSync.current = null;
       });
     }, 300);
@@ -69,6 +80,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     return () => {
       if (syncTimeout.current) clearTimeout(syncTimeout.current);
+      abortController.current?.abort();
     };
   }, []);
 
@@ -117,10 +129,16 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
             return;
           }
 
-          const items = (cart.lines.edges || []).map((edge: any) => ({
-            variantId: edge.node.merchandise.id,
-            quantity: edge.node.quantity,
-          }));
+          const items = (cart.lines.edges || []).map(
+            (
+              edge: {
+                node: { merchandise: { id: string }; quantity: number };
+              }
+            ) => ({
+              variantId: edge.node.merchandise.id,
+              quantity: edge.node.quantity,
+            })
+          );
           setCartItems(items);
           setCheckoutUrl(cart.checkoutUrl);
         })
@@ -139,8 +157,13 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [cartItems, checkoutId]);
 
-  const syncShopifyCheckout = async (items: CartItem[]) => {
+  const syncShopifyCheckout = async (
+    items: CartItem[],
+    current: number,
+    signal?: AbortSignal
+  ) => {
     if (items.length === 0) {
+      if (current !== syncVersion.current) return;
       setCheckoutUrl(null);
       setCheckoutId(null);
       return;
@@ -153,8 +176,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ items }),
           credentials: 'include',
+          signal,
         });
         const data = await res.json();
+        if (current !== syncVersion.current) return;
         setCheckoutUrl(data.checkoutUrl);
         setCheckoutId(data.checkoutId);
       } else {
@@ -163,8 +188,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ checkoutId, items }),
           credentials: 'include',
+          signal,
         });
         const data = await res.json();
+        if (current !== syncVersion.current) return;
         if (data.completed) {
           setCartItems([]);
           setCheckoutId(null);
@@ -173,15 +200,23 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         }
         const cart = data.cart;
         if (cart) {
-          const updated = (cart.lines.edges || []).map((edge: any) => ({
-            variantId: edge.node.merchandise.id,
-            quantity: edge.node.quantity,
-          }));
+          const updated = (cart.lines.edges || []).map(
+            (
+              edge: {
+                node: { merchandise: { id: string }; quantity: number };
+              }
+            ) => ({
+              variantId: edge.node.merchandise.id,
+              quantity: edge.node.quantity,
+            })
+          );
+          if (current !== syncVersion.current) return;
           setCartItems(updated);
           setCheckoutUrl(cart.checkoutUrl);
         }
       }
-    } catch (err) {
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name === 'AbortError') return;
       console.error('Checkout error:', err);
     }
   };
