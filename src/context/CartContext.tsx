@@ -93,6 +93,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: storedId }),
+        credentials: 'include',
       })
         .then((res) => res.json())
         .then((data) => {
@@ -161,6 +162,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ checkoutId, items }),
+          credentials: 'include',
         });
         const data = await res.json();
         if (data.completed) {
