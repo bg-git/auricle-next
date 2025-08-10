@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { COOKIE_NAME } from '@/lib/cookies';
 
 const SHOPIFY_DOMAIN = process.env.SHOPIFY_STORE_DOMAIN!;
 const SHOPIFY_TOKEN = process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN!;
@@ -27,6 +28,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!checkoutId) {
     return res.status(400).json({ message: 'Missing checkoutId' });
   }
+
+  const customerAccessToken = req.cookies?.[COOKIE_NAME];
 
   const GET_CART = `${CART_FRAGMENT}\nquery getCart($id: ID!) { cart(id: $id) { ...CartFields } }`;
 
@@ -79,6 +82,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (toAdd.length) {
     const MUTATION = `mutation cartLinesAdd($cartId: ID!, $lines: [CartLineInput!]!) { cartLinesAdd(cartId: $cartId, lines: $lines) { cart { id } userErrors { field message } } }`;
     await shopifyFetch(MUTATION, { cartId: checkoutId, lines: toAdd });
+  }
+
+  const IDENTITY_MUTATION = `mutation cartBuyerIdentityUpdate($cartId: ID!, $buyerIdentity: CartBuyerIdentityInput!) { cartBuyerIdentityUpdate(cartId: $cartId, buyerIdentity: $buyerIdentity) { cart { id } userErrors { field message } } }`;
+  const buyerIdentity = {
+    countryCode: 'GB',
+    ...(customerAccessToken ? { customerAccessToken } : {}),
+  };
+  const identityRes = await shopifyFetch(IDENTITY_MUTATION, {
+    cartId: checkoutId,
+    buyerIdentity,
+  });
+  const identityErrors = identityRes.data?.cartBuyerIdentityUpdate?.userErrors;
+  if (identityErrors?.length) {
+    console.error('Shopify cartBuyerIdentityUpdate user errors:', identityErrors);
   }
 
   json = await shopifyFetch(GET_CART, { id: checkoutId });
