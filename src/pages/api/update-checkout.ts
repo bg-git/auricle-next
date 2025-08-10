@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { COOKIE_NAME } from '@/lib/cookies';
 
 const SHOPIFY_DOMAIN = process.env.SHOPIFY_STORE_DOMAIN!;
 const SHOPIFY_TOKEN = process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN!;
@@ -24,6 +25,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const { checkoutId, items } = req.body as { checkoutId: string; items: { variantId: string; quantity: number }[] };
+  const token = req.cookies[COOKIE_NAME];
   if (!checkoutId) {
     return res.status(400).json({ message: 'Missing checkoutId' });
   }
@@ -41,12 +43,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const existing: { [variantId: string]: { lineId: string; qty: number } } = {};
-  for (const edge of cart.lines.edges as any[]) {
+  for (const edge of cart.lines.edges as Array<{ node: { id: string; quantity: number; merchandise: { id: string } } }>) {
     existing[edge.node.merchandise.id] = { lineId: edge.node.id, qty: edge.node.quantity };
   }
 
   const desired = new Map<string, number>();
-  for (const item of items as any[]) {
+  for (const item of items) {
     if (item.quantity > 0) desired.set(item.variantId, item.quantity);
   }
 
@@ -79,6 +81,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (toAdd.length) {
     const MUTATION = `mutation cartLinesAdd($cartId: ID!, $lines: [CartLineInput!]!) { cartLinesAdd(cartId: $cartId, lines: $lines) { cart { id } userErrors { field message } } }`;
     await shopifyFetch(MUTATION, { cartId: checkoutId, lines: toAdd });
+  }
+
+  if (token) {
+    const MUTATION = `mutation cartBuyerIdentityUpdate($cartId: ID!, $buyerIdentity: CartBuyerIdentityInput!) { cartBuyerIdentityUpdate(cartId: $cartId, buyerIdentity: $buyerIdentity) { cart { id } userErrors { field message } } }`;
+    await shopifyFetch(MUTATION, {
+      cartId: checkoutId,
+      buyerIdentity: { customerAccessToken: token },
+    });
   }
 
   json = await shopifyFetch(GET_CART, { id: checkoutId });
