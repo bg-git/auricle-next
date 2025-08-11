@@ -17,7 +17,7 @@ async function shopifyFetch(query: string, variables: Record<string, unknown>) {
   return res.json();
 }
 
-const CART_FRAGMENT = `fragment CartFields on Cart {\n  id\n  status\n  checkoutUrl\n  lines(first: 250) {\n    edges {\n      node {\n        id\n        quantity\n        merchandise { ... on ProductVariant { id } }\n      }\n    }\n  }\n}`;
+const CART_FRAGMENT = `fragment CartFields on Cart {\n  id\n  checkoutUrl\n  lines(first: 250) {\n    edges {\n      node {\n        id\n        quantity\n        merchandise { ... on ProductVariant { id } }\n      }\n    }\n  }\n}`;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -39,9 +39,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(404).json({ message: 'Cart not found', debug: json });
   }
 
-  if (cart.status && cart.status !== 'ACTIVE') {
-    return res.status(200).json({ completed: true });
-  }
+  // Cart status field doesn't exist in current Shopify API
+  // if (cart.status && cart.status !== 'ACTIVE') {
+  //   return res.status(200).json({ completed: true });
+  // }
 
   const existing: { [variantId: string]: { lineId: string; qty: number } } = {};
   for (const edge of cart.lines.edges as any[]) {

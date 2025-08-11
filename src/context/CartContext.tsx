@@ -136,7 +136,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         .then((res) => res.json())
         .then((data) => {
           const cart = data.cart;
-          if (!cart || cart.status !== 'ACTIVE') {
+          if (!cart) {
             fetch('/api/create-checkout', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -147,10 +147,12 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
               .then((data) => {
                 setCheckoutId(data.checkoutId);
                 setCheckoutUrl(data.checkoutUrl);
+                checkoutUrlRef.current = data.checkoutUrl;
               })
               .catch(() => {
                 setCheckoutId(null);
                 setCheckoutUrl(null);
+                checkoutUrlRef.current = null;
               });
             return;
           }
@@ -160,16 +162,30 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
               edge: {
                 node: { merchandise: { id: string }; quantity: number };
               }
-            ) => ({
-              variantId: edge.node.merchandise.id,
-              quantity: edge.node.quantity,
-            })
+            ) => {
+              // Try to find existing item data from localStorage
+              const existingItem = parsedItems.find(item => item.variantId === edge.node.merchandise.id);
+              return {
+                variantId: edge.node.merchandise.id,
+                quantity: edge.node.quantity,
+                // Preserve existing metadata from localStorage
+                title: existingItem?.title,
+                price: existingItem?.price,
+                image: existingItem?.image,
+                handle: existingItem?.handle,
+                metafields: existingItem?.metafields,
+                quantityAvailable: existingItem?.quantityAvailable,
+              };
+            }
           );
           setCartItems(items);
           setCheckoutUrl(cart.checkoutUrl);
+          checkoutUrlRef.current = cart.checkoutUrl;
         })
         .catch(() => {
           setCheckoutId(null);
+          setCheckoutUrl(null);
+          checkoutUrlRef.current = null;
         });
     }
   }, []);
@@ -192,10 +208,18 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     current: number,
     signal?: AbortSignal
   ) => {
+    // Validate variant IDs
+    const invalidItems = items.filter(item => !item.variantId || !item.variantId.startsWith('gid://shopify/'));
+    if (invalidItems.length > 0) {
+      console.error('❌ Invalid variant IDs found:', invalidItems);
+      return;
+    }
+    
     if (items.length === 0) {
       if (current !== syncVersion.current) return;
       setCheckoutUrl(null);
       setCheckoutId(null);
+      checkoutUrlRef.current = null;
       return;
     }
 
@@ -212,6 +236,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         if (current !== syncVersion.current) return;
         setCheckoutUrl(data.checkoutUrl);
         setCheckoutId(data.checkoutId);
+        checkoutUrlRef.current = data.checkoutUrl;
       } else {
         const res = await fetch('/api/update-checkout', {
           method: 'POST',
@@ -222,27 +247,45 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         });
         const data = await res.json();
         if (current !== syncVersion.current) return;
+        // Handle completed checkout if API returns it
         if (data.completed) {
           setCartItems([]);
           setCheckoutId(null);
           setCheckoutUrl(null);
+          checkoutUrlRef.current = null;
           return;
         }
         const cart = data.cart;
         if (cart) {
+          // Preserve existing metadata when updating from Shopify
+          const existingItemsMap = new Map(
+            latestItemsRef.current.map(item => [item.variantId, item])
+          );
+          
           const updated = (cart.lines.edges || []).map(
             (
               edge: {
                 node: { merchandise: { id: string }; quantity: number };
               }
-            ) => ({
-              variantId: edge.node.merchandise.id,
-              quantity: edge.node.quantity,
-            })
+            ) => {
+              const existingItem = existingItemsMap.get(edge.node.merchandise.id);
+              return {
+                variantId: edge.node.merchandise.id,
+                quantity: edge.node.quantity,
+                // Preserve existing metadata
+                title: existingItem?.title,
+                price: existingItem?.price,
+                image: existingItem?.image,
+                handle: existingItem?.handle,
+                metafields: existingItem?.metafields,
+                quantityAvailable: existingItem?.quantityAvailable,
+              };
+            }
           );
           if (current !== syncVersion.current) return;
           setCartItems(updated);
           setCheckoutUrl(cart.checkoutUrl);
+          checkoutUrlRef.current = cart.checkoutUrl;
         }
       }
     } catch (err: unknown) {
