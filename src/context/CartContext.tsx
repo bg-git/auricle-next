@@ -82,7 +82,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       ).finally(() => {
         pendingSync.current = null;
       });
-    }, 300);
+    }, 100);
   };
 
   const flushSync = async (): Promise<string | null> => {
@@ -316,19 +316,11 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
             ? { ...item, quantity: finalQty, quantityAvailable: maxQty }
             : item
         )
-      : [...cartItems, { variantId, quantity: finalQty, ...meta }];
+      : [{ variantId, quantity: finalQty, ...meta }, ...cartItems];
 
     setCartItems(updatedItems);
-    if (meta?.handle) {
-  addFavourite({
-    handle: meta.handle,
-    title: meta.title || '',
-    image: meta.image,
-    price: meta.price,
-    metafields: meta.metafields,
-  });
-}
-
+    
+    // Open drawer immediately for better UX
     openDrawer();
 
     // ✅ Add to favourites silently

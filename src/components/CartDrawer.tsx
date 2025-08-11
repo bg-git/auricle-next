@@ -56,7 +56,7 @@ export default function CartDrawer() {
             <p className="empty-message">Your cart is empty.</p>
           ) : (
             <ul className="cart-items">
-               {[...cartItems].reverse().map((item) => (
+               {cartItems.map((item) => (
                 <li key={item.variantId} className="cart-item-overlay">
                   <div className="cart-image-full">
                     {item.image && (
