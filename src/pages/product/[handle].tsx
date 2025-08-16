@@ -69,54 +69,48 @@ interface ProductPageProps {
 
 
 export default function ProductPage({ product }: ProductPageProps) {
+  if (!product) {
+    return <div style={{ padding: '16px' }}>Product not found.</div>;
+  }
+
   const { addToCart, openDrawer } = useCart();
   const { showToast } = useToast();
   const router = useRouter();
 
-const [selectedVariantId, setSelectedVariantId] = useState(
-  product.variants?.edges?.[0]?.node?.id || null
-);
-const initialQty =
-  product.variants?.edges?.[0]?.node?.quantityAvailable > 0 ? 1 : 0;
-const [qty, setQty] = useState(initialQty);
+  const [selectedVariantId, setSelectedVariantId] = useState(
+    product.variants?.edges?.[0]?.node?.id || null
+  );
+  const initialQty =
+    product.variants?.edges?.[0]?.node?.quantityAvailable > 0 ? 1 : 0;
+  const [qty, setQty] = useState(initialQty);
 
+  const variantEdges = useMemo(() => product.variants?.edges || [], [product]);
 
-const variantEdges = useMemo(() => product.variants?.edges || [], [product]);
+  useEffect(() => {
+    const first = variantEdges?.[0]?.node;
+    setSelectedVariantId(first?.id || null);
+    setQty(first && first.quantityAvailable > 0 ? 1 : 0);
+  }, [router.asPath, product.id, variantEdges]);
 
+  useEffect(() => {
+    const variant = variantEdges.find(v => v.node.id === selectedVariantId)?.node;
+    if (!variant) return;
+    setQty(variant.quantityAvailable > 0 ? 1 : 0);
+  }, [selectedVariantId, variantEdges]);
 
-useEffect(() => {
-  const first = variantEdges?.[0]?.node;
-  setSelectedVariantId(first?.id || null);
-  setQty(first && first.quantityAvailable > 0 ? 1 : 0);
-}, [router.asPath, product.id, variantEdges]); 
+  const { user, refreshUser } = useAuth();
+  const hasRefreshed = useRef(false);
 
-
-
-useEffect(() => {
-  const variant = variantEdges.find(v => v.node.id === selectedVariantId)?.node;
-  if (!variant) return;
-  setQty(variant.quantityAvailable > 0 ? 1 : 0);
-}, [selectedVariantId, variantEdges]);
-
-
-const { user, refreshUser } = useAuth();
-const hasRefreshed = useRef(false);
-
-useEffect(() => {
-  if (user && !user.approved && !hasRefreshed.current) {
-    hasRefreshed.current = true;
-    refreshUser();
-  }
-}, [user, refreshUser]);
-
-if (!product) {
-  return <div style={{ padding: '16px' }}>Product not found.</div>;
-}
-
+  useEffect(() => {
+    if (user && !user.approved && !hasRefreshed.current) {
+      hasRefreshed.current = true;
+      refreshUser();
+    }
+  }, [user, refreshUser]);
 
   const selectedVariant = product.variants?.edges?.find(
-  v => v.node.id === selectedVariantId
-)?.node;
+    v => v.node.id === selectedVariantId
+  )?.node;
 
 const isSoldOut =
   !selectedVariant?.availableForSale ||
@@ -442,7 +436,9 @@ const formattedPrice = rawPrice % 1 === 0 ? rawPrice.toFixed(0) : rawPrice.toFix
     }
     addToCart(selectedVariantId, qty, {
       handle: router.query.handle as string,
-      title: `${product.title} | ${selectedVariant.title}`,
+      title: product.title,
+      variantTitle: selectedVariant.title,
+      selectedOptions: selectedVariant.selectedOptions,
       price: selectedVariant.price.amount,
       image: product.images?.edges?.[0]?.node?.url || undefined,
       metafields: product.metafields,

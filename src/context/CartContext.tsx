@@ -13,6 +13,8 @@ export interface CartItem {
   variantId: string;
   quantity: number;
   title?: string;
+  variantTitle?: string;
+  selectedOptions?: { name: string; value: string }[];
   price?: string;
   image?: string;
   handle?: string;
@@ -170,6 +172,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
                 quantity: edge.node.quantity,
                 // Preserve existing metadata from localStorage
                 title: existingItem?.title,
+                variantTitle: existingItem?.variantTitle,
+                selectedOptions: existingItem?.selectedOptions,
                 price: existingItem?.price,
                 image: existingItem?.image,
                 handle: existingItem?.handle,
@@ -274,6 +278,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
                 quantity: edge.node.quantity,
                 // Preserve existing metadata
                 title: existingItem?.title,
+                variantTitle: existingItem?.variantTitle,
+                selectedOptions: existingItem?.selectedOptions,
                 price: existingItem?.price,
                 image: existingItem?.image,
                 handle: existingItem?.handle,

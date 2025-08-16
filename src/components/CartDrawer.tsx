@@ -8,6 +8,17 @@ const formatPrice = (price: string | undefined) => {
   return num % 1 === 0 ? num.toFixed(0) : num.toFixed(2);
 };
 
+const displayTitle = (title?: string, variantTitle?: string) => {
+  const t = (s?: string) => (s || '').trim();
+  const isDefault = (s?: string) => /^default\s*title$/i.test(s || '');
+  const base = t(title);
+  const variant = t(variantTitle);
+  if (!variant || isDefault(variant) || variant.toLowerCase() === base.toLowerCase()) {
+    return base || 'Untitled Product';
+  }
+  return `${base} | ${variant}`;
+};
+
 export default function CartDrawer() {
   const {
     cartItems,
@@ -62,7 +73,7 @@ export default function CartDrawer() {
                     {item.image && (
                       <Image
                         src={item.image}
-                        alt={item.title || ''}
+                        alt={displayTitle(item.title, item.variantTitle)}
                         width={600}
                         height={750}
                         style={{
@@ -76,7 +87,7 @@ export default function CartDrawer() {
 
                     <div className="cart-image-overlay">
                       <div className="overlay-title">
-                        {item.title || 'Untitled Product'}
+                        {displayTitle(item.title, item.variantTitle)}
                       </div>
                       <div className="overlay-controls">
                         <div className="quantity-controls">
