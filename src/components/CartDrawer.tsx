@@ -49,7 +49,15 @@ export default function CartDrawer() {
   }, [isDrawerOpen, closeDrawer]);
 
   return (
-    <div className={`cart-backdrop${isDrawerOpen ? ' open' : ''}`}> 
+  <div
+  className={`cart-backdrop${isDrawerOpen ? ' open' : ''}`}
+  onMouseDown={(e) => {
+    if (e.target === e.currentTarget) {
+      closeDrawer()
+    }
+  }}
+>
+
       <div
         className={`cart-drawer${isDrawerOpen ? ' open' : ''}`}
         role="dialog"
