@@ -137,21 +137,22 @@ const variables: {
 
           const upsertMetafield = async (key: string, value: string) => {
             const existingRes = await fetch(
-              `https://${SHOPIFY_DOMAIN}/admin/api/2023-01/customers/${customerId}/metafields.json?namespace=custom&key=${key}`,
+              `https://${SHOPIFY_DOMAIN}/admin/api/2023-01/customers/${customerId}/metafields.json?namespace=custom`,
               { method: 'GET', headers: adminHeaders }
             );
             const existingJson = await existingRes.json();
-            const metafield = existingJson.metafields?.[0];
+            const metafield = existingJson.metafields?.find((m: any) => m.key === key);
             if (metafield) {
               await fetch(
                 `https://${SHOPIFY_DOMAIN}/admin/api/2023-01/metafields/${metafield.id}.json`,
                 {
                   method: 'PUT',
                   headers: adminHeaders,
-                  body: JSON.stringify({ metafield: { id: metafield.id, value, type: 'single_line_text_field' } }),
+                  body: JSON.stringify({ metafield: { id: metafield.id, value, type: metafield.type } }),
                 }
               );
             } else {
+              const type = key === 'website' ? 'url' : 'single_line_text_field';
               await fetch(
                 `https://${SHOPIFY_DOMAIN}/admin/api/2023-01/customers/${customerId}/metafields.json`,
                 {
@@ -161,7 +162,7 @@ const variables: {
                     metafield: {
                       namespace: 'custom',
                       key,
-                      type: 'single_line_text_field',
+                      type,
                       value,
                     },
                   }),
