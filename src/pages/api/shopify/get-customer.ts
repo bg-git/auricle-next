@@ -29,8 +29,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         createdAt
         updatedAt
         metafield(namespace: "custom", key: "approved") {
-      value
-    }
+          value
+        }
+        website: metafield(namespace: "custom", key: "website") {
+          value
+        }
+        social: metafield(namespace: "custom", key: "social") {
+          value
+        }
         defaultAddress {
           id
           firstName
@@ -118,6 +124,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         note,
         tags,
         approved: isApproved(tags),
+        website: customer.website?.value || '',
+        social: customer.social?.value || '',
       },
     });
 

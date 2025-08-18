@@ -196,7 +196,8 @@ function AccountSettingsForm({ customer, refreshCustomer }: { customer: any; ref
   const [phone, setPhone] = useState(customer?.phone || "");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [website, setWebsite] = useState(customer?.note || ""); // Now from note field
+  const [website, setWebsite] = useState(customer?.website || "");
+  const [social, setSocial] = useState(customer?.social || "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -207,7 +208,8 @@ function AccountSettingsForm({ customer, refreshCustomer }: { customer: any; ref
     setFirstName(newCustomer?.firstName || "");
     setLastName(newCustomer?.lastName || "");
     setPhone(newCustomer?.phone || "");
-    setWebsite(newCustomer?.note || "");
+    setWebsite(newCustomer?.website || "");
+    setSocial(newCustomer?.social || "");
     // Don't update password fields
   };
 
@@ -233,7 +235,7 @@ const fetchLatestCustomer = async () => {
     }
     setLoading(true);
       try {
-        const payload: any = { firstName, lastName, phone, note: website };
+        const payload: any = { firstName, lastName, phone, website, social };
         if (password) payload.password = password;
         const res = await fetch("/api/shopify/update-customer", {
           method: "POST",
@@ -318,13 +320,23 @@ const fetchLatestCustomer = async () => {
         />
       </label>
       <label>
-        Website / Social Media
+        Website
         <input
           type="url"
           name="website"
-          placeholder="https://your-site.com or @yourhandle"
+          placeholder="https://your-site.com"
           value={website}
           onChange={e => setWebsite(e.target.value)}
+        />
+      </label>
+      <label>
+        Social
+        <input
+          type="text"
+          name="social"
+          placeholder="@yourhandle"
+          value={social}
+          onChange={e => setSocial(e.target.value)}
         />
       </label>
       {error && <div style={{ color: 'red', marginBottom: 10 }}>{error}</div>}
