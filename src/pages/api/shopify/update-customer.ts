@@ -19,7 +19,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ success: false, error: 'Method not allowed' });
   }
 
-  const { firstName, lastName, phone, password, note } = req.body;
+  const { firstName, lastName, phone, password, note, website, social } = req.body;
   const token = req.cookies[COOKIE_NAME];
 
   if (!token) {
@@ -90,7 +90,7 @@ const variables: {
       storefrontCustomer = json.data.customerUpdate.customer;
     }
 
-    if (note !== undefined) {
+    if (note !== undefined || website !== undefined || social !== undefined) {
       let email = storefrontCustomer?.email;
       if (!email) {
         const getCustomerQuery = `
@@ -122,14 +122,60 @@ const variables: {
         const adminJson = await adminRes.json();
         if (adminJson.customers && adminJson.customers.length > 0) {
           const customerId = adminJson.customers[0].id;
-          await fetch(`https://${SHOPIFY_DOMAIN}/admin/api/2023-01/customers/${customerId}.json`, {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-Shopify-Access-Token': ADMIN_API_KEY,
-            },
-            body: JSON.stringify({ customer: { id: customerId, note } }),
-          });
+          const adminHeaders = {
+            'Content-Type': 'application/json',
+            'X-Shopify-Access-Token': ADMIN_API_KEY,
+          };
+
+          if (note !== undefined) {
+            await fetch(`https://${SHOPIFY_DOMAIN}/admin/api/2023-01/customers/${customerId}.json`, {
+              method: 'PUT',
+              headers: adminHeaders,
+              body: JSON.stringify({ customer: { id: customerId, note } }),
+            });
+          }
+
+          const upsertMetafield = async (key: string, value: string) => {
+            const existingRes = await fetch(
+              `https://${SHOPIFY_DOMAIN}/admin/api/2023-01/customers/${customerId}/metafields.json?namespace=custom&key=${key}`,
+              { method: 'GET', headers: adminHeaders }
+            );
+            const existingJson = await existingRes.json();
+            const metafield = existingJson.metafields?.[0];
+            if (metafield) {
+              await fetch(
+                `https://${SHOPIFY_DOMAIN}/admin/api/2023-01/metafields/${metafield.id}.json`,
+                {
+                  method: 'PUT',
+                  headers: adminHeaders,
+                  body: JSON.stringify({ metafield: { id: metafield.id, value, type: 'single_line_text_field' } }),
+                }
+              );
+            } else {
+              await fetch(
+                `https://${SHOPIFY_DOMAIN}/admin/api/2023-01/customers/${customerId}/metafields.json`,
+                {
+                  method: 'POST',
+                  headers: adminHeaders,
+                  body: JSON.stringify({
+                    metafield: {
+                      namespace: 'custom',
+                      key,
+                      type: 'single_line_text_field',
+                      value,
+                    },
+                  }),
+                }
+              );
+            }
+          };
+
+          if (website !== undefined) {
+            await upsertMetafield('website', website);
+          }
+          if (social !== undefined) {
+            await upsertMetafield('social', social);
+          }
         }
       }
     }
