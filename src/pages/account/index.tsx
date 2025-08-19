@@ -192,6 +192,9 @@ export default function AccountPage() {
 }
 
 function AccountSettingsForm({ customer, refreshCustomer }: { customer: any; refreshCustomer: () => Promise<any> }) {
+  const router = useRouter();
+  const { signOut } = useAuth();
+  
   // Safely get validation context - handle case where it might not be available
   let refreshValidation = () => {};
   try {
@@ -303,10 +306,23 @@ const fetchLatestCustomer = async () => {
         if (!res.ok || !data.success) {
           setError(data.error || "Failed to update account");
         } else {
-          setSuccess("Account updated successfully.");
-          // Re-fetch latest customer info
-          await fetchLatestCustomer();
-          refreshValidation(); // Refresh site-wide banner status
+          // Check if password was updated
+          if (password && password.trim()) {
+            setSuccess("Password updated successfully. Please sign in again.");
+            // Wait a moment for user to see the message
+            setTimeout(async () => {
+              signOut();
+            }, 2000);
+          } else {
+            setSuccess("Account updated successfully.");
+            // Re-fetch latest customer info
+            await fetchLatestCustomer();
+            refreshValidation(); // Refresh site-wide banner status
+          }
+          
+          // Clear password fields after successful update
+          setPassword("");
+          setConfirmPassword("");
         }
     } catch (err: any) {
       setError(err.message || "Unknown error");
