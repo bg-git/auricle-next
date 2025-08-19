@@ -42,7 +42,9 @@ const { favourites } = useFavourites();
             isAuthenticated ? (
               <>
                 <Link href="/account" style={{ color: '#fff', textDecoration: 'none', marginRight: '12px' }}>
-                  {user?.firstName ? `Hi, ${user.firstName} | My Account`: 'My Account'}
+                  {user?.firstName ? 'My Account' : 'My Account'}
+
+
                 </Link>
                 <span style={{ marginRight: '12px' }}>|</span>
                 <button 
