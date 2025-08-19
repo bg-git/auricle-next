@@ -202,7 +202,7 @@ const variables: {
             
             if (metafieldResult.errors) {
               const errorMessage = metafieldResult.errors[0]?.message || 'GraphQL request failed';
-              return res.status(400).json({ success: false, error: errorMessage });
+              return res.status(400).json({ success: false, error: errorMessage, errors: metafieldResult.errors });
             }
             
             if (!metafieldResult.data || !metafieldResult.data.customerUpdate) {
