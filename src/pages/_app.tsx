@@ -22,11 +22,13 @@ import '@/styles/pages/blog.scss';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import BreadcrumbSchema from '@/components/BreadcrumbSchema';
+import AccountCompletionBanner from '@/components/AccountCompletionBanner';
 import { CartProvider } from '@/context/CartContext';
 import { AuthProvider } from '@/context/AuthContext';
 import { FavouritesProvider } from '@/context/FavouritesContext';
 import { ToastProvider } from '@/context/ToastContext';
 import { ChatDrawerProvider } from '@/context/ChatDrawerContext';
+import { AccountValidationProvider } from '@/context/AccountValidationContext';
 import type { ShopifyCustomer } from '@/lib/verifyCustomerSession';
 
 
@@ -44,9 +46,10 @@ export default function MyApp({ Component, pageProps }: MyAppProps) {
   return (
     <ToastProvider>
       <AuthProvider initialUser={pageProps.customer || null}>
-        <FavouritesProvider>
-          <CartProvider>
-            <ChatDrawerProvider>
+        <AccountValidationProvider>
+          <FavouritesProvider>
+            <CartProvider>
+              <ChatDrawerProvider>
               <Head>
                 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
                 <meta name="theme-color" content="#ffffff" />
@@ -59,6 +62,7 @@ export default function MyApp({ Component, pageProps }: MyAppProps) {
                 <meta name="msapplication-TileColor" content="#ffffff" />
               </Head>
               <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100dvh' }}>
+                <AccountCompletionBanner />
                 <Header />
                 <main style={{ flex: '1 0 auto' }}>
                   <Component {...pageProps} />
@@ -71,6 +75,7 @@ export default function MyApp({ Component, pageProps }: MyAppProps) {
             </ChatDrawerProvider>
           </CartProvider>
         </FavouritesProvider>
+        </AccountValidationProvider>
       </AuthProvider>
     </ToastProvider>
   );

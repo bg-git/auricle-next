@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import useSWR from "swr";
 import { useAuth } from "@/context/AuthContext";
+import { useAccountValidationContext } from "@/context/AccountValidationContext";
 import { useRouter } from "next/router";
 
 const tabs = [
@@ -191,15 +192,25 @@ export default function AccountPage() {
 }
 
 function AccountSettingsForm({ customer, refreshCustomer }: { customer: any; refreshCustomer: () => Promise<any> }) {
+  // Safely get validation context - handle case where it might not be available
+  let refreshValidation = () => {};
+  try {
+    const validationContext = useAccountValidationContext();
+    refreshValidation = validationContext.refreshValidation;
+  } catch (error) {
+    console.warn('AccountValidationContext not available:', error);
+  }
   const [firstName, setFirstName] = useState(customer?.firstName || "");
   const [lastName, setLastName] = useState(customer?.lastName || "");
   const [phone, setPhone] = useState(customer?.phone || "");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [website, setWebsite] = useState(customer?.note || ""); // Now from note field
+  const [website, setWebsite] = useState(customer?.website || "");
+  const [social, setSocial] = useState(customer?.social || "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [validationErrors, setValidationErrors] = useState<{[key: string]: boolean}>({});
 
   // Add a prop or callback to update parent customer state
   const [refreshing, setRefreshing] = useState(false);
@@ -207,8 +218,49 @@ function AccountSettingsForm({ customer, refreshCustomer }: { customer: any; ref
     setFirstName(newCustomer?.firstName || "");
     setLastName(newCustomer?.lastName || "");
     setPhone(newCustomer?.phone || "");
-    setWebsite(newCustomer?.note || "");
+    setWebsite(newCustomer?.website || "");
+    setSocial(newCustomer?.social || "");
     // Don't update password fields
+  };
+
+  const validateMandatoryFields = () => {
+    const errors: {[key: string]: boolean} = {};
+    
+    if (!firstName.trim()) errors.firstName = true;
+    if (!lastName.trim()) errors.lastName = true;
+    if (!customer?.email?.trim()) errors.email = true;
+    if (!phone.trim()) errors.phone = true;
+    
+    // Website OR Social is required (at least one of them)
+    if (!website.trim() && !social.trim()) {
+      errors.website = true;
+      errors.social = true;
+    }
+    
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  // Helper function to check if a field should show red border (for real-time validation)
+  const shouldShowFieldError = (field: string) => {
+    switch (field) {
+      case 'firstName':
+        return !firstName.trim();
+      case 'lastName':
+        return !lastName.trim();
+      case 'email':
+        return !customer?.email?.trim();
+      case 'phone':
+        return !phone.trim();
+      case 'website':
+        // Show red only if both website AND social are empty
+        return !website.trim() && !social.trim();
+      case 'social':
+        // Show red only if both website AND social are empty
+        return !website.trim() && !social.trim();
+      default:
+        return false;
+    }
   };
 
 const fetchLatestCustomer = async () => {
@@ -227,13 +279,20 @@ const fetchLatestCustomer = async () => {
     e.preventDefault();
     setError(null);
     setSuccess(null);
+    
+    // Validate mandatory fields
+    if (!validateMandatoryFields()) {
+      setError("Please fill in all mandatory fields. For Website/Social Media, at least one is required.");
+      return;
+    }
+    
     if (password && password !== confirmPassword) {
       setError("Passwords do not match.");
       return;
     }
     setLoading(true);
       try {
-        const payload: any = { firstName, lastName, phone, note: website };
+        const payload: any = { firstName, lastName, phone, website, social };
         if (password) payload.password = password;
         const res = await fetch("/api/shopify/update-customer", {
           method: "POST",
@@ -247,6 +306,7 @@ const fetchLatestCustomer = async () => {
           setSuccess("Account updated successfully.");
           // Re-fetch latest customer info
           await fetchLatestCustomer();
+          refreshValidation(); // Refresh site-wide banner status
         }
     } catch (err: any) {
       setError(err.message || "Unknown error");
@@ -258,43 +318,59 @@ const fetchLatestCustomer = async () => {
   return (
     <form className="dashboard-form" onSubmit={handleSubmit}>
       <label>
-        First Name
+        First Name *
         <input
           type="text"
           name="firstName"
           placeholder="First Name"
           value={firstName}
           onChange={e => setFirstName(e.target.value)}
+          style={{ 
+            borderColor: shouldShowFieldError('firstName') ? '#ff0000' : undefined,
+            borderWidth: shouldShowFieldError('firstName') ? '2px' : undefined 
+          }}
         />
       </label>
       <label>
-        Last Name
+        Last Name *
         <input
           type="text"
           name="lastName"
           placeholder="Last Name"
           value={lastName}
           onChange={e => setLastName(e.target.value)}
+          style={{ 
+            borderColor: shouldShowFieldError('lastName') ? '#ff0000' : undefined,
+            borderWidth: shouldShowFieldError('lastName') ? '2px' : undefined 
+          }}
         />
       </label>
       <label>
-        Email
+        Email *
         <input
           type="email"
           name="email"
           placeholder="Email"
           value={customer?.email || ""}
           readOnly
+          style={{ 
+            borderColor: shouldShowFieldError('email') ? '#ff0000' : undefined,
+            borderWidth: shouldShowFieldError('email') ? '2px' : undefined 
+          }}
         />
       </label>
       <label>
-        Phone Number
+        Phone Number *
         <input
           type="tel"
           name="phone"
           placeholder="Phone Number"
           value={phone}
           onChange={e => setPhone(e.target.value)}
+          style={{ 
+            borderColor: shouldShowFieldError('phone') ? '#ff0000' : undefined,
+            borderWidth: shouldShowFieldError('phone') ? '2px' : undefined 
+          }}
         />
       </label>
       <label>
@@ -318,13 +394,31 @@ const fetchLatestCustomer = async () => {
         />
       </label>
       <label>
-        Website / Social Media
+        Website * (at least one required)
         <input
           type="url"
           name="website"
-          placeholder="https://your-site.com or @yourhandle"
+          placeholder="https://your-site.com"
           value={website}
           onChange={e => setWebsite(e.target.value)}
+          style={{ 
+            borderColor: shouldShowFieldError('website') ? '#ff0000' : undefined,
+            borderWidth: shouldShowFieldError('website') ? '2px' : undefined 
+          }}
+        />
+      </label>
+      <label>
+        Social Media * (at least one required)
+        <input
+          type="url"
+          name="social"
+          placeholder="https://instagram.com/yourhandle"
+          value={social}
+          onChange={e => setSocial(e.target.value)}
+          style={{ 
+            borderColor: shouldShowFieldError('social') ? '#ff0000' : undefined,
+            borderWidth: shouldShowFieldError('social') ? '2px' : undefined 
+          }}
         />
       </label>
       {error && <div style={{ color: 'red', marginBottom: 10 }}>{error}</div>}

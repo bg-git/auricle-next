@@ -31,6 +31,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         metafield(namespace: "custom", key: "approved") {
       value
     }
+        websiteMetafield: metafield(namespace: "custom", key: "website") {
+      value
+    }
+        socialMetafield: metafield(namespace: "custom", key: "social") {
+      value
+    }
         defaultAddress {
           id
           firstName
@@ -87,10 +93,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const customer = json.data.customer;
 
-    let note = '';
+    let website = customer.websiteMetafield?.value || '';
+    let social = customer.socialMetafield?.value || '';
     let tags: string[] = [];
+    
     if (customer.email) {
-      const adminRes = await fetch(`https://${SHOPIFY_DOMAIN}/admin/api/2023-01/customers/search.json?query=email:${encodeURIComponent(customer.email)}`, {
+      const adminRes = await fetch(`https://${SHOPIFY_DOMAIN}/admin/api/2024-04/customers/search.json?query=email:${encodeURIComponent(customer.email)}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -100,9 +108,33 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const adminJson = await adminRes.json();
       if (adminJson.customers && adminJson.customers.length > 0) {
         const adminCustomer = adminJson.customers[0];
-        note = adminCustomer.note || '';
+        const customerId = adminCustomer.id;
+        
+        // Get tags
         if (adminCustomer.tags) {
           tags = adminCustomer.tags.split(',').map((t: string) => t.trim()).filter(Boolean);
+        }
+        
+        // If we don't have website or social from Storefront API, try to get them from Admin API metafields
+        if (!website || !social) {
+          const metafieldRes = await fetch(`https://${SHOPIFY_DOMAIN}/admin/api/2024-07/customers/${customerId}/metafields.json?namespace=custom`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Shopify-Access-Token': ADMIN_API_KEY,
+            },
+          });
+          const metafieldJson = await metafieldRes.json();
+          if (metafieldJson.metafields && metafieldJson.metafields.length > 0) {
+            metafieldJson.metafields.forEach((metafield: any) => {
+              if (metafield.key === 'website' && !website) {
+                website = metafield.value || '';
+              }
+              if (metafield.key === 'social' && !social) {
+                social = metafield.value || '';
+              }
+            });
+          }
         }
       }
     }
@@ -115,7 +147,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       success: true,
       customer: {
         ...customer,
-        note,
+        website,
+        social,
         tags,
         approved: isApproved(tags),
       },
