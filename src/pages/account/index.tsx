@@ -6,7 +6,7 @@ import { useRouter } from "next/router";
 
 const tabs = [
   "Orders",
-  "Delivery Address",
+  "Billing Address",
   "Shipping Address",
   "Account Settings",
 ];
@@ -16,6 +16,15 @@ export default function AccountPage() {
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
   const { isAuthenticated, user, loading } = useAuth();
   const router = useRouter();
+  
+  // Safely get validation context - handle case where it might not be available
+  let refreshValidation = () => {};
+  try {
+    const validationContext = useAccountValidationContext();
+    refreshValidation = validationContext.refreshValidation;
+  } catch (error) {
+    console.warn('AccountValidationContext not available:', error);
+  }
 
   const fetcher = (url: string) =>
     fetch(url, { 
@@ -77,6 +86,53 @@ export default function AccountPage() {
     setExpandedOrder(expandedOrder === orderId ? null : orderId);
   };
 
+  // Function to check if a tab has missing mandatory fields
+  const hasTabValidationErrors = (tabName: string) => {
+    if (!customer) return false;
+    
+    switch (tabName) {
+      case "Account Settings":
+        // Check account settings mandatory fields
+        const hasFirstName = !!customer.firstName?.trim();
+        const hasLastName = !!customer.lastName?.trim();
+        const hasEmail = !!customer.email?.trim();
+        const hasPhone = !!customer.phone?.trim();
+        const hasWebsiteOrSocial = !!(customer.website?.trim() || customer.social?.trim());
+        return !(hasFirstName && hasLastName && hasEmail && hasPhone && hasWebsiteOrSocial);
+        
+      case "Billing Address": {
+        const deliveryAddress = customer?.addresses?.edges?.[0]?.node;
+        if (!deliveryAddress) return true;
+        return !(
+          deliveryAddress.firstName?.trim() &&
+          deliveryAddress.lastName?.trim() &&
+          deliveryAddress.address1?.trim() &&
+          deliveryAddress.city?.trim() &&
+          deliveryAddress.zip?.trim() &&
+          deliveryAddress.country?.trim() &&
+          deliveryAddress.phone?.trim()
+        );
+      }
+      
+      case "Shipping Address": {
+        const shippingAddress = customer?.addresses?.edges?.[1]?.node;
+        if (!shippingAddress) return true;
+        return !(
+          shippingAddress.firstName?.trim() &&
+          shippingAddress.lastName?.trim() &&
+          shippingAddress.address1?.trim() &&
+          shippingAddress.city?.trim() &&
+          shippingAddress.zip?.trim() &&
+          shippingAddress.country?.trim() &&
+          shippingAddress.phone?.trim()
+        );
+      }
+      
+      default:
+        return false;
+    }
+  };
+
   const renderTab = () => {
     switch (activeTab) {
       case "Orders":
@@ -134,14 +190,17 @@ export default function AccountPage() {
           </div>
         );
 
-      case "Delivery Address": {
+      case "Billing Address": {
         // Use the first address for delivery
         const deliveryAddress = customer?.addresses?.edges?.[0]?.node;
         return (
           <AddressForm
             type="edit"
             address={deliveryAddress}
-            onAddressUpdated={() => mutateCustomer()}
+            onAddressUpdated={async () => {
+              await mutateCustomer();
+              refreshValidation(); // Refresh site-wide banner status
+            }}
           />
         );
       }
@@ -152,7 +211,10 @@ export default function AccountPage() {
           <AddressForm
             type="edit"
             address={shippingAddress}
-            onAddressUpdated={() => mutateCustomer()}
+            onAddressUpdated={async () => {
+              await mutateCustomer();
+              refreshValidation(); // Refresh site-wide banner status
+            }}
           />
         );
       }
@@ -180,6 +242,11 @@ export default function AccountPage() {
             key={tab}
             className={`tab-btn ${tab === activeTab ? "active" : ""}`}
             onClick={() => setActiveTab(tab)}
+            style={{
+              borderColor: hasTabValidationErrors(tab) ? '#ff0000' : undefined,
+              borderWidth: hasTabValidationErrors(tab) ? '2px' : undefined,
+              color: hasTabValidationErrors(tab) ? '#ff0000' : undefined
+            }}
           >
             {tab}
           </button>
@@ -467,6 +534,7 @@ function AddressForm({ type, address, onAddressUpdated }: {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [validationErrors, setValidationErrors] = useState<{[key: string]: boolean}>({});
 
   useEffect(() => {
     setForm({
@@ -487,10 +555,54 @@ function AddressForm({ type, address, onAddressUpdated }: {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  const validateMandatoryAddressFields = () => {
+    const errors: {[key: string]: boolean} = {};
+    
+    if (!form.firstName.trim()) errors.firstName = true;
+    if (!form.lastName.trim()) errors.lastName = true;
+    if (!form.address1.trim()) errors.address1 = true;
+    if (!form.city.trim()) errors.city = true;
+    if (!form.zip.trim()) errors.zip = true;
+    if (!form.country.trim()) errors.country = true;
+    if (!form.phone.trim()) errors.phone = true;
+    
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  // Helper function to check if a field should show red border (for real-time validation)
+  const shouldShowAddressFieldError = (field: string) => {
+    switch (field) {
+      case 'firstName':
+        return !form.firstName.trim();
+      case 'lastName':
+        return !form.lastName.trim();
+      case 'address1':
+        return !form.address1.trim();
+      case 'city':
+        return !form.city.trim();
+      case 'zip':
+        return !form.zip.trim();
+      case 'country':
+        return !form.country.trim();
+      case 'phone':
+        return !form.phone.trim();
+      default:
+        return false;
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setSuccess(null);
+    
+    // Validate mandatory fields
+    if (!validateMandatoryAddressFields()) {
+      setError("Please fill in all mandatory fields (highlighted in red).");
+      return;
+    }
+    
     setLoading(true);
       try {
         const payload: any = {
@@ -530,23 +642,31 @@ function AddressForm({ type, address, onAddressUpdated }: {
   return (
     <form className="dashboard-form" onSubmit={handleSubmit}>
       <label>
-        First Name
+        First Name *
         <input
           type="text"
           name="firstName"
           placeholder="First Name"
           value={form.firstName}
           onChange={handleChange}
+          style={{ 
+            borderColor: shouldShowAddressFieldError('firstName') ? '#ff0000' : undefined,
+            borderWidth: shouldShowAddressFieldError('firstName') ? '2px' : undefined 
+          }}
         />
       </label>
       <label>
-        Last Name
+        Last Name *
         <input
           type="text"
           name="lastName"
           placeholder="Last Name"
           value={form.lastName}
           onChange={handleChange}
+          style={{ 
+            borderColor: shouldShowAddressFieldError('lastName') ? '#ff0000' : undefined,
+            borderWidth: shouldShowAddressFieldError('lastName') ? '2px' : undefined 
+          }}
         />
       </label>
       <label>
@@ -560,13 +680,17 @@ function AddressForm({ type, address, onAddressUpdated }: {
         />
       </label>
       <label>
-        Address Line 1
+        Address Line 1 *
         <input
           type="text"
           name="address1"
           placeholder="Street address"
           value={form.address1}
           onChange={handleChange}
+          style={{ 
+            borderColor: shouldShowAddressFieldError('address1') ? '#ff0000' : undefined,
+            borderWidth: shouldShowAddressFieldError('address1') ? '2px' : undefined 
+          }}
         />
       </label>
       <label>
@@ -580,13 +704,17 @@ function AddressForm({ type, address, onAddressUpdated }: {
         />
       </label>
       <label>
-        City
+        City *
         <input
           type="text"
           name="city"
           placeholder="City"
           value={form.city}
           onChange={handleChange}
+          style={{ 
+            borderColor: shouldShowAddressFieldError('city') ? '#ff0000' : undefined,
+            borderWidth: shouldShowAddressFieldError('city') ? '2px' : undefined 
+          }}
         />
       </label>
       <label>
@@ -600,33 +728,45 @@ function AddressForm({ type, address, onAddressUpdated }: {
         />
       </label>
       <label>
-        Postcode
+        Postcode *
         <input
           type="text"
           name="zip"
           placeholder="Postcode"
           value={form.zip}
           onChange={handleChange}
+          style={{ 
+            borderColor: shouldShowAddressFieldError('zip') ? '#ff0000' : undefined,
+            borderWidth: shouldShowAddressFieldError('zip') ? '2px' : undefined 
+          }}
         />
       </label>
       <label>
-        Country
+        Country *
         <input
           type="text"
           name="country"
           placeholder="Country"
           value={form.country}
           onChange={handleChange}
+          style={{ 
+            borderColor: shouldShowAddressFieldError('country') ? '#ff0000' : undefined,
+            borderWidth: shouldShowAddressFieldError('country') ? '2px' : undefined 
+          }}
         />
       </label>
       <label>
-        Phone
+        Phone *
         <input
           type="tel"
           name="phone"
           placeholder="Phone"
           value={form.phone}
           onChange={handleChange}
+          style={{ 
+            borderColor: shouldShowAddressFieldError('phone') ? '#ff0000' : undefined,
+            borderWidth: shouldShowAddressFieldError('phone') ? '2px' : undefined 
+          }}
         />
       </label>
       {error && <div style={{ color: 'red', marginBottom: 10 }}>{error}</div>}

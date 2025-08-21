@@ -26,17 +26,41 @@ export const useAccountValidation = () => {
     console.warn('AuthContext not available in useAccountValidation:', error);
   }
 
-  const validateAccountCompleteness = (customer: CustomerData | null) => {
+  const validateAccountCompleteness = (customer: any) => {
     if (!customer) return false;
     
-    // Check mandatory fields
+    // Check mandatory account fields
     const hasFirstName = !!customer.firstName?.trim();
     const hasLastName = !!customer.lastName?.trim();
     const hasEmail = !!customer.email?.trim();
     const hasPhone = !!customer.phone?.trim();
     const hasWebsiteOrSocial = !!(customer.website?.trim() || customer.social?.trim());
     
-    return hasFirstName && hasLastName && hasEmail && hasPhone && hasWebsiteOrSocial;
+    const accountFieldsComplete = hasFirstName && hasLastName && hasEmail && hasPhone && hasWebsiteOrSocial;
+    
+    // Check mandatory address fields
+    const billingAddress = customer?.addresses?.edges?.[0]?.node;
+    const shippingAddress = customer?.addresses?.edges?.[1]?.node;
+    
+    const isBillingComplete = billingAddress && 
+      billingAddress.firstName?.trim() &&
+      billingAddress.lastName?.trim() &&
+      billingAddress.address1?.trim() &&
+      billingAddress.city?.trim() &&
+      billingAddress.zip?.trim() &&
+      billingAddress.country?.trim() &&
+      billingAddress.phone?.trim();
+    
+    const isShippingComplete = shippingAddress &&
+      shippingAddress.firstName?.trim() &&
+      shippingAddress.lastName?.trim() &&
+      shippingAddress.address1?.trim() &&
+      shippingAddress.city?.trim() &&
+      shippingAddress.zip?.trim() &&
+      shippingAddress.country?.trim() &&
+      shippingAddress.phone?.trim();
+    
+    return accountFieldsComplete && isBillingComplete && isShippingComplete;
   };
 
   const checkAccountStatus = async () => {
