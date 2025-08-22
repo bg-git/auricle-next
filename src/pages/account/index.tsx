@@ -8,7 +8,8 @@ const tabs = [
   "Orders",
   "Billing Address",
   "Shipping Address",
-  "Account Settings",
+  "Profile",
+  "Security",
 ];
 
 export default function AccountPage() {
@@ -91,14 +92,18 @@ export default function AccountPage() {
     if (!customer) return false;
     
     switch (tabName) {
-      case "Account Settings":
-        // Check account settings mandatory fields
+      case "Profile":
+        // Check profile mandatory fields
         const hasFirstName = !!customer.firstName?.trim();
         const hasLastName = !!customer.lastName?.trim();
         const hasEmail = !!customer.email?.trim();
         const hasPhone = !!customer.phone?.trim();
         const hasWebsiteOrSocial = !!(customer.website?.trim() || customer.social?.trim());
         return !(hasFirstName && hasLastName && hasEmail && hasPhone && hasWebsiteOrSocial);
+        
+      case "Security":
+        // Security tab has no mandatory fields (password is optional)
+        return false;
         
       case "Billing Address": {
         const deliveryAddress = customer?.addresses?.edges?.[0]?.node;
@@ -219,9 +224,14 @@ export default function AccountPage() {
         );
       }
 
-      case "Account Settings":
+      case "Profile":
         return (
-          <AccountSettingsForm customer={customer} refreshCustomer={() => mutateCustomer()} />
+          <ProfileForm customer={customer} refreshCustomer={() => mutateCustomer()} />
+        );
+        
+      case "Security":
+        return (
+          <SecurityForm />
         );
 
       default:
@@ -258,9 +268,7 @@ export default function AccountPage() {
   );
 }
 
-function AccountSettingsForm({ customer, refreshCustomer }: { customer: any; refreshCustomer: () => Promise<any> }) {
-  const router = useRouter();
-  const { signOut } = useAuth();
+function ProfileForm({ customer, refreshCustomer }: { customer: any; refreshCustomer: () => Promise<any> }) {
   
   // Safely get validation context - handle case where it might not be available
   let refreshValidation = () => {};
@@ -273,14 +281,11 @@ function AccountSettingsForm({ customer, refreshCustomer }: { customer: any; ref
   const [firstName, setFirstName] = useState(customer?.firstName || "");
   const [lastName, setLastName] = useState(customer?.lastName || "");
   const [phone, setPhone] = useState(customer?.phone || "");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [website, setWebsite] = useState(customer?.website || "");
   const [social, setSocial] = useState(customer?.social || "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [validationErrors, setValidationErrors] = useState<{[key: string]: boolean}>({});
 
   // Add a prop or callback to update parent customer state
   const [refreshing, setRefreshing] = useState(false);
@@ -290,7 +295,6 @@ function AccountSettingsForm({ customer, refreshCustomer }: { customer: any; ref
     setPhone(newCustomer?.phone || "");
     setWebsite(newCustomer?.website || "");
     setSocial(newCustomer?.social || "");
-    // Don't update password fields
   };
 
   const validateMandatoryFields = () => {
@@ -307,7 +311,6 @@ function AccountSettingsForm({ customer, refreshCustomer }: { customer: any; ref
       errors.social = true;
     }
     
-    setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
@@ -356,14 +359,9 @@ const fetchLatestCustomer = async () => {
       return;
     }
     
-    if (password && password !== confirmPassword) {
-      setError("Passwords do not match.");
-      return;
-    }
     setLoading(true);
       try {
         const payload: any = { firstName, lastName, phone, website, social };
-        if (password) payload.password = password;
         const res = await fetch("/api/shopify/update-customer", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -371,25 +369,12 @@ const fetchLatestCustomer = async () => {
         });
         const data = await res.json();
         if (!res.ok || !data.success) {
-          setError(data.error || "Failed to update account");
+          setError(data.error || "Failed to update profile");
         } else {
-          // Check if password was updated
-          if (password && password.trim()) {
-            setSuccess("Password updated successfully. Please sign in again.");
-            // Wait a moment for user to see the message
-            setTimeout(async () => {
-              signOut();
-            }, 2000);
-          } else {
-            setSuccess("Account updated successfully.");
-            // Re-fetch latest customer info
-            await fetchLatestCustomer();
-            refreshValidation(); // Refresh site-wide banner status
-          }
-          
-          // Clear password fields after successful update
-          setPassword("");
-          setConfirmPassword("");
+          setSuccess("Profile updated successfully.");
+          // Re-fetch latest customer info
+          await fetchLatestCustomer();
+          refreshValidation(); // Refresh site-wide banner status
         }
     } catch (err: any) {
       setError(err.message || "Unknown error");
@@ -457,26 +442,6 @@ const fetchLatestCustomer = async () => {
         />
       </label>
       <label>
-        Password
-        <input
-          type="password"
-          name="password"
-          placeholder="New Password"
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-        />
-      </label>
-      <label>
-        Confirm Password
-        <input
-          type="password"
-          name="confirmPassword"
-          placeholder="Confirm Password"
-          value={confirmPassword}
-          onChange={e => setConfirmPassword(e.target.value)}
-        />
-      </label>
-      <label>
         Website * (at least one required)
         <input
           type="url"
@@ -509,6 +474,89 @@ const fetchLatestCustomer = async () => {
       {refreshing && <div style={{ color: 'blue', marginBottom: 10 }}>Refreshing info...</div>}
       <button type="submit" className="primary-btn" disabled={loading}>
         {loading ? "Saving..." : "Save Changes"}
+      </button>
+    </form>
+  );
+}
+
+function SecurityForm() {
+  const { signOut } = useAuth();
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setSuccess(null);
+    
+    if (!password.trim()) {
+      setError("Please enter a new password.");
+      return;
+    }
+    
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      const payload = { password };
+      const res = await fetch("/api/shopify/update-customer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        setError(data.error || "Failed to update password");
+      } else {
+        setSuccess("Password updated successfully. Please sign in again.");
+        // Clear password fields
+        setPassword("");
+        setConfirmPassword("");
+        // Wait a moment for user to see the message
+        setTimeout(async () => {
+          signOut();
+        }, 2000);
+      }
+    } catch (err: any) {
+      setError(err.message || "Unknown error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <form className="dashboard-form" onSubmit={handleSubmit}>
+      <h3>Change Password</h3>
+      <label>
+        New Password
+        <input
+          type="password"
+          name="password"
+          placeholder="Enter new password"
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+        />
+      </label>
+      <label>
+        Confirm New Password
+        <input
+          type="password"
+          name="confirmPassword"
+          placeholder="Confirm new password"
+          value={confirmPassword}
+          onChange={e => setConfirmPassword(e.target.value)}
+        />
+      </label>
+      {error && <div style={{ color: 'red', marginBottom: 10 }}>{error}</div>}
+      {success && <div style={{ color: 'green', marginBottom: 10 }}>{success}</div>}
+      <button type="submit" className="primary-btn" disabled={loading}>
+        {loading ? "Updating..." : "Update Password"}
       </button>
     </form>
   );
