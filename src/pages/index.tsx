@@ -82,7 +82,7 @@ export default function Home() {
                 <h2 className="overlay-title">RINGS & HOOPS</h2>
                 <p className="overlay-subtitle">View our collection of rings</p>
                 <div className="overlay-buttons">
-                  <Link href="/collection/rings" className="button">VIEW ALL RINGS &#x27F6;</Link>
+                  <Link href="/collection/rings-hoops" className="button">VIEW ALL RINGS &#x27F6;</Link>
                 </div>
               </div>
             </div>
