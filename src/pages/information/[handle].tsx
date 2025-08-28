@@ -3,6 +3,9 @@ import type {
   GetStaticProps,
   GetStaticPropsContext,
 } from 'next';
+import { useMemo } from 'react';
+import parse from 'html-react-parser';
+import DOMPurify from 'dompurify';
 import { shopifyFetch } from '@/lib/shopify';
 import {
   GET_ALL_PAGES,
@@ -26,6 +29,14 @@ interface PageProps {
 }
 
 export default function InformationPage({ page }: PageProps) {
+  const content = useMemo(() => {
+    const sanitized =
+      typeof window !== 'undefined'
+        ? DOMPurify.sanitize(page.bodyHtml)
+        : page.bodyHtml;
+    return parse(sanitized);
+  }, [page.bodyHtml]);
+
   return (
     <>
       <Seo
@@ -34,7 +45,7 @@ export default function InformationPage({ page }: PageProps) {
       />
       <main style={{ padding: '16px' }}>
         <h1 style={{ marginBottom: '16px' }}>{page.title}</h1>
-        <div dangerouslySetInnerHTML={{ __html: page.bodyHtml }} />
+        <div>{content}</div>
       </main>
     </>
   );
