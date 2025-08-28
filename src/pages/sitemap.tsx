@@ -63,6 +63,29 @@ export const getStaticProps: GetStaticProps = async () => {
     { href: '/sitemap.xml', label: 'Sitemap XML' },
   ];
 
+  // === ✅ Fetch Shopify pages ===
+  const pagesQuery = `
+    {
+      pages(first: 100) {
+        edges {
+          node {
+            handle
+            title
+          }
+        }
+      }
+    }
+  `;
+  const pagesData = await shopifyFetch({ query: pagesQuery });
+  const pageLinks: PageLink[] =
+    pagesData.pages.edges.map(
+      ({ node }: { node: { handle: string; title: string } }) => ({
+        href: `/information/${node.handle}`,
+        label: node.title,
+      })
+    ) || [];
+  staticLinks.push(...pageLinks);
+
   const blogDir = path.join(process.cwd(), 'content/piercing-magazine');
   const blogFiles = fs.existsSync(blogDir) ? fs.readdirSync(blogDir) : [];
 

@@ -8,7 +8,7 @@ import { shopifyFetch } from '../src/lib/shopify.js';
 
 const DOMAIN = process.env.SITE_DOMAIN || 'http://localhost:3000';
 
-async function fetchShopifyHandles(type: 'products' | 'collections') {
+async function fetchShopifyHandles(type: 'products' | 'collections' | 'pages') {
   const query = `
     {
       ${type}(first: 250) {
@@ -75,6 +75,16 @@ async function generateSitemap() {
       url: `/collection/${handle}`,
       changefreq: 'weekly',
       priority: 0.8,
+    });
+  });
+
+  // Shopify information pages
+  const pageHandles = await fetchShopifyHandles('pages');
+  pageHandles.forEach((handle: string) => {
+    smStream.write({
+      url: `/information/${handle}`,
+      changefreq: 'monthly',
+      priority: 0.7,
     });
   });
 
