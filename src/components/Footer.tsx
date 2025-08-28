@@ -16,7 +16,7 @@ const sections = [
     links: [
       { label: 'About Us', href: '/about' },
       { label: 'Careers', href: '/careers' },
-      { label: 'Blog', href: '/blog' },
+      { label: 'Blog', href: '/piercing-magazine' },
     ],
   },
   {

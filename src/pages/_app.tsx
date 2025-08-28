@@ -18,6 +18,7 @@ import '@/styles/pages/filters.scss';
 import '@/styles/pages/resetPassword.scss';
 import '@/styles/pages/blog-page.scss';
 import '@/styles/pages/blog.scss';
+import '@/styles/pages/information.scss';
 
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
