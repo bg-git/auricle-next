@@ -28,7 +28,9 @@
     "resend": "^4.7.0",
     "sass": "^1.89.2",
     "sitemap": "^8.0.0",
-    "swr": "^2.3.4"
+    "swr": "^2.3.4",
+    "dompurify": "^3.0.6",
+    "html-react-parser": "^4.0.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
