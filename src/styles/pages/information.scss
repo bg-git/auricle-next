@@ -1,9 +1,39 @@
 /* information.scss
-   Styling for Terms, Privacy, Shipping Info, etc.
-   Mobile-first layout, minimal and readable.
+   Styles for information index and detail pages.
 */
 
-.information-page {
+.information-index {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 1.5rem;
+
+  h1 {
+    font-size: 1.6rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+
+    li {
+      margin-bottom: 1rem;
+
+      a {
+        font-weight: 600;
+        text-decoration: underline;
+      }
+
+      p {
+        margin-top: 0.25rem;
+        color: #555;
+      }
+    }
+  }
+}
+
+.info-page {
   max-width: 800px;
   margin: 0 auto;
   padding: 1.5rem;
@@ -69,9 +99,16 @@
   }
 }
 
-/* Larger screens */
 @media (min-width: 768px) {
-  .information-page {
+  .information-index {
+    padding: 2rem;
+
+    h1 {
+      font-size: 2rem;
+    }
+  }
+
+  .info-page {
     padding: 2rem;
     font-size: 1rem;
 
