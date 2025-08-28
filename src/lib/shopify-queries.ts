@@ -25,3 +25,28 @@ export const GET_ALL_PRODUCTS = `
     }
   }
 `;
+
+export const GET_ALL_PAGES = `
+  {
+    pages(first: 250) {
+      edges {
+        node {
+          handle
+        }
+      }
+    }
+  }
+`;
+
+export const GET_PAGE_BY_HANDLE = `
+  query getPageByHandle($handle: String!) {
+    pageByHandle(handle: $handle) {
+      title
+      bodyHtml
+      seo {
+        title
+        description
+      }
+    }
+  }
+`;
