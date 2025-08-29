@@ -11,7 +11,7 @@ robots: index,follow
 
 This Privacy Policy describes how we collect, use, disclose and protect personal data when you use our websites and services. It applies to [www.auricle.co.uk](https://www.auricle.co.uk) and [www.auriclejewelry.com](https://www.auriclejewelry.com) (the “Website”).
 
-> **NOTICE:** This policy explains how we process personal data. Some processing is strictly necessary to operate the Website and fulfil orders (contract/legitimate interests). If you do not agree with this policy, do not use the Website or submit personal data. For cookies, see the [COOKIE POLICY](/cookie-policy). Website use is governed by the [TERMS OF SERVICE](/terms-of-service).
+> **NOTICE:** This policy explains how we process personal data. Some processing is strictly necessary to operate the Website and fulfil orders (contract/legitimate interests). If you do not agree with this policy, do not use the Website or submit personal data. For cookies, see the [COOKIE POLICY](/information/cookie-policy). Website use is governed by the [TERMS OF SERVICE](/information/terms-of-service).
 ---
 
 ## 1) Who we are (Controller)
@@ -20,7 +20,7 @@ This Privacy Policy describes how we collect, use, disclose and protect personal
 We are the data **controller** for personal data processed through the Website and our B2B operations.
 
 Contact: **info@auricle.co.uk**  
-See our registered details on the [Company Information](/information/company) page.
+See our registered details on the [Company Information](/information/company-information-imprint) page.
 
 ---
 
@@ -29,7 +29,7 @@ See our registered details on the [Company Information](/information/company) pa
 - This is a **B2B** platform intended for legitimate businesses (studios, jewellers, distributors).  
 - Use of the Website is governed by our [Terms of Service](/information/terms-of-service).  
 - Purchasing is governed by our [Terms of Sale](/information/terms-of-sale).  
-- Cookies are explained in our [Cookie Policy](/information/cookies) and can be managed via [Cookie Preferences](/information/cookie-preferences).
+- Cookies are explained in our [Cookie Policy](/information/cookie-policy) and can be managed via [Cookie Preferences](/information/cookie-preferences).
 
 If you are under 18, you may only use the Website with parent/guardian consent.
 
@@ -44,7 +44,7 @@ We collect the following categories of personal data:
 - **Order & support**: orders, invoices, returns, messages to our team.  
 - **Usage & device**: IP address, device/browser info, pages viewed, referral source, approximate location (derived from IP).  
 - **Marketing preferences**: newsletter/artwork updates, opt-ins/opt-outs.  
-- **Cookies & similar tech**: see [Cookie Policy](/information/cookies).
+- **Cookies & similar tech**: see [Cookie Policy](/information/cookie-policy).
 
 We do **not** store full payment card numbers on our Website. Card data is handled by our checkout/payment provider.
 
@@ -138,7 +138,7 @@ Our Website and services are not directed to children. If you believe we have co
 ## 12) Cookies & similar technologies
 
 We use cookies and similar technologies for essential functions, performance, and (where enabled) analytics/marketing.  
-See our [Cookie Policy](/information/cookies) and manage choices via [Cookie Preferences](/information/cookie-preferences).
+See our [Cookie Policy](/information/cookie-policy) and manage choices via [Cookie Preferences](/information/cookie-preferences).
 
 ---
 
@@ -151,7 +151,7 @@ We may update this Privacy Policy from time to time. Changes take effect when po
 ## 14) Contact
 
 For privacy requests and questions: **info@auricle.co.uk**  
-Postal: see [Company Information](/information/company).
+Postal: see [Company Information](/information/company-information-imprint).
 
 ---
 

@@ -24,7 +24,7 @@ This statement covers:
 - **Shopify Checkout** (hosted on a separate Shopify domain)
 - Third-party integrations used within our purchase flow, including **DHL** and **Royal Mail** (for shipping rate/label/tracking), and our **live chat** powered by the **ChatGPT API**
 
-Website use is governed by our [TERMS OF SERVICE](/terms-of-service). For personal data and cookies, see our [PRIVACY POLICY](/privacy-policy) and [COOKIE POLICY](/cookie-policy).
+Website use is governed by our [TERMS OF SERVICE](/information/terms-of-service). For personal data and cookies, see our [PRIVACY POLICY](/information/privacy-policy) and [COOKIE POLICY](/information/cookie-policy).
 
 ---
 
@@ -80,7 +80,7 @@ We currently do **not** offer general PDF downloads. **Invoice PDFs** may be iss
 
 ## 8. COOKIES
 
-Cookies are required for core functionality (authentication, cart, checkout). We do **not** provide per-category cookie settings. You may accept cookies to use the website, or decline by not using the website. See the [COOKIE POLICY](/cookie-policy).
+Cookies are required for core functionality (authentication, cart, checkout). We do **not** provide per-category cookie settings. You may accept cookies to use the website, or decline by not using the website. See the [COOKIE POLICY](/information/cookie-policy).
 
 ---
 

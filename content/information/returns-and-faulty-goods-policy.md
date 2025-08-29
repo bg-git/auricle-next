@@ -9,13 +9,13 @@ robots: index,follow
 
 **Effective Date:** 9 August 2025
 
-> **NON-NEGOTIABLE POLICY (B2B):** Returns are accepted **only** for faulty goods as set out below. No change-of-mind returns are offered. If you do not agree, do not place an order. See also the [TERMS OF SALE](/terms-of-sale).
+> **NON-NEGOTIABLE POLICY (B2B):** Returns are accepted **only** for faulty goods as set out below. No change-of-mind returns are offered. If you do not agree, do not place an order. See also the [TERMS OF SALE](/information/terms-of-sale).
 
 ---
 
 ## 1. SCOPE
 
-This policy applies to B2B purchases from AURICLE. Website use is governed by the [TERMS OF SERVICE](/terms-of-service).
+This policy applies to B2B purchases from AURICLE. Website use is governed by the [TERMS OF SERVICE](/information/terms-of-service).
 
 ---
 
@@ -81,7 +81,7 @@ Email **info@auricle.co.uk** with:
 
 ## 9. GOVERNING LAW
 
-This policy forms part of the [TERMS OF SALE](/terms-of-sale) and is governed by the laws of England and Wales. Formal notices: see [COMPLAINTS & NOTICES](/complaints-and-notices).
+This policy forms part of the [TERMS OF SALE](/information/terms-of-sale) and is governed by the laws of England and Wales. Formal notices: see [COMPLAINTS & NOTICES](/information/complaints-notices).
 
 ---
 

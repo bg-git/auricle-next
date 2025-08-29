@@ -9,7 +9,7 @@ robots: index,follow
 
 **Effective Date:** 9 August 2025
 
-> **NON-NEGOTIABLE TERMS:** Use of AURICLE designs, images, and brand assets is restricted as set out here. If you do not agree, do not use or reproduce our materials. See also the [TERMS OF SERVICE](/terms-of-service) and [TERMS OF SALE](/terms-of-sale).
+> **NON-NEGOTIABLE TERMS:** Use of AURICLE designs, images, and brand assets is restricted as set out here. If you do not agree, do not use or reproduce our materials. See also the [TERMS OF SERVICE](/information/terms-of-service) and [TERMS OF SALE](/information/terms-of-sale).
 
 ---
 
@@ -112,8 +112,8 @@ We reserve all remedies for infringement, including injunctive relief, damages, 
 
 We may update this notice from time to time. This notice is governed by the laws of **England and Wales**; courts of England and Wales have exclusive jurisdiction.
 
-Company details: see [COMPANY INFORMATION](/company-information).  
-Formal notices: see [COMPLAINTS & NOTICES](/complaints-and-notices).
+Company details: see [COMPANY INFORMATION](/information/company-information-imprint).
+Formal notices: see [COMPLAINTS & NOTICES](/information/complaints-notices).
 
 ---
 

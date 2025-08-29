@@ -9,13 +9,13 @@ robots: index,follow
 
 **Effective Date:** 9 August 2025
 
-> **NON-NEGOTIABLE POLICY:** Shipping is provided only on the terms set out in this SHIPPING & DELIVERY POLICY. If you do not agree, do not place an order. See also the [TERMS OF SALE](/terms-of-sale).
+> **NON-NEGOTIABLE POLICY:** Shipping is provided only on the terms set out in this SHIPPING & DELIVERY POLICY. If you do not agree, do not place an order. See also the [TERMS OF SALE](/information/terms-of-sale).
 
 ---
 
 ## 1. SCOPE
 
-This policy applies to all orders placed with AURICLE via our website or by direct invoice. Website use is governed by the [TERMS OF SERVICE](/terms-of-service).
+This policy applies to all orders placed with AURICLE via our website or by direct invoice. Website use is governed by the [TERMS OF SERVICE](/information/terms-of-service).
 
 ---
 
@@ -38,9 +38,9 @@ Available services shown at checkout may vary by destination, order value, conte
 
 ## 4. DISPATCH & HANDLING
 
-- Orders are prepared and dispatched on **business days** (excluding UK public holidays).  
-- Verification steps (e.g., payment/anti-fraud, address confirmation) may affect dispatch timing.  
-- We may consolidate multiple items into a single shipment or split into partial shipments (see [TERMS OF SALE](/terms-of-sale)).
+- Orders are prepared and dispatched on **business days** (excluding UK public holidays).
+- Verification steps (e.g., payment/anti-fraud, address confirmation) may affect dispatch timing.
+- We may consolidate multiple items into a single shipment or split into partial shipments (see [TERMS OF SALE](/information/terms-of-sale)).
 
 ---
 
@@ -68,7 +68,7 @@ Available services shown at checkout may vary by destination, order value, conte
 - Customs inspections can add **unpredictable delays** that are outside our control.  
 - If you decline to pay import charges or cannot be contacted, the shipment may be returned or destroyed by the carrier. Any **return, storage, re-shipping, or destruction fees** are your responsibility.
 
-For VAT treatment and invoices, see the [TAX POLICY](/tax-policy).
+For VAT treatment and invoices, see the [TAX POLICY](/information/tax-vat-policy).
 
 ---
 
@@ -83,7 +83,7 @@ For VAT treatment and invoices, see the [TAX POLICY](/tax-policy).
 
 - **Risk** in the products passes to you **on delivery** to the address provided (or to your nominated carrier).  
 - **Title** passes when we receive **payment in full**, including all applicable delivery charges.  
-- See the [TERMS OF SALE](/terms-of-sale) for full details.
+- See the [TERMS OF SALE](/information/terms-of-sale) for full details.
 
 ---
 
@@ -93,7 +93,7 @@ For VAT treatment and invoices, see the [TAX POLICY](/tax-policy).
 - Report any visible damage, loss, or shortages to the **carrier at delivery** (where possible) and notify us **promptly** at **info@auricle.co.uk**.  
 - Keep all packaging and contents while a carrier investigation is in progress.
 
-For faulty product handling, see the [RETURNS POLICY](/returns-policy).
+For faulty product handling, see the [RETURNS POLICY](/information/returns-and-faulty-goods-policy).
 
 ---
 
@@ -119,8 +119,8 @@ We may update this policy from time to time. Changes take effect when posted on 
 ## 14. CONTACT
 
 Shipping enquiries: **info@auricle.co.uk**  
-Formal notices: see [COMPLAINTS & NOTICES](/complaints-and-notices).  
-Company details: see [COMPANY INFORMATION](/company-information).
+Formal notices: see [COMPLAINTS & NOTICES](/information/complaints-notices).
+Company details: see [COMPANY INFORMATION](/information/company-information-imprint).
 
 ---
 

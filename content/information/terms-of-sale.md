@@ -11,16 +11,16 @@ robots: index,follow
 
 These Terms of Sale apply to wholesale purchases made from AURICLE via our websites or by direct invoice. They set out how orders are placed, paid for, delivered, and handled if something goes wrong.
 
-> **NON-NEGOTIABLE TERMS:** Placing an order requires acceptance of these TERMS OF SALE in full. We do not offer bespoke variations. If you do not agree, do not place an order. See also the [SHIPPING POLICY](/shipping-policy), [RETURNS POLICY](/returns-policy) and [TAX POLICY](/tax-policy).
+> **NON-NEGOTIABLE TERMS:** Placing an order requires acceptance of these TERMS OF SALE in full. We do not offer bespoke variations. If you do not agree, do not place an order. See also the [SHIPPING POLICY](/information/shipping-and-delivery-policy), [RETURNS POLICY](/information/returns-and-faulty-goods-policy) and [TAX POLICY](/information/tax-vat-policy).
 
 ---
 
 ## 1. Scope
 
 - These terms govern **wholesale (B2B)** sales only.  
-- Website use is covered by the [Terms of Service](/information/terms-of-service).  
-- Privacy and cookies are covered by our [Privacy Policy](/information/privacy) and [Cookie Policy](/information/cookies).  
-- Subscriptions (auto-replenish) are covered by the [Subscriptions & Recurring Billing](/information/subscriptions) terms.
+- Website use is covered by the [Terms of Service](/information/terms-of-service).
+- Privacy and cookies are covered by our [Privacy Policy](/information/privacy-policy) and [Cookie Policy](/information/cookie-policy).
+- Subscriptions (auto-replenish) are covered by the [Subscriptions & Recurring Billing](/information/subscriptions-recurring-billing) terms.
 
 ---
 
@@ -49,7 +49,7 @@ These Terms of Sale apply to wholesale purchases made from AURICLE via our websi
 - For deliveries outside the UK, VAT is deducted at checkout when a valid export address is provided.  
 - USD/EUR prices shown (if any) are **approximate**; your card provider sets the actual exchange rate.
 
-For detailed tax treatment, see [Tax & VAT Policy](/information/tax-vat).
+For detailed tax treatment, see [Tax & VAT Policy](/information/tax-vat-policy).
 
 ---
 
@@ -70,7 +70,7 @@ For detailed tax treatment, see [Tax & VAT Policy](/information/tax-vat).
 - If the country selected at checkout does not match the delivery address, we may **cancel** the order.  
 - For security, we may ship to the **card billing address**.
 
-For carrier details, restrictions, and current timelines see the [Shipping Policy](/information/shipping).
+For carrier details, restrictions, and current timelines see the [Shipping Policy](/information/shipping-and-delivery-policy).
 
 ---
 
@@ -98,7 +98,7 @@ For carrier details, restrictions, and current timelines see the [Shipping Polic
 - Returns for change of mind, over-ordering, or compatibility are **not accepted**.  
 - Our returns policy does not affect your **statutory rights**.
 
-For process steps and packaging instructions, see the [Returns Policy](/information/returns).
+For process steps and packaging instructions, see the [Returns Policy](/information/returns-and-faulty-goods-policy).
 
 ---
 
@@ -108,7 +108,7 @@ For process steps and packaging instructions, see the [Returns Policy](/informat
 - Drawings, photos, specifications, and advertising are **approximate** and do not form part of the contract.  
 - We may improve or amend specifications where this does not materially affect performance or quality.
 
-For design rights and usage, see [Designs & IP](/information/ip).
+For design rights and usage, see [Designs & IP](/information/design-copyright-ip-notice).
 
 ---
 
@@ -150,14 +150,14 @@ For design rights and usage, see [Designs & IP](/information/ip).
 
 ## 16. Notices & Contact
 
-Formal notices and complaints are handled as described on our [Complaints & Notices](/information/complaints) page.  
+Formal notices and complaints are handled as described on our [Complaints & Notices](/information/complaints-notices) page.
 General contact: **info@auricle.co.uk**.
 
 ---
 
 ## 17. Company Information
 
-AURICLE is a trading style of **AURICLE Limited**. See our [Company Information](/information/company) page for registered details.
+AURICLE is a trading style of **AURICLE Limited**. See our [Company Information](/information/company-information-imprint) page for registered details.
 
 ---
 
