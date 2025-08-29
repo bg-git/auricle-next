@@ -19,7 +19,7 @@ If you have concerns or information related to modern slavery connected to our b
 
 This statement covers **auricle.co.uk**, **auriclejewelry.com**, and our **Shopify Checkout** (hosted on Shopify). It applies to our B2B wholesale operations and to suppliers and contractors who provide goods or services to AURICLE.
 
-Website use is governed by our [TERMS OF SERVICE](/terms-of-service). Company details are on [COMPANY INFORMATION](/company-information).
+Website use is governed by our [TERMS OF SERVICE](/information/terms-of-service). Company details are on [COMPANY INFORMATION](/information/company-information-imprint).
 
 ---
 

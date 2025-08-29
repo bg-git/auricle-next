@@ -26,7 +26,7 @@ Websites: [www.auricle.co.uk](https://www.auricle.co.uk) · [www.auriclejewelry.
 
 **8 Silver Walk, Leicester, LE1 5EW, England**
 
-> This is our statutory registered office. Returns are **not** accepted at this address. For returns, please follow the RMA process in the [RETURNS POLICY](/returns-policy).
+> This is our statutory registered office. Returns are **not** accepted at this address. For returns, please follow the RMA process in the [RETURNS POLICY](/information/returns-and-faulty-goods-policy).
 
 ---
 
@@ -34,8 +34,8 @@ Websites: [www.auricle.co.uk](https://www.auricle.co.uk) · [www.auriclejewelry.
 
 **PO BOX 11129, Leicester, LE19 9EA, United Kingdom**
 
-General enquiries: **info@auricle.co.uk**  
-Formal notices: see [COMPLAINTS & NOTICES](/complaints-and-notices)
+General enquiries: **info@auricle.co.uk**
+Formal notices: see [COMPLAINTS & NOTICES](/information/complaints-notices)
 
 ---
 
@@ -43,19 +43,19 @@ Formal notices: see [COMPLAINTS & NOTICES](/complaints-and-notices)
 
 AURICLE operates a **B2B wholesale** platform for professional studios, jewellers, and authorised trade customers.
 
-Website use: [TERMS OF SERVICE](/terms-of-service)  
-Purchasing: [TERMS OF SALE](/terms-of-sale)
+Website use: [TERMS OF SERVICE](/information/terms-of-service)
+Purchasing: [TERMS OF SALE](/information/terms-of-sale)
 
 ---
 
 ## POLICIES & COMPLIANCE
 
-- Privacy: [PRIVACY POLICY](/privacy-policy)  
-- Cookies: [COOKIE POLICY](/cookie-policy)  
-- Shipping: [SHIPPING & DELIVERY POLICY](/shipping-policy)  
-- Returns (B2B): [RETURNS / FAULTY GOODS POLICY](/returns-policy)  
-- Tax / VAT: [TAX / VAT POLICY](/tax-policy)  
-- Designs & IP: [DESIGNS & IP](/designs-and-ip)
+- Privacy: [PRIVACY POLICY](/information/privacy-policy)
+- Cookies: [COOKIE POLICY](/information/cookie-policy)
+- Shipping: [SHIPPING & DELIVERY POLICY](/information/shipping-and-delivery-policy)
+- Returns (B2B): [RETURNS / FAULTY GOODS POLICY](/information/returns-and-faulty-goods-policy)
+- Tax / VAT: [TAX / VAT POLICY](/information/tax-vat-policy)
+- Designs & IP: [DESIGNS & IP](/information/design-copyright-ip-notice)
 
 ---
 

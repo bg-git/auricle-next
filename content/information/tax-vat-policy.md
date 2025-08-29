@@ -9,13 +9,13 @@ robots: index,follow
 
 **Effective Date:** 9 August 2025
 
-> **NON-NEGOTIABLE POLICY:** VAT treatment, export rules, and invoicing are applied as described in this TAX / VAT POLICY. If you do not agree, do not place an order. See also the [TERMS OF SALE](/terms-of-sale) and [SHIPPING & DELIVERY POLICY](/shipping-policy).
+> **NON-NEGOTIABLE POLICY:** VAT treatment, export rules, and invoicing are applied as described in this TAX / VAT POLICY. If you do not agree, do not place an order. See also the [TERMS OF SALE](/information/terms-of-sale) and [SHIPPING & DELIVERY POLICY](/information/shipping-and-delivery-policy).
 
 ---
 
 ## 1. SCOPE
 
-This policy applies to all B2B purchases from AURICLE via our website or direct invoice. Website use is governed by the [TERMS OF SERVICE](/terms-of-service).
+This policy applies to all B2B purchases from AURICLE via our website or direct invoice. Website use is governed by the [TERMS OF SERVICE](/information/terms-of-service).
 
 ---
 
@@ -42,7 +42,7 @@ This policy applies to all B2B purchases from AURICLE via our website or direct 
 - Under **DAP/DDU**, **import VAT, customs duties, brokerage/clearance fees, and local taxes are payable by you** to the carrier or your local authority.  
 - If you refuse or fail to pay import charges, the shipment may be **returned or destroyed** by the carrier. Any return, storage, re-shipping, or destruction fees are **your responsibility**.
 
-See the [SHIPPING & DELIVERY POLICY](/shipping-policy) for carrier details.
+See the [SHIPPING & DELIVERY POLICY](/information/shipping-and-delivery-policy) for carrier details.
 
 ---
 
@@ -97,8 +97,8 @@ We may update this policy from time to time. Changes take effect when posted on 
 ## 12. CONTACT
 
 Tax/VAT enquiries: **info@auricle.co.uk**  
-Company details: see [COMPANY INFORMATION](/company-information).  
-Formal notices: see [COMPLAINTS & NOTICES](/complaints-and-notices).
+Company details: see [COMPANY INFORMATION](/information/company-information-imprint).
+Formal notices: see [COMPLAINTS & NOTICES](/information/complaints-notices).
 
 ---
 

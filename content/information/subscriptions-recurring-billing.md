@@ -9,13 +9,13 @@ robots: index,follow
 
 **Effective Date:** 9 August 2025
 
-> **NON-NEGOTIABLE TERMS:** Subscribing authorises recurring charges as described below. We do not offer bespoke variations. If you do not agree, do not subscribe. See also the [TERMS OF SALE](/terms-of-sale), [TERMS OF SERVICE](/terms-of-service), [PRIVACY POLICY](/privacy-policy), and [COOKIE POLICY](/cookie-policy).
+> **NON-NEGOTIABLE TERMS:** Subscribing authorises recurring charges as described below. We do not offer bespoke variations. If you do not agree, do not subscribe. See also the [TERMS OF SALE](/information/terms-of-sale), [TERMS OF SERVICE](/information/terms-of-service), [PRIVACY POLICY](/information/privacy-policy), and [COOKIE POLICY](/information/cookie-policy).
 
 ---
 
 ## 1. SCOPE
 
-These terms apply to AURICLE subscription-based services offered to **B2B customers** via our websites or by direct invoice. Website use is governed by the [TERMS OF SERVICE](/terms-of-service).
+These terms apply to AURICLE subscription-based services offered to **B2B customers** via our websites or by direct invoice. Website use is governed by the [TERMS OF SERVICE](/information/terms-of-service).
 
 ---
 
@@ -29,9 +29,9 @@ Subscriptions are available to **legitimate businesses** (e.g., studios, jewelle
 
 - Subscriptions are **recurring** and billed **on the first day of each calendar month** according to your selected plan.  
 - By providing a payment method, you **authorise** AURICLE to charge the recurring fees automatically until you cancel.  
-- Fees are shown **before** you confirm enrollment and may be subject to taxes (see the [TAX / VAT POLICY](/tax-policy)).
+- Fees are shown **before** you confirm enrollment and may be subject to taxes (see the [TAX / VAT POLICY](/information/tax-vat-policy)).
 
-> Cookies are required for account, basket, and checkout features. We do **not** offer per-category cookie settings. Accept cookies to use the Website; otherwise, do not use the Website. See the [COOKIE POLICY](/cookie-policy).
+> Cookies are required for account, basket, and checkout features. We do **not** offer per-category cookie settings. Accept cookies to use the Website; otherwise, do not use the Website. See the [COOKIE POLICY](/information/cookie-policy).
 
 ---
 
@@ -73,7 +73,7 @@ Any benefits tied to a subscription (e.g., discounts, eligibility, gated access,
 
 ## 9. TAXES
 
-Charges may be subject to **VAT** or other taxes depending on your location and status. See the [TAX / VAT POLICY](/tax-policy). You are responsible for providing accurate tax identifiers where required.
+Charges may be subject to **VAT** or other taxes depending on your location and status. See the [TAX / VAT POLICY](/information/tax-vat-policy). You are responsible for providing accurate tax identifiers where required.
 
 ---
 
@@ -98,7 +98,7 @@ These terms (and any non-contractual disputes) are governed by the laws of **Eng
 ## 13. CONTACT
 
 Subscription enquiries and cancellations: **info@auricle.co.uk**  
-Company details: [COMPANY INFORMATION](/company-information)
+Company details: [COMPANY INFORMATION](/information/company-information-imprint)
 
 ---
 

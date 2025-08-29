@@ -11,13 +11,13 @@ robots: index,follow
 
 These Terms of Service set out the rules for using our websites and online services. By accessing or using the site, you agree to these terms.
 
-> **NON-NEGOTIABLE TERMS:** Use of the Website requires acceptance of these TERMS OF SERVICE in full. We do not offer bespoke variations. If you do not agree, do not use the Website. See also the [PRIVACY POLICY](/privacy-policy) and [COOKIE POLICY](/cookie-policy).
+> **NON-NEGOTIABLE TERMS:** Use of the Website requires acceptance of these TERMS OF SERVICE in full. We do not offer bespoke variations. If you do not agree, do not use the Website. See also the [PRIVACY POLICY](/information/privacy-policy) and [COOKIE POLICY](/information/cookie-policy).
 
 ---
 
 ## 1. Who we are
 
-“AURICLE”, “we”, “us” and “our” refer to **AURICLE Limited**. Details are provided on our [Company Information](/information/company) page.
+“AURICLE”, “we”, “us” and “our” refer to **AURICLE Limited**. Details are provided on our [Company Information](/information/company-information-imprint) page.
 
 “You” means the person or entity using the website.
 
@@ -29,8 +29,8 @@ This website is operated as a **B2B** platform and is not intended for consumer 
 
 ## 2. Other terms that apply
 
-These terms cover **use of the website only**. When you buy products, the [Terms of Sale](/information/terms-of-sale) apply.  
-How we handle personal data is explained in our [Privacy Policy](/information/privacy) and our use of cookies in the [Cookie Policy](/information/cookies). Specific IP notices are in our [Designs & IP](/information/ip).
+These terms cover **use of the website only**. When you buy products, the [Terms of Sale](/information/terms-of-sale) apply.
+How we handle personal data is explained in our [Privacy Policy](/information/privacy-policy) and our use of cookies in the [Cookie Policy](/information/cookie-policy). Specific IP notices are in our [Designs & IP](/information/design-copyright-ip-notice).
 
 ---
 
@@ -56,7 +56,7 @@ Some areas may require an account. You are responsible for keeping your credenti
 
 All content on the website (including text, graphics, images, logos, and code) is owned by or licensed to AURICLE and is protected by copyright and other IP rights. All rights are reserved.
 
-You may print or download extracts for your legitimate business use with us, provided you do not modify the material and retain any notices. Any other use requires our prior written permission. For design-specific notices, see [Designs & IP](/information/ip).
+You may print or download extracts for your legitimate business use with us, provided you do not modify the material and retain any notices. Any other use requires our prior written permission. For design-specific notices, see [Designs & IP](/information/design-copyright-ip-notice).
 
 If you submit content to us (e.g., reviews, testimonials), you grant us a non-exclusive, worldwide, royalty-free licence to use, reproduce and display that content in connection with the website and our business, and you confirm you have the necessary rights to grant this licence.
 
@@ -112,7 +112,7 @@ These terms (and any non-contractual disputes or claims) are governed by the law
 
 ## 13. Notices and contact
 
-For formal notices or complaints, see our [Complaints & Notices](/information/complaints) page.  
+For formal notices or complaints, see our [Complaints & Notices](/information/complaints-notices) page.
 General contact: **info@auricle.co.uk**.
 
 ---

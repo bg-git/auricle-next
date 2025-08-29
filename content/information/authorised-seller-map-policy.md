@@ -9,7 +9,7 @@ robots: index,follow
 
 **Effective Date:** 9 August 2025
 
-> **NON-NEGOTIABLE POLICY:** Authorisation to resell AURICLE products and to use our brand assets requires compliance with this policy, including our **Minimum Advertised Price (MAP)** rules. If you do not agree, do not resell AURICLE products. See also [TERMS OF SALE](/terms-of-sale), [TERMS OF SERVICE](/terms-of-service) and [DESIGNS & IP](/designs-and-ip).
+> **NON-NEGOTIABLE POLICY:** Authorisation to resell AURICLE products and to use our brand assets requires compliance with this policy, including our **Minimum Advertised Price (MAP)** rules. If you do not agree, do not resell AURICLE products. See also [TERMS OF SALE](/information/terms-of-sale), [TERMS OF SERVICE](/information/terms-of-service) and [DESIGNS & IP](/information/design-copyright-ip-notice).
 
 ---
 
@@ -68,7 +68,7 @@ This policy concerns **advertised** price only. **Actual transactional sale pric
 
 ## 7. BRAND ASSETS & CONTENT
 
-Use of AURICLE images, copy and logos is subject to [DESIGNS & IP](/designs-and-ip). We may **withdraw the image/content licence** and request takedown for MAP breaches or brand misuse.
+Use of AURICLE images, copy and logos is subject to [DESIGNS & IP](/information/design-copyright-ip-notice). We may **withdraw the image/content licence** and request takedown for MAP breaches or brand misuse.
 
 ---
 
@@ -93,8 +93,8 @@ Nothing in this policy requires you to sell at any particular price. It governs 
 ## 10. QUESTIONS & NOTICES
 
 Policy enquiries: **info@auricle.co.uk**  
-Company details: [COMPANY INFORMATION](/company-information)  
-Formal notices: [COMPLAINTS & NOTICES](/complaints-and-notices)
+Company details: [COMPANY INFORMATION](/information/company-information-imprint)
+Formal notices: [COMPLAINTS & NOTICES](/information/complaints-notices)
 
 ---
 

@@ -9,7 +9,7 @@ robots: index,follow
 
 **Effective Date:** 9 August 2025
 
-> **INFORMATIONAL NOTICE:** Materials and markings are provided as described below and may not be customised. For purchasing terms, see the [TERMS OF SALE](/terms-of-sale). For intellectual property, see [DESIGNS & IP](/designs-and-ip).
+> **INFORMATIONAL NOTICE:** Materials and markings are provided as described below and may not be customised. For purchasing terms, see the [TERMS OF SALE](/information/terms-of-sale). For intellectual property, see [DESIGNS & IP](/information/design-copyright-ip-notice).
 
 ---
 
@@ -81,7 +81,7 @@ Titanium components are **not** hallmarked (not precious metal under UK law). Wh
 
 ## 5. COLOUR & DISPLAY DISCLAIMER
 
-Display characteristics vary by device and screen type. **Colour and finish in real life may differ** from on-screen images. See [SHIPPING & DELIVERY POLICY](/shipping-policy) and [RETURNS / FAULTY GOODS POLICY (B2B)](/returns-policy) for fulfilment and defect handling.
+Display characteristics vary by device and screen type. **Colour and finish in real life may differ** from on-screen images. See [SHIPPING & DELIVERY POLICY](/information/shipping-and-delivery-policy) and [RETURNS / FAULTY GOODS POLICY (B2B)](/information/returns-and-faulty-goods-policy) for fulfilment and defect handling.
 
 ---
 
@@ -94,8 +94,8 @@ Materials specifications and marking practices may be updated as manufacturing m
 ## 7. CONTACT
 
 Material or hallmarking enquiries: **info@auricle.co.uk**  
-Company details: [COMPANY INFORMATION](/company-information)  
-Terms: [TERMS OF SALE](/terms-of-sale) · [TERMS OF SERVICE](/terms-of-service)
+Company details: [COMPANY INFORMATION](/information/company-information-imprint)
+Terms: [TERMS OF SALE](/information/terms-of-sale) · [TERMS OF SERVICE](/information/terms-of-service)
 
 ---
 
