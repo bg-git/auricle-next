@@ -22,8 +22,15 @@ const sections = [
   {
     title: 'LEGAL',
     links: [
-      { label: 'Privacy Policy', href: '/privacy' },
-      { label: 'Terms of Service', href: '/terms' },
+      { label: 'Terms of Service', href: '/information/terms-of-service' },
+      { label: 'Terms of Sale', href: '/information/terms-of-sale' },
+      { label: 'Privacy Policy', href: '/information/privacy-policy' },
+      { label: 'Cookie Policy', href: '/information/cookie-policy' },
+      { label: 'Shipping & Delivery', href: '/information/shipping-and-delivery-policy' },
+      { label: 'All Terms', href: '/information' },
+
+      
+      
     ],
   },
   {
