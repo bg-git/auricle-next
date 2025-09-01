@@ -14,6 +14,10 @@ import FavouriteToggle from '@/components/FavouriteToggle';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import { useMemo } from 'react';
+import { mapStyledByYou } from "@/lib/mapStyledByYou";
+import StyledByYou from "@/components/StyledByYou";
+import type { UGCItem } from "@/components/StyledByYou";
+
 
 
 
@@ -62,13 +66,17 @@ interface Product {
   };
   metafields: Metafield[];
 }
-
+interface ProductPageProps {
+  product: Product;
+  ugcItems: UGCItem[];
+}
 interface ProductPageProps {
   product: Product;
 }
 
 
-export default function ProductPage({ product }: ProductPageProps) {
+export default function ProductPage({ product, ugcItems }: ProductPageProps) {
+
   if (!product) {
     return <div style={{ padding: '16px' }}>Product not found.</div>;
   }
@@ -76,6 +84,7 @@ export default function ProductPage({ product }: ProductPageProps) {
   const { addToCart, openDrawer } = useCart();
   const { showToast } = useToast();
   const router = useRouter();
+
 
   const [selectedVariantId, setSelectedVariantId] = useState(
     product.variants?.edges?.[0]?.node?.id || null
@@ -515,8 +524,9 @@ const formattedPrice = rawPrice % 1 === 0 ? rawPrice.toFixed(0) : rawPrice.toFix
             </div>
           </div>
         </div>
-
+<StyledByYou items={ugcItems} />
         <div style={{ height: '80px' }} />
+        
       </main>
 
         </>
@@ -555,82 +565,95 @@ export const getStaticProps: GetStaticProps<ProductPageProps> = async (
 ) => {
   const handle = context.params?.handle;
 
-  const query = `
-    query ProductByHandle($handle: String!) {
-      productByHandle(handle: $handle) {
-        id
-        title
-        descriptionHtml
-        priceRange {
-          minVariantPrice {
-            amount
+const query = `
+  query ProductByHandle($handle: String!) {
+    productByHandle(handle: $handle) {
+      id
+      title
+      descriptionHtml
+      priceRange {
+        minVariantPrice { amount }
+      }
+      images(first: 5) {
+        edges { node { url altText } }
+      }
+      variants(first: 10) {
+        edges {
+          node {
+            id
+            title
+            price { amount }
+            availableForSale
+            quantityAvailable
+            selectedOptions { name value }
           }
         }
-        images(first: 5) {
+      }
+      metafields(identifiers: [
+        { namespace: "custom", key: "alloy" },
+        { namespace: "custom", key: "metal" },
+        { namespace: "custom", key: "metal_colour" },
+        { namespace: "custom", key: "thread_type" },
+        { namespace: "custom", key: "gem_type" },
+        { namespace: "custom", key: "gem_colour" },
+        { namespace: "custom", key: "name" },
+        { namespace: "custom", key: "title" },
+        { namespace: "custom", key: "sku" },
+        { namespace: "custom", key: "width" },
+        { namespace: "custom", key: "height" },
+        { namespace: "custom", key: "length" },
+        { namespace: "custom", key: "gauge" },
+        { namespace: "custom", key: "sold_as" },
+        { namespace: "custom", key: "shipping" },
+        { namespace: "custom", key: "base_size" },
+        { namespace: "custom", key: "variants" },
+        { namespace: "custom", key: "variant_label" },
+        { namespace: "custom", key: "fitting" }
+      ]) {
+        key
+        value
+      }
+
+      # <-- NEW: Styled By You
+      styledByYou: metafield(namespace: "custom", key: "styled_by_you") {
+        references(first: 50) {
           edges {
             node {
-              url
-              altText
-            }
-          }
-        }
-        variants(first: 10) {
-          edges {
-            node {
-              id
-              title
-              price {
-                amount
-              }
-              availableForSale
-              quantityAvailable
-              selectedOptions {
-                name
-                value
+              ... on Metaobject {
+                id
+                type
+                fields {
+                  key
+                  value
+                  reference {
+                    __typename
+                    ... on MediaImage { image { url width height altText } }
+                    ... on Product { id }
+                  }
+                }
               }
             }
           }
-        }
-        metafields(identifiers: [
-          { namespace: "custom", key: "alloy" },
-          { namespace: "custom", key: "metal" },
-          { namespace: "custom", key: "metal_colour" },
-          { namespace: "custom", key: "thread_type" },
-          { namespace: "custom", key: "gem_type" },
-          { namespace: "custom", key: "gem_colour" },
-          { namespace: "custom", key: "name" },
-          { namespace: "custom", key: "title" },
-          { namespace: "custom", key: "sku" },
-          { namespace: "custom", key: "width" },
-          { namespace: "custom", key: "height" },
-          { namespace: "custom", key: "length" },
-          { namespace: "custom", key: "gauge" },
-          { namespace: "custom", key: "sold_as" },
-          { namespace: "custom", key: "shipping" },
-          { namespace: "custom", key: "base_size" },
-          { namespace: "custom", key: "variants" },
-          { namespace: "custom", key: "variant_label" },
-          { namespace: "custom", key: "fitting" }
-        ]) {
-          key
-          value
         }
       }
     }
-  `;
+  }
+`;
+
 
   const data = await shopifyFetch({ query, variables: { handle } });
 
-  if (!data.productByHandle) {
-    return { notFound: true };
-  }
+   const ugcItems = mapStyledByYou(
+    data.productByHandle.styledByYou?.references?.edges ?? [],
+    data.productByHandle.id
+  );
 
-return {
-  props: {
-    product: data.productByHandle,
-  },
-  revalidate: 60,
-};
-
+  return {
+    props: {
+      product: data.productByHandle,
+      ugcItems,
+    },
+    revalidate: 60,
+  };
 };
 
