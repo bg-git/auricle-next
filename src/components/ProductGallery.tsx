@@ -49,15 +49,16 @@ export default function ProductGallery({ images }: { images: GalleryImage[] }) {
             )}
 
             <Image
-              key={main.url}
-              src={main.url}
-              alt={main.alt || ""}
-              width={main.width}
-              height={main.height}
-              priority={active === 0}
-              sizes="(min-width: 1400px) 600px, (min-width: 1024px) 50vw, 100vw"
-              style={{ width: "100%", height: "auto", objectFit: "cover", display: "block" }}
-            />
+  key={main.url}
+  src={main.url}
+  alt={main.alt || ""}
+  width={main.width}
+  height={main.height}
+  priority={active === 0}
+  fetchPriority="high"
+  sizes="(min-width: 1024px) min(700px, 50vw), 100vw"
+  style={{ width: "100%", height: "auto", objectFit: "cover", display: "block" }}
+/>
 
             {safeImages.length > 1 && (
               <div
@@ -83,7 +84,8 @@ export default function ProductGallery({ images }: { images: GalleryImage[] }) {
                         loading="lazy"
                         decoding="async"
                         fetchPriority="low"
-                        sizes="(max-width: 768px) 0px, 60px" /* 0 on mobile, 60px on desktop */
+                        sizes="60px"
+                        quality={40} 
                       />
                     </div>
                   </button>
@@ -107,16 +109,17 @@ export default function ProductGallery({ images }: { images: GalleryImage[] }) {
                   </div>
                 )}
                 <Image
-                  src={img.url}
-                  alt={img.alt || ""}
-                  width={img.width}
-                  height={img.height}
-                  priority={i === 0}
-                  loading={i === 0 ? undefined : "lazy"}
-                  decoding="async"
-                  sizes="100vw"
-                  style={{ width: "100%", height: "auto", objectFit: "cover", display: "block" }}
-                />
+  src={img.url}
+  alt={img.alt || ""}
+  width={img.width}
+  height={img.height}
+  priority={i === 0}
+  fetchPriority={i === 0 ? "high" : "low"}
+  loading={i === 0 ? undefined : "lazy"}
+  decoding="async"
+  sizes="100vw"
+  style={{ width: "100%", height: "auto", objectFit: "cover", display: "block" }}
+/>
               </div>
             ))}
           </div>
@@ -124,7 +127,7 @@ export default function ProductGallery({ images }: { images: GalleryImage[] }) {
       )}
 
       <style jsx>{`
-        .img-wrap { position: relative; width: 100%; aspect-ratio: 4 / 5; }
+        .img-wrap { position: relative; width: 100%; }
 
         /* Stacked badges (top-left) */
         .badges {
@@ -149,7 +152,7 @@ export default function ProductGallery({ images }: { images: GalleryImage[] }) {
           white-space: nowrap;
           max-width: 90%;
           overflow: hidden;
-          text-overflow: ellipsis;
+          max-width: max-content;
         }
 
         /* Overlayed horizontal thumbs on the LEFT (desktop) */
@@ -188,6 +191,10 @@ export default function ProductGallery({ images }: { images: GalleryImage[] }) {
           aspect-ratio: 4 / 5;
           position: relative;
         }
+        /* styles at the bottom of ProductGallery.tsx */
+.img-wrap { position: relative; width: 100%; }          /* <— updated */
+.snap-card { min-width: 100%; scroll-snap-align: start; aspect-ratio: 4 / 5; position: relative; }
+
       `}</style>
     </div>
   );
