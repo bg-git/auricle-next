@@ -9,17 +9,23 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import Seo from '@/components/Seo';
 import Link from 'next/link';
-import FavouriteToggle from '@/components/FavouriteToggle';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import { useMemo } from 'react';
 import { mapStyledByYou } from "@/lib/mapStyledByYou";
-import StyledByYou from "@/components/StyledByYou";
 import type { UGCItem } from "@/components/StyledByYou";
 import ProductGallery from "@/components/ProductGallery";
+import dynamic from 'next/dynamic';
 
-
-
+// ✅ Lazy-loaded, non-critical UI
+const StyledByYouLazy = dynamic(() => import('@/components/StyledByYou'), {
+  ssr: false,
+  loading: () => null,
+});
+const FavouriteToggleLazy = dynamic(() => import('@/components/FavouriteToggle'), {
+  ssr: false,
+  loading: () => null,
+});
 
 // TYPES
 interface Metafield {
@@ -57,7 +63,7 @@ interface Product {
         url: string;
         altText: string | null;
         width: number;
-      height: number;
+        height: number;
       };
     }[];
   };
@@ -73,13 +79,6 @@ interface ProductPageProps {
   ugcItems: UGCItem[];
 }
 
-
-export default function ProductPage({ product, ugcItems }: ProductPageProps) {
-
-  const { addToCart, openDrawer } = useCart();
-  const { showToast } = useToast();
-  const router = useRouter();
-  // Build the combined gallery: product images + up to 2 “Styled By You” images
 type GalleryImage = {
   url: string;
   width: number;
@@ -89,35 +88,41 @@ type GalleryImage = {
   credit?: string;
 };
 
-const galleryImages = useMemo<GalleryImage[]>(() => {
-  const official: GalleryImage[] =
-  (product.images?.edges || []).map(({ node }) => ({
-    url: node.url,
-    width: node.width,     // 👈 was a cast/fallback before
-    height: node.height,   // 👈 was a cast/fallback before
-    alt: node.altText || product.title,
-    isUGC: false,
-  }));
+export default function ProductPage({ product, ugcItems }: ProductPageProps) {
 
-  // Append up to 2 SBY images
-  const sby: GalleryImage[] = (ugcItems || []).slice(0, 2).map((it) => ({
-    url: it.image.url,
-    width: it.image.width,
-    height: it.image.height,
-    alt: it.alt || "Styled by you",
-    isUGC: true,
-    credit: it.credit || undefined,
-  }));
+  const { addToCart, openDrawer } = useCart();
+  const { showToast } = useToast();
+  const router = useRouter();
 
-  // De-dupe by URL
-  const seen = new Set<string>();
-  return [...official, ...sby].filter((img) => {
-    if (seen.has(img.url)) return false;
-    seen.add(img.url);
-    return true;
-  });
-}, [product.images, product.title, ugcItems]);
+  // Build the combined gallery: product images + up to 2 “Styled By You” images
+  const galleryImages = useMemo<GalleryImage[]>(() => {
+    const official: GalleryImage[] =
+      (product.images?.edges || []).map(({ node }) => ({
+        url: node.url,
+        width: node.width,
+        height: node.height,
+        alt: node.altText || product.title,
+        isUGC: false,
+      }));
 
+    // Append up to 2 SBY images
+    const sby: GalleryImage[] = (ugcItems || []).slice(0, 2).map((it) => ({
+      url: it.image.url,
+      width: it.image.width,
+      height: it.image.height,
+      alt: it.alt || "Styled by you",
+      isUGC: true,
+      credit: it.credit || undefined,
+    }));
+
+    // De-dupe by URL
+    const seen = new Set<string>();
+    return [...official, ...sby].filter((img) => {
+      if (seen.has(img.url)) return false;
+      seen.add(img.url);
+      return true;
+    });
+  }, [product.images, product.title, ugcItems]);
 
   const [selectedVariantId, setSelectedVariantId] = useState(
     product?.variants?.edges?.[0]?.node?.id || null
@@ -215,308 +220,344 @@ const galleryImages = useMemo<GalleryImage[]>(() => {
   };
 
   const fieldLabels = {
-  title: 'Title',
-  name: 'Name',
-  sku: 'SKU',
-  metal: 'Metal',
-  alloy: 'Alloy',
-  metal_colour: 'Metal Colour',
-  thread_type: 'Thread Type',
-  fitting: 'Fitting',
-   gem_type: 'Gem Type',
-  gem_colour: 'Gem Colour',
-  gauge: 'Gauge',
-  base_size: 'Base Size',
-  length: 'Length',
-  width: 'Width',
-  height: 'Height',
-  sold_as: 'Sold As',
-  shipping: 'Shipping'
+    title: 'Title',
+    name: 'Name',
+    sku: 'SKU',
+    metal: 'Metal',
+    alloy: 'Alloy',
+    metal_colour: 'Metal Colour',
+    thread_type: 'Thread Type',
+    fitting: 'Fitting',
+    gem_type: 'Gem Type',
+    gem_colour: 'Gem Colour',
+    gauge: 'Gauge',
+    base_size: 'Base Size',
+    length: 'Length',
+    width: 'Width',
+    height: 'Height',
+    sold_as: 'Sold As',
+    shipping: 'Shipping'
   };
+
+  // ✅ Viewport-gate "Styled By You"
+  const sbyAnchorRef = useRef<HTMLDivElement | null>(null);
+  const [showSBY, setShowSBY] = useState(false);
+
+  useEffect(() => {
+    const el = sbyAnchorRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setShowSBY(true);
+          io.disconnect();
+        }
+      },
+      { rootMargin: '300px' }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  // ✅ Idle-load FavouriteToggle (with proper typing from src/types/idle-callback.d.ts)
+  const [showFav, setShowFav] = useState(false);
+  useEffect(() => {
+    let cancel: (() => void) | undefined;
+
+    if (typeof window !== 'undefined' && typeof window.requestIdleCallback === 'function') {
+      const id = window.requestIdleCallback(() => setShowFav(true));
+      cancel = () => {
+        if (typeof window.cancelIdleCallback === 'function') {
+          window.cancelIdleCallback(id as number);
+        }
+      };
+    } else {
+      const t = window.setTimeout(() => setShowFav(true), 300);
+      cancel = () => window.clearTimeout(t);
+    }
+
+    return () => { if (cancel) cancel(); };
+  }, []);
 
   if (!product) {
     return <div style={{ padding: '16px' }}>Product not found.</div>;
   }
 
   return (
-    
     <>
-    <Seo
-      title={getFieldValue('title') || product.title}
-      description={
-        getFieldValue('description') || `Buy ${product.title} in 14k gold or titanium.`
-      }
-      canonical={`https://www.auricle.co.uk/product/${product.handle}`}
-    />
-
-<script
-  type="application/ld+json"
-  dangerouslySetInnerHTML={{
-    __html: JSON.stringify({
-      "@context": "https://schema.org",
-      "@type": "Product",
-      "name": product.title,
-      "image": product.images?.edges?.map(img => img?.node?.url).filter(Boolean),
-      "description":
-        product.metafields?.find((m) => m?.key === "description")?.value || "",
-      "sku": product.metafields?.find((m) => m?.key === "sku")?.value || "",
-      "brand": {
-        "@type": "Brand",
-        "name": "AURICLE"
-      },
-      "offers": {
-        "@type": "Offer",
-        "url": `https://www.auricle.co.uk/product/${product.handle}`,
-        "priceCurrency": "GBP",
-        "price": "0.01",
-        "availability": "https://schema.org/InStock",
-        "priceSpecification": {
-          "@type": "UnitPriceSpecification",
-          "priceCurrency": "GBP",
-          "price": "0.01"
+      <Seo
+        title={getFieldValue('title') || product.title}
+        description={
+          getFieldValue('description') || `Buy ${product.title} in 14k gold or titanium.`
         }
-      }
-    })
-  }}
-/>
+        canonical={`https://www.auricle.co.uk/product/${product.handle}`}
+      />
 
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Product",
+            "name": product.title,
+            "image": product.images?.edges?.map(img => img?.node?.url).filter(Boolean),
+            "description":
+              product.metafields?.find((m) => m?.key === "description")?.value || "",
+            "sku": product.metafields?.find((m) => m?.key === "sku")?.value || "",
+            "brand": {
+              "@type": "Brand",
+              "name": "AURICLE"
+            },
+            "offers": {
+              "@type": "Offer",
+              "url": `https://www.auricle.co.uk/product/${product.handle}`,
+              "priceCurrency": "GBP",
+              "price": "0.01",
+              "availability": "https://schema.org/InStock",
+              "priceSpecification": {
+                "@type": "UnitPriceSpecification",
+                "priceCurrency": "GBP",
+                "price": "0.01"
+              }
+            }
+          })
+        }}
+      />
 
       <main style={{ maxWidth: '1400px', margin: '0 auto', padding: '16px' }}>
         <div className="product-layout">
           <div className="product-image" style={{ position: 'relative' }}>
-  <ProductGallery images={galleryImages} />
+            <ProductGallery images={galleryImages} />
 
-<FavouriteToggle
-  handle={router.query.handle as string}
-  title={product.title}
-  image={galleryImages[0]?.url || '/placeholder.png'}   // ← replace imageUrl with this
-  price={formattedPrice}
-  metafields={metafields}
-/>
-</div>
-
+            {showFav && (
+              <FavouriteToggleLazy
+                handle={router.query.handle as string}
+                title={product.title}
+                image={galleryImages[0]?.url || '/placeholder.png'}
+                price={formattedPrice}
+                metafields={metafields}
+              />
+            )}
+          </div>
 
           <div className="product-info">
             <h1 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '4px' }}>{product.title}</h1>
             {user?.approved ? (
-  <>
-    {/* Price */}
-    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-      <p style={{ fontSize: '14px', fontWeight: 500 }}>
-        £{formattedPrice}
-      </p>
-    </div>
+              <>
+                {/* Price */}
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <p style={{ fontSize: '14px', fontWeight: 500 }}>
+                    £{formattedPrice}
+                  </p>
+                </div>
 
-    {/* Variant options */}
-    {variantOptions.length > 0 && (
-      <div style={{ marginTop: '24px' }}>
-        <p style={{ fontSize: '14px', fontWeight: 500, marginBottom: '8px' }}>Available in:</p>
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-          {variantOptions.map((variant) => {
-            const isCurrent = variant.label === currentVariantLabel;
-            return isCurrent ? (
-              <span
-                key={variant.label}
-                style={{
-                  padding: '8px 12px',
-                  borderRadius: '5px',
-                  background: '#181818',
-                  color: '#fff',
-                  fontSize: '14px',
-                  fontWeight: 500,
-                  border: '2px solid #181818',
-                }}
-              >
-                {variant.label}
-              </span>
+                {/* Variant options */}
+                {variantOptions.length > 0 && (
+                  <div style={{ marginTop: '24px' }}>
+                    <p style={{ fontSize: '14px', fontWeight: 500, marginBottom: '8px' }}>Available in:</p>
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                      {variantOptions.map((variant) => {
+                        const isCurrent = variant.label === currentVariantLabel;
+                        return isCurrent ? (
+                          <span
+                            key={variant.label}
+                            style={{
+                              padding: '8px 12px',
+                              borderRadius: '5px',
+                              background: '#181818',
+                              color: '#fff',
+                              fontSize: '14px',
+                              fontWeight: 500,
+                              border: '2px solid #181818',
+                            }}
+                          >
+                            {variant.label}
+                          </span>
+                        ) : (
+                          <Link
+                            key={variant.url}
+                            href={variant.url}
+                            style={{
+                              padding: '8px 12px',
+                              borderRadius: '5px',
+                              background: '#fff',
+                              color: '#181818',
+                              fontSize: '14px',
+                              fontWeight: 500,
+                              border: '1px solid #ccc',
+                              textDecoration: 'none',
+                              transition: 'all 0.2s',
+                            }}
+                          >
+                            {variant.label}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Variant buttons */}
+                {product.variants?.edges?.length > 1 && (
+                  <div className="variant-wrapper">
+                    <p className="variant-label">Select an option:</p>
+                    <div className="variant-grid">
+                      {product.variants.edges.map(({ node }) => {
+                        const isSelected = selectedVariantId === node.id;
+                        return (
+                          <button
+                            key={node.id}
+                            onClick={() => setSelectedVariantId(node.id)}
+                            className={`variant-button${isSelected ? ' selected' : ''}`}
+                          >
+                            {node.title}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Quantity + Add to Cart */}
+                <div className="desktop-add-to-cart" style={{ marginTop: '24px' }}>
+                  <div style={{ display: 'flex', gap: '12px' }}>
+                    <label htmlFor="qty" style={{ position: 'absolute', left: '-9999px' }}>Quantity</label>
+                    <div
+                      style={{
+                        flex: '0 0 120px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        border: '1px solid #ccc',
+                        borderRadius: '4px',
+                        overflow: 'hidden',
+                        paddingInline: '4px',
+                      }}
+                    >
+                      <button
+                        style={{
+                          width: '48px',
+                          height: '48px',
+                          minWidth: '48px',
+                          minHeight: '48px',
+                          background: '#fff',
+                          border: 'none',
+                          fontSize: '20px',
+                          cursor: 'pointer',
+                        }}
+                        onClick={() => setQty((prev) => Math.max(isSoldOut ? 0 : 1, prev - 1))}
+                      >
+                        −
+                      </button>
+                      <span
+                        id="qty"
+                        style={{
+                          width: '100%',
+                          height: '40px',
+                          textAlign: 'center',
+                          fontSize: '14px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          userSelect: 'none',
+                        }}
+                      >
+                        {qty}
+                      </span>
+                      <button
+                        style={{
+                          width: '48px',
+                          height: '48px',
+                          minWidth: '48px',
+                          minHeight: '48px',
+                          fontSize: '20px',
+                          background: '#fff',
+                          border: 'none',
+                          cursor: 'pointer',
+                        }}
+                        onClick={() => {
+                          if (maxQty <= 0) {
+                            showToast('More coming soon 😉');
+                            return;
+                          }
+                          if (qty >= maxQty) {
+                            showToast(`We only have ${maxQty} available. Sorry 😞`);
+                            return;
+                          }
+                          setQty((prev) => prev + 1);
+                        }}
+                      >
+                        +
+                      </button>
+                    </div>
+
+                    <button
+                      style={{
+                        flex: '1',
+                        height: '48px',
+                        minHeight: '48px',
+                        background: '#181818',
+                        color: '#fff',
+                        border: 'none',
+                        fontSize: '14px',
+                        fontWeight: 900,
+                        cursor: 'pointer',
+                        borderRadius: '4px',
+                        whiteSpace: 'nowrap',
+                      }}
+                      onClick={() => {
+                        if (isSoldOut) {
+                          showToast('SOLD OUT. More coming soon.');
+                          return;          // Prevent action when sold out
+                        }
+                        if (!selectedVariantId || !selectedVariant) {
+                          return;
+                        }
+                        addToCart(selectedVariantId, qty, {
+                          handle: router.query.handle as string,
+                          title: product.title,
+                          variantTitle: selectedVariant.title,
+                          selectedOptions: selectedVariant.selectedOptions,
+                          price: selectedVariant.price.amount,
+                          image: product.images?.edges?.[0]?.node?.url || undefined,
+                          metafields: product.metafields,
+                          quantityAvailable: selectedVariant.quantityAvailable,
+                        });
+                        openDrawer();
+                      }}
+                    >
+                      {isSoldOut ? 'SOLD OUT' : 'ADD TO BAG'}
+                    </button>
+                  </div>
+                </div>
+
+                {/* VAT Note */}
+                <p
+                  style={{
+                    fontSize: '12px',
+                    color: '#888',
+                    marginTop: '10px',
+                    marginBottom: '16px',
+                    textAlign: 'right',
+                  }}
+                >
+                  VAT & shipping calculated at checkout
+                </p>
+              </>
             ) : (
-              <Link
-                key={variant.url}
-                href={variant.url}
+              <div
                 style={{
-                  padding: '8px 12px',
-                  borderRadius: '5px',
-                  background: '#fff',
-                  color: '#181818',
+                  marginTop: '24px',
+                  padding: '16px',
+                  background: '#f9f9f9',
+                  border: '1px solid #ddd',
+                  textAlign: 'center',
                   fontSize: '14px',
-                  fontWeight: 500,
-                  border: '1px solid #ccc',
-                  textDecoration: 'none',
-                  transition: 'all 0.2s',
                 }}
               >
-                {variant.label}
-              </Link>
-            );
-          })}
-        </div>
-      </div>
-    )}
+                <p style={{ fontWeight: 600 }}>CATALOGUE VIEW</p><br />
+                <p>Sign in to your wholesale account to view pricing.</p></div>
 
-    {/* Variant buttons */}
-    {product.variants?.edges?.length > 1 && (
-      <div className="variant-wrapper">
-        <p className="variant-label">Select an option:</p>
-        <div className="variant-grid">
-          {product.variants.edges.map(({ node }) => {
-            const isSelected = selectedVariantId === node.id;
-            return (
-              <button
-                key={node.id}
-                onClick={() => setSelectedVariantId(node.id)}
-                className={`variant-button${isSelected ? ' selected' : ''}`}
-              >
-                {node.title}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-    )}
-
-    {/* Quantity + Add to Cart */}
-    <div className="desktop-add-to-cart" style={{ marginTop: '24px' }}>
-      <div style={{ display: 'flex', gap: '12px' }}>
-        <label htmlFor="qty" style={{ position: 'absolute', left: '-9999px' }}>Quantity</label>
-        <div
-          style={{
-            flex: '0 0 120px',
-            display: 'flex',
-            alignItems: 'center',
-            border: '1px solid #ccc',
-            borderRadius: '4px',
-            overflow: 'hidden',
-            paddingInline: '4px',
-          }}
-        >
-          <button
-            style={{
-              width: '48px',
-              height: '48px',
-              minWidth: '48px',
-              minHeight: '48px',
-              background: '#fff',
-              border: 'none',
-              fontSize: '20px',
-              cursor: 'pointer',
-            }}
-            onClick={() => setQty((prev) => Math.max(isSoldOut ? 0 : 1, prev - 1))}
-          >
-            −
-          </button>
-          <span
-            id="qty"
-            style={{
-              width: '100%',
-              height: '40px',
-              textAlign: 'center',
-              fontSize: '14px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              userSelect: 'none',
-            }}
-          >
-            {qty}
-          </span>
-          <button
-            style={{
-              width: '48px',
-              height: '48px',
-              minWidth: '48px',
-              minHeight: '48px',
-              fontSize: '20px',
-              background: '#fff',
-              border: 'none',
-              cursor: 'pointer',
-            }}
-            onClick={() => {
-              if (maxQty <= 0) {
-                showToast('More coming soon 😉');
-                return;
-              }
-              if (qty >= maxQty) {
-                showToast(`We only have ${maxQty} available. Sorry 😞`);
-                return;
-              }
-              setQty((prev) => prev + 1);
-            }}
-          >
-            +
-          </button>
-        </div>
-
-        <button
-          style={{
-            flex: '1',
-            height: '48px',
-            minHeight: '48px',
-            background: '#181818',
-            color: '#fff',
-            border: 'none',
-            fontSize: '14px',
-            fontWeight: 900,
-            cursor: 'pointer',
-            borderRadius: '4px',
-            whiteSpace: 'nowrap',
-          }}
-          onClick={() => {
-    if (isSoldOut) {
-      showToast('SOLD OUT. More coming soon.');
-      return;          // Prevent action when sold out
-    }
-    if (!selectedVariantId || !selectedVariant) {
-      console.warn('No variant selected');
-      return;
-    }
-    addToCart(selectedVariantId, qty, {
-      handle: router.query.handle as string,
-      title: product.title,
-      variantTitle: selectedVariant.title,
-      selectedOptions: selectedVariant.selectedOptions,
-      price: selectedVariant.price.amount,
-      image: product.images?.edges?.[0]?.node?.url || undefined,
-      metafields: product.metafields,
-      quantityAvailable: selectedVariant.quantityAvailable,
-    });
-    openDrawer();
-  }}
->
-  {isSoldOut ? 'SOLD OUT' : 'ADD TO BAG'}
-</button>
-      </div>
-    </div>
-
-    {/* VAT Note */}
-    <p
-      style={{
-        fontSize: '12px',
-        color: '#888',
-        marginTop: '10px',
-        marginBottom: '16px',
-        textAlign: 'right',
-      }}
-    >
-      VAT & shipping calculated at checkout
-    </p>
-  </>
-) : (
-  <div
-  style={{
-    marginTop: '24px',
-    padding: '16px',
-    background: '#f9f9f9',
-    border: '1px solid #ddd',
-    textAlign: 'center',
-    fontSize: '14px',
-  }}
->
-  <p style={{ fontWeight: 600 }}>CATALOGUE VIEW</p><br />
-  <p>Sign in to your wholesale account to view pricing.</p></div>
-
-)}
-
-
+            )}
 
             <div style={{ marginTop: '32px' }}>
               <h2 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '8px' }}>Details</h2>
@@ -550,12 +591,16 @@ const galleryImages = useMemo<GalleryImage[]>(() => {
             </div>
           </div>
         </div>
-<StyledByYou items={ugcItems} />
+
+        {/* ✅ Styled By You (renders when near viewport) */}
+        <div ref={sbyAnchorRef} />
+        {showSBY ? <StyledByYouLazy items={ugcItems} /> : null}
+
         <div style={{ height: '80px' }} />
         
       </main>
 
-        </>
+    </>
   );
 }
 
@@ -591,7 +636,7 @@ export const getStaticProps: GetStaticProps<ProductPageProps> = async (
 ) => {
   const handle = context.params?.handle;
 
-const query = `
+  const query = `
   query ProductByHandle($handle: String!) {
     productByHandle(handle: $handle) {
       id
@@ -680,11 +725,9 @@ const query = `
   }
 `;
 
-
-
   const data = await shopifyFetch({ query, variables: { handle } });
 
-   const ugcItems = mapStyledByYou(
+  const ugcItems = mapStyledByYou(
     data.productByHandle.styledByYou?.references?.edges ?? [],
     data.productByHandle.id
   );
@@ -697,4 +740,3 @@ const query = `
     revalidate: 60,
   };
 };
-

@@ -1,13 +1,17 @@
+// next.config.js (ESM)
 import withPWA from 'next-pwa';
+import createBundleAnalyzer from '@next/bundle-analyzer';
+
+const withBundleAnalyzer = createBundleAnalyzer({
+  enabled: process.env.ANALYZE === 'true',
+});
 
 const pwaConfig = withPWA({
   dest: 'public',
   register: true,
   skipWaiting: true,
   disable: process.env.NODE_ENV === 'development',
-  fallbacks: {
-    document: '/fallback.html',
-  },
+  fallbacks: { document: '/fallback.html' },
   runtimeCaching: [
     {
       // Cache static and semi-static pages
@@ -29,10 +33,7 @@ const pwaConfig = withPWA({
       handler: 'NetworkFirst',
       options: {
         cacheName: 'pages-cache',
-        expiration: {
-          maxEntries: 100,
-          maxAgeSeconds: 7 * 24 * 60 * 60,
-        },
+        expiration: { maxEntries: 100, maxAgeSeconds: 7 * 24 * 60 * 60 },
       },
     },
     {
@@ -41,10 +42,7 @@ const pwaConfig = withPWA({
       handler: 'CacheFirst',
       options: {
         cacheName: 'next-static',
-        expiration: {
-          maxEntries: 64,
-          maxAgeSeconds: 30 * 24 * 60 * 60,
-        },
+        expiration: { maxEntries: 64, maxAgeSeconds: 30 * 24 * 60 * 60 },
       },
     },
     {
@@ -53,10 +51,7 @@ const pwaConfig = withPWA({
       handler: 'CacheFirst',
       options: {
         cacheName: 'image-cache',
-        expiration: {
-          maxEntries: 64,
-          maxAgeSeconds: 30 * 24 * 60 * 60,
-        },
+        expiration: { maxEntries: 64, maxAgeSeconds: 30 * 24 * 60 * 60 },
       },
     },
   ],
@@ -74,21 +69,24 @@ const pwaConfig = withPWA({
 const nextConfig = {
   reactStrictMode: true,
   trailingSlash: false,
+  swcMinify: true, // safe: smaller JS
+  compiler: {
+    // safe: remove console.* in production except warn/error
+    removeConsole:
+      process.env.NODE_ENV === 'production' ? { exclude: ['error', 'warn'] } : false,
+  },
 
   images: {
-  remotePatterns: [
-    { protocol: 'https', hostname: 'cdn.shopify.com', pathname: '**' },
-  ],
-  formats: ['image/avif', 'image/webp'],
-  deviceSizes: [360, 414, 480, 540, 640, 750, 828, 1024, 1280, 1400, 1600],
-  imageSizes: [48, 60, 64, 75, 96, 128, 256, 300, 350, 400, 500, 600, 750, 900],
-  minimumCacheTTL: 60 * 60 * 24 * 30,
-},
-
-
-  eslint: {
-    ignoreDuringBuilds: true,
+    remotePatterns: [
+      { protocol: 'https', hostname: 'cdn.shopify.com', pathname: '**' },
+    ],
+    formats: ['image/avif', 'image/webp'],
+    deviceSizes: [360, 414, 480, 540, 640, 750, 828, 1024, 1280, 1400, 1600],
+    imageSizes: [48, 60, 64, 75, 96, 128, 256, 300, 350, 400, 500, 600, 750, 900],
+    minimumCacheTTL: 60 * 60 * 24 * 30,
   },
+
+  eslint: { ignoreDuringBuilds: true },
 };
 
-export default pwaConfig(nextConfig);
+export default withBundleAnalyzer(pwaConfig(nextConfig));
