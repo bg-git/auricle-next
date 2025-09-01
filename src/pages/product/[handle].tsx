@@ -77,29 +77,24 @@ interface ProductPageProps {
 
 export default function ProductPage({ product, ugcItems }: ProductPageProps) {
 
-  if (!product) {
-    return <div style={{ padding: '16px' }}>Product not found.</div>;
-  }
-
   const { addToCart, openDrawer } = useCart();
   const { showToast } = useToast();
   const router = useRouter();
 
-
   const [selectedVariantId, setSelectedVariantId] = useState(
-    product.variants?.edges?.[0]?.node?.id || null
+    product?.variants?.edges?.[0]?.node?.id || null
   );
   const initialQty =
-    product.variants?.edges?.[0]?.node?.quantityAvailable > 0 ? 1 : 0;
+    product?.variants?.edges?.[0]?.node?.quantityAvailable > 0 ? 1 : 0;
   const [qty, setQty] = useState(initialQty);
 
-  const variantEdges = useMemo(() => product.variants?.edges || [], [product]);
+  const variantEdges = useMemo(() => product?.variants?.edges || [], [product]);
 
   useEffect(() => {
     const first = variantEdges?.[0]?.node;
     setSelectedVariantId(first?.id || null);
     setQty(first && first.quantityAvailable > 0 ? 1 : 0);
-  }, [router.asPath, product.id, variantEdges]);
+  }, [router.asPath, product?.id, variantEdges]);
 
   useEffect(() => {
     const variant = variantEdges.find(v => v.node.id === selectedVariantId)?.node;
@@ -117,26 +112,25 @@ export default function ProductPage({ product, ugcItems }: ProductPageProps) {
     }
   }, [user, refreshUser]);
 
-  const selectedVariant = product.variants?.edges?.find(
+  const selectedVariant = product?.variants?.edges?.find(
     v => v.node.id === selectedVariantId
   )?.node;
 
-const isSoldOut =
-  !selectedVariant?.availableForSale ||
-  selectedVariant.quantityAvailable <= 0;
+  const isSoldOut =
+    !selectedVariant?.availableForSale ||
+    selectedVariant?.quantityAvailable <= 0;
 
-const maxQty = selectedVariant?.quantityAvailable ?? 9999;
+  const maxQty = selectedVariant?.quantityAvailable ?? 9999;
 
-const rawPrice = selectedVariant
-  ? parseFloat(selectedVariant.price.amount)
-  : parseFloat(product.priceRange.minVariantPrice.amount);
-const formattedPrice = rawPrice % 1 === 0 ? rawPrice.toFixed(0) : rawPrice.toFixed(2);
+  const rawPrice = selectedVariant
+    ? parseFloat(selectedVariant.price.amount)
+    : parseFloat(product?.priceRange?.minVariantPrice?.amount || '0');
+  const formattedPrice = rawPrice % 1 === 0 ? rawPrice.toFixed(0) : rawPrice.toFixed(2);
 
-
-  const imageUrl = product.images?.edges?.[0]?.node?.url ?? '/placeholder.png';
+  const imageUrl = product?.images?.edges?.[0]?.node?.url ?? '/placeholder.png';
   const metafields = useMemo(
-    () => product.metafields || [],
-    [product.metafields]
+    () => product?.metafields || [],
+    [product?.metafields]
   );
 
   const getFieldValue = (key: string): string | null => {
@@ -202,6 +196,10 @@ const formattedPrice = rawPrice % 1 === 0 ? rawPrice.toFixed(0) : rawPrice.toFix
   sold_as: 'Sold As',
   shipping: 'Shipping'
   };
+
+  if (!product) {
+    return <div style={{ padding: '16px' }}>Product not found.</div>;
+  }
 
   return (
     
