@@ -40,6 +40,16 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
   const router = useRouter();
 
   const verifySession = async (): Promise<boolean> => {
+    const hasCookie = document.cookie
+      .split('; ')
+      .some((cookie) => cookie.startsWith(`${COOKIE_NAME}=`));
+
+    if (!hasCookie) {
+      setUser(null);
+      setIsAuthenticated(false);
+      return false;
+    }
+
     try {
       const res = await fetch('/api/shopify/verify-customer', {
         method: 'POST',
