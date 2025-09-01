@@ -627,7 +627,14 @@ const query = `
                   value
                   reference {
                     __typename
-                    ... on MediaImage { image { url width height altText } }
+                    ... on MediaImage {
+  image {
+    url(transform: { maxWidth: 1200, preferredContentType: WEBP })
+    width
+    height
+    altText
+  }
+}
                     ... on Product { id }
                   }
                 }
