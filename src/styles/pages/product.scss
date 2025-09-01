@@ -219,3 +219,63 @@ input[type='number'] {
 .ugc-upload-btn:hover {
   text-decoration: underline;
 }
+/* Skeleton card for empty state */
+.ugc-skeleton .ugc-frame {
+  background: #f1f1f1;
+  border: 1px solid #e5e5e5;
+}
+
+/* Simple shimmer effect */
+.skeleton-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.skeleton-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0) 0%,
+    rgba(255,255,255,0.6) 50%,
+    rgba(255,255,255,0) 100%
+  );
+  transform: translateX(-100%);
+  animation: ugc-shimmer 1.2s ease-in-out infinite;
+}
+@keyframes ugc-shimmer {
+  100% { transform: translateX(100%); }
+}
+/* Placeholder gets a subtle border */
+.ugc-placeholder .ugc-frame { border: 1px solid #e5e5e5; }
+
+/* Shimmer overlay on top of the image */
+.ugc .ugc-frame.has-shimmer {
+  position: relative;
+}
+.ugc .ugc-frame.has-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;               /* above the image */
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0) 0%,
+    rgba(255,255,255,0.6) 50%,
+    rgba(255,255,255,0) 100%
+  );
+  transform: translateX(-100%);
+  animation: ugc-shimmer 2s ease-in-out infinite;
+}
+
+/* Caption stays above the shimmer */
+.ugc .ugc-caption { z-index: 2; }
+
+/* Motion safety */
+@keyframes ugc-shimmer {
+  100% { transform: translateX(100%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ugc .ugc-frame.has-shimmer::after { animation: none; }
+}
