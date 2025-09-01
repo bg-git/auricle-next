@@ -4,7 +4,6 @@ import type {
   GetStaticPropsContext,
 } from 'next';
 import { shopifyFetch } from '@/lib/shopify';
-import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
@@ -17,6 +16,7 @@ import { useMemo } from 'react';
 import { mapStyledByYou } from "@/lib/mapStyledByYou";
 import StyledByYou from "@/components/StyledByYou";
 import type { UGCItem } from "@/components/StyledByYou";
+import ProductGallery from "@/components/ProductGallery";
 
 
 
@@ -56,6 +56,8 @@ interface Product {
       node: {
         url: string;
         altText: string | null;
+        width: number;
+      height: number;
       };
     }[];
   };
@@ -70,9 +72,6 @@ interface ProductPageProps {
   product: Product;
   ugcItems: UGCItem[];
 }
-interface ProductPageProps {
-  product: Product;
-}
 
 
 export default function ProductPage({ product, ugcItems }: ProductPageProps) {
@@ -80,6 +79,45 @@ export default function ProductPage({ product, ugcItems }: ProductPageProps) {
   const { addToCart, openDrawer } = useCart();
   const { showToast } = useToast();
   const router = useRouter();
+  // Build the combined gallery: product images + up to 2 “Styled By You” images
+type GalleryImage = {
+  url: string;
+  width: number;
+  height: number;
+  alt?: string | null;
+  isUGC?: boolean;
+  credit?: string;
+};
+
+const galleryImages = useMemo<GalleryImage[]>(() => {
+  const official: GalleryImage[] =
+  (product.images?.edges || []).map(({ node }) => ({
+    url: node.url,
+    width: node.width,     // 👈 was a cast/fallback before
+    height: node.height,   // 👈 was a cast/fallback before
+    alt: node.altText || product.title,
+    isUGC: false,
+  }));
+
+  // Append up to 2 SBY images
+  const sby: GalleryImage[] = (ugcItems || []).slice(0, 2).map((it) => ({
+    url: it.image.url,
+    width: it.image.width,
+    height: it.image.height,
+    alt: it.alt || "Styled by you",
+    isUGC: true,
+    credit: it.credit || undefined,
+  }));
+
+  // De-dupe by URL
+  const seen = new Set<string>();
+  return [...official, ...sby].filter((img) => {
+    if (seen.has(img.url)) return false;
+    seen.add(img.url);
+    return true;
+  });
+}, [product.images, product.title, ugcItems]);
+
 
   const [selectedVariantId, setSelectedVariantId] = useState(
     product?.variants?.edges?.[0]?.node?.id || null
@@ -127,7 +165,6 @@ export default function ProductPage({ product, ugcItems }: ProductPageProps) {
     : parseFloat(product?.priceRange?.minVariantPrice?.amount || '0');
   const formattedPrice = rawPrice % 1 === 0 ? rawPrice.toFixed(0) : rawPrice.toFixed(2);
 
-  const imageUrl = product?.images?.edges?.[0]?.node?.url ?? '/placeholder.png';
   const metafields = useMemo(
     () => product?.metafields || [],
     [product?.metafields]
@@ -247,24 +284,15 @@ export default function ProductPage({ product, ugcItems }: ProductPageProps) {
       <main style={{ maxWidth: '1400px', margin: '0 auto', padding: '16px' }}>
         <div className="product-layout">
           <div className="product-image" style={{ position: 'relative' }}>
-  <Image
-    src={imageUrl}
-    alt={product.title}
-    width={1200}
-    height={1500}
-    priority
-    fetchPriority="high"
-    sizes="(min-width: 1400px) 600px, (min-width: 1024px) 50vw, 100vw"
-    style={{ objectFit: 'cover', width: '100%', height: 'auto', display: 'block' }}
-  />
+  <ProductGallery images={galleryImages} />
 
-  <FavouriteToggle
-    handle={router.query.handle as string}
-    title={product.title}
-    image={imageUrl}
-    price={formattedPrice}
-    metafields={metafields}
-  />
+<FavouriteToggle
+  handle={router.query.handle as string}
+  title={product.title}
+  image={galleryImages[0]?.url || '/placeholder.png'}   // ← replace imageUrl with this
+  price={formattedPrice}
+  metafields={metafields}
+/>
 </div>
 
 
@@ -569,12 +597,19 @@ const query = `
       id
       title
       descriptionHtml
-      priceRange {
-        minVariantPrice { amount }
-      }
+      priceRange { minVariantPrice { amount } }
+
       images(first: 5) {
-        edges { node { url altText } }
+        edges {
+          node {
+            url(transform: { maxWidth: 1600, preferredContentType: WEBP })
+            width
+            height
+            altText
+          }
+        }
       }
+
       variants(first: 10) {
         edges {
           node {
@@ -587,6 +622,7 @@ const query = `
           }
         }
       }
+
       metafields(identifiers: [
         { namespace: "custom", key: "alloy" },
         { namespace: "custom", key: "metal" },
@@ -612,7 +648,6 @@ const query = `
         value
       }
 
-      # <-- NEW: Styled By You
       styledByYou: metafield(namespace: "custom", key: "styled_by_you") {
         references(first: 50) {
           edges {
@@ -626,13 +661,13 @@ const query = `
                   reference {
                     __typename
                     ... on MediaImage {
-  image {
-    url(transform: { maxWidth: 1200, preferredContentType: WEBP })
-    width
-    height
-    altText
-  }
-}
+                      image {
+                        url(transform: { maxWidth: 1200, preferredContentType: WEBP })
+                        width
+                        height
+                        altText
+                      }
+                    }
                     ... on Product { id }
                   }
                 }
@@ -644,6 +679,7 @@ const query = `
     }
   }
 `;
+
 
 
   const data = await shopifyFetch({ query, variables: { handle } });

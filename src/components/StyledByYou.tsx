@@ -32,7 +32,7 @@ export default function StyledByYou({
         rel="noopener noreferrer"
         aria-label="Upload your photo (opens in a new tab)"
       >
-        Upload your photo
+        Upload Your Photo
       </a>
 
       <div className="ugc-grid">
