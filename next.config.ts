@@ -76,17 +76,15 @@ const nextConfig = {
   trailingSlash: false,
 
   images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'cdn.shopify.com',
-        pathname: '**',
-      },
-    ],
-    formats: ['image/avif', 'image/webp'],
-    deviceSizes: [360, 414, 768, 1024, 1280, 1440, 1600, 1920],
-    imageSizes: [300, 350, 400, 500, 600, 750, 900],
-  },
+  remotePatterns: [
+    { protocol: 'https', hostname: 'cdn.shopify.com', pathname: '**' },
+  ],
+  formats: ['image/avif', 'image/webp'],
+  deviceSizes: [360, 414, 480, 540, 640, 750, 828, 1024, 1280, 1400, 1600],
+  imageSizes: [300, 350, 400, 500, 600, 750, 900],
+  minimumCacheTTL: 60 * 60 * 24 * 30,
+},
+
 
   eslint: {
     ignoreDuringBuilds: true,

@@ -30,12 +30,15 @@ export default function StyledByYou({ items }: { items: UGCItem[] }) {
           <figure key={it.id}>
             <div className="ugc-frame">
               <Image
-                src={it.image.url}
-                alt={(it.alt || it.image.altText || "Customer photo").slice(0, 100)}
-                width={it.image.width}
-                height={it.image.height}
-                loading="lazy"
-              />
+  src={it.image.url}
+  alt={(it.alt || it.image.altText || "Customer photo").slice(0, 100)}
+  width={it.image.width}
+  height={it.image.height}
+  loading="lazy"
+  decoding="async"
+  sizes="(min-width: 1024px) calc((min(1400px, 100vw) - 48px) / 5), 100vw"
+  quality={100}
+/>
             </div>
             {(it.credit || it.url) && (
               <figcaption className="ugc-caption">
