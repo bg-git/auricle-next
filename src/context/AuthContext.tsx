@@ -8,6 +8,27 @@ import {
 import { useRouter } from 'next/router';
 import { COOKIE_NAME, COOKIE_MAX_AGE } from '@/lib/cookies';
 
+type Debounced<T extends (...args: any[]) => void> = ((...args: Parameters<T>) => void) & {
+  cancel: () => void;
+};
+
+function debounce<T extends (...args: any[]) => void>(fn: T, delay: number): Debounced<T> {
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
+  const debounced = (...args: Parameters<T>) => {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+    timeoutId = setTimeout(() => fn(...args), delay);
+  };
+  debounced.cancel = () => {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+      timeoutId = null;
+    }
+  };
+  return debounced;
+}
+
 export interface ShopifyCustomer {
   id: string;
   email: string;
@@ -86,9 +107,45 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
     };
 
     checkSession();
-    const intervalId = setInterval(verifySession, 60_000);
 
-    return () => clearInterval(intervalId);
+    let intervalId: ReturnType<typeof setInterval> | null = null;
+
+    const startInterval = () => {
+      if (intervalId === null) {
+        intervalId = setInterval(verifySession, 60_000);
+      }
+    };
+
+    const stopInterval = () => {
+      if (intervalId !== null) {
+        clearInterval(intervalId);
+        intervalId = null;
+      }
+    };
+
+    if (document.visibilityState === 'visible') {
+      startInterval();
+    }
+
+    const debouncedVerifySession = debounce(verifySession, 1_000);
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        debouncedVerifySession();
+        startInterval();
+      } else {
+        debouncedVerifySession.cancel();
+        stopInterval();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      stopInterval();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      debouncedVerifySession.cancel();
+    };
   }, [initialUser]);
 
 
