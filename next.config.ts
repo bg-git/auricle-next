@@ -69,7 +69,6 @@ const pwaConfig = withPWA({
 const nextConfig = {
   reactStrictMode: true,
   trailingSlash: false,
-  swcMinify: true, // safe: smaller JS
   compiler: {
     // safe: remove console.* in production except warn/error
     removeConsole:
