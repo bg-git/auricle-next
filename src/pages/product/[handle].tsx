@@ -156,7 +156,7 @@ const [qty, setQty] = useState(0);
 }, [router.asPath, product?.id, defaultVariant]);
 
 
-  const { user, refreshUser } = useAuth();
+  const { user, refreshUser, loading } = useAuth();
   const hasRefreshed = useRef(false);
 
   useEffect(() => {
@@ -353,7 +353,7 @@ const [qty, setQty] = useState(0);
 
           <div className="product-info">
             <h1 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '4px' }}>{product.title}</h1>
-            {user?.approved ? (
+            {!loading && (user?.approved ? (
               <>
                 {/* Price */}
                 <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -568,7 +568,7 @@ const [qty, setQty] = useState(0);
                 <p style={{ fontWeight: 600 }}>CATALOGUE VIEW</p><br />
                 <p>Sign in to your wholesale account to view pricing.</p></div>
 
-            )}
+            ))}
 
             <div style={{ marginTop: '32px' }}>
               <h2 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '8px' }}>Details</h2>
