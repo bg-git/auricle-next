@@ -81,16 +81,14 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
       return;
     }
 
-    const handleVisibility = () => {
-      if (document.visibilityState === 'visible') {
-        verifySession().finally(() => setLoading(false));
-      }
+    const checkSession = () => {
+      verifySession().finally(() => setLoading(false));
     };
 
-    document.addEventListener('visibilitychange', handleVisibility);
-    handleVisibility();
+    checkSession();
+    const intervalId = setInterval(verifySession, 60_000);
 
-    return () => document.removeEventListener('visibilitychange', handleVisibility);
+    return () => clearInterval(intervalId);
   }, [initialUser]);
 
 
