@@ -736,18 +736,33 @@ export const getStaticProps: GetStaticProps<ProductPageProps> = async (
   }
 `;
 
-  const data = await shopifyFetch({ query, variables: { handle } });
+  try {
+    const data = await shopifyFetch({ query, variables: { handle } });
 
-  const ugcItems = mapStyledByYou(
-    data.productByHandle.styledByYou?.references?.edges ?? [],
-    data.productByHandle.id
-  );
+    if (!data?.productByHandle) {
+      return {
+        notFound: true,
+        revalidate: 60,
+      };
+    }
 
-  return {
-    props: {
-      product: data.productByHandle,
-      ugcItems,
-    },
-    revalidate: 60,
-  };
+    const ugcItems = mapStyledByYou(
+      data.productByHandle.styledByYou?.references?.edges ?? [],
+      data.productByHandle.id
+    );
+
+    return {
+      props: {
+        product: data.productByHandle,
+        ugcItems,
+      },
+      revalidate: 60,
+    };
+  } catch (error) {
+    console.error('Error fetching product data:', error);
+    return {
+      notFound: true,
+      revalidate: 60,
+    };
+  }
 };
