@@ -124,26 +124,37 @@ export default function ProductPage({ product, ugcItems }: ProductPageProps) {
     });
   }, [product.images, product.title, ugcItems]);
 
-  const [selectedVariantId, setSelectedVariantId] = useState(
-    product?.variants?.edges?.[0]?.node?.id || null
-  );
-  const initialQty =
-    product?.variants?.edges?.[0]?.node?.quantityAvailable > 0 ? 1 : 0;
-  const [qty, setQty] = useState(initialQty);
+  const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
+const [qty, setQty] = useState(0);
+
 
   const variantEdges = useMemo(() => product?.variants?.edges || [], [product]);
+  const defaultVariant = useMemo<ProductVariantNode | null>(() => {
+  const nodes = (variantEdges || []).map(v => v.node);
+  if (nodes.length === 0) return null;
+
+  // Prefer first in-stock variant; otherwise fall back to the first variant
+  const firstInStock = nodes.find(
+    v => v.availableForSale && (v.quantityAvailable ?? 0) > 0
+  );
+  return firstInStock ?? nodes[0];
+}, [variantEdges]);
+
 
   useEffect(() => {
-    const first = variantEdges?.[0]?.node;
-    setSelectedVariantId(first?.id || null);
-    setQty(first && first.quantityAvailable > 0 ? 1 : 0);
-  }, [router.asPath, product?.id, variantEdges]);
+  if (!defaultVariant) {
+    setSelectedVariantId(null);
+    setQty(0);
+    return;
+  }
+  setSelectedVariantId(defaultVariant.id);
+  setQty(
+    defaultVariant.availableForSale && (defaultVariant.quantityAvailable ?? 0) > 0
+      ? 1
+      : 0
+  );
+}, [router.asPath, product?.id, defaultVariant]);
 
-  useEffect(() => {
-    const variant = variantEdges.find(v => v.node.id === selectedVariantId)?.node;
-    if (!variant) return;
-    setQty(variant.quantityAvailable > 0 ? 1 : 0);
-  }, [selectedVariantId, variantEdges]);
 
   const { user, refreshUser } = useAuth();
   const hasRefreshed = useRef(false);
