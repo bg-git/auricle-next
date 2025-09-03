@@ -377,19 +377,18 @@ const approved: true | false | null = loading ? null : Boolean(user?.approved);
     {product.title}
   </h1>
 
-  {selectedSku && (
-    <p
-      style={{
-        fontSize: '12px',
-        color: '#666',
-        marginTop: '10px',
-        marginBottom: '16px',
-        textAlign: 'left',
-      }}
-    >
-      {selectedSku}
-    </p>
-  )}
+  <p
+    style={{
+      fontSize: '12px',
+      color: '#666',
+      marginTop: '10px',
+      marginBottom: '16px',
+      textAlign: 'left',
+      minHeight: 18,
+    }}
+  >
+    {selectedSku || ''}
+  </p>
 
     {/* Price */}
     <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
