@@ -45,6 +45,12 @@ interface ProductVariantNode {
     name: string;
     value: string;
   }[];
+  image?: {
+    url: string;
+    width: number;
+    height: number;
+    altText: string | null;
+  } | null;
   sku: string;
 }
 
@@ -96,36 +102,6 @@ export default function ProductPage({ product, ugcItems }: ProductPageProps) {
   const router = useRouter();
 
   
-
-  // Build the combined gallery: product images + up to 2 “Styled By You” images
-  const galleryImages = useMemo<GalleryImage[]>(() => {
-    const official: GalleryImage[] =
-      (product.images?.edges || []).map(({ node }) => ({
-        url: node.url,
-        width: node.width,
-        height: node.height,
-        alt: node.altText || product.title,
-        isUGC: false,
-      }));
-
-    // Append up to 2 SBY images
-    const sby: GalleryImage[] = (ugcItems || []).slice(0, 2).map((it) => ({
-      url: it.image.url,
-      width: it.image.width,
-      height: it.image.height,
-      alt: it.alt || "Styled by you",
-      isUGC: true,
-      credit: it.credit || undefined,
-    }));
-
-    // De-dupe by URL
-    const seen = new Set<string>();
-    return [...official, ...sby].filter((img) => {
-      if (seen.has(img.url)) return false;
-      seen.add(img.url);
-      return true;
-    });
-  }, [product.images, product.title, ugcItems]);
 
   const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
 const [qty, setQty] = useState(0);
@@ -181,6 +157,46 @@ const approved: true | false | null = loading ? null : Boolean(user?.approved);
   const selectedVariant = product?.variants?.edges?.find(
     v => v.node.id === selectedVariantId
   )?.node;
+
+  // Build the combined gallery: selected variant image first (if any),
+  // followed by product images and up to 2 “Styled By You” images
+  const galleryImages = useMemo<GalleryImage[]>(() => {
+    const variantImg: GalleryImage[] = selectedVariant?.image
+      ? [{
+          url: selectedVariant.image.url,
+          width: selectedVariant.image.width,
+          height: selectedVariant.image.height,
+          alt: selectedVariant.image.altText || product.title,
+          isUGC: false,
+        }]
+      : [];
+
+    const official: GalleryImage[] =
+      (product.images?.edges || []).map(({ node }) => ({
+        url: node.url,
+        width: node.width,
+        height: node.height,
+        alt: node.altText || product.title,
+        isUGC: false,
+      }));
+
+    const sby: GalleryImage[] = (ugcItems || []).slice(0, 2).map((it) => ({
+      url: it.image.url,
+      width: it.image.width,
+      height: it.image.height,
+      alt: it.alt || "Styled by you",
+      isUGC: true,
+      credit: it.credit || undefined,
+    }));
+
+    // De-dupe by URL, preserving order
+    const seen = new Set<string>();
+    return [...variantImg, ...official, ...sby].filter((img) => {
+      if (seen.has(img.url)) return false;
+      seen.add(img.url);
+      return true;
+    });
+  }, [product.images, product.title, ugcItems, selectedVariant?.image, selectedVariant?.image?.url]);
 
   const isSoldOut =
     !selectedVariant?.availableForSale ||
@@ -739,6 +755,12 @@ export const getStaticProps: GetStaticProps<ProductPageProps> = async (
             quantityAvailable
             selectedOptions { name value }
             sku
+            image {
+              url
+              width
+              height
+              altText
+            }
           }
         }
       }

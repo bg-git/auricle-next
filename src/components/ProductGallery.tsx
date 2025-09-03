@@ -28,6 +28,8 @@ export default function ProductGallery({ images }: { images: GalleryImage[] }) {
   const [active, setActive] = useState(0);
   const isDesktop = useIsDesktop();
 
+  useEffect(() => setActive(0), [images]);
+
   const safeImages = useMemo(() => (images || []).filter(Boolean), [images]);
   if (!safeImages.length) return null;
 
