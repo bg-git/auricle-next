@@ -161,6 +161,12 @@ const approved: true | false | null = loading ? null : Boolean(user?.approved);
   // Build the combined gallery: selected variant image first (if any),
   // followed by product images and up to 2 “Styled By You” images
   const galleryImages = useMemo<GalleryImage[]>(() => {
+    const variantImages = new Set(
+      variantEdges
+        .map(({ node }) => node.image?.url.split("?")[0])
+        .filter((u): u is string => Boolean(u))
+    );
+
     const variantImg: GalleryImage[] = selectedVariant?.image
       ? [{
           url: selectedVariant.image.url,
@@ -171,10 +177,10 @@ const approved: true | false | null = loading ? null : Boolean(user?.approved);
         }]
       : [];
 
-    const variantBase = selectedVariant?.image?.url.split("?")[0];
     const official: GalleryImage[] =
       (product.images?.edges || [])
-        .filter(({ node }) => node.url.split("?")[0] !== variantBase)
+        .filter(({ node }) => !variantImages.has(node.url.split("?")[0]))
+        .slice(0, 1)
         .map(({ node }) => ({
           url: node.url,
           width: node.width,
@@ -200,7 +206,7 @@ const approved: true | false | null = loading ? null : Boolean(user?.approved);
       seen.add(base);
       return true;
     });
-  }, [product.images, product.title, ugcItems, selectedVariant?.image, selectedVariant?.image?.url]);
+  }, [product.images, product.title, ugcItems, selectedVariant?.image, variantEdges]);
 
   const isSoldOut =
     !selectedVariant?.availableForSale ||
