@@ -69,6 +69,7 @@ export default function ProductGallery({ images }: { images: GalleryImage[] }) {
                 role="group" /* simpler ARIA; avoids tablist requirements */
                 aria-label="Product thumbnails"
               >
+                {/* Skip the main image; thumbnails start from second image */}
                 {safeImages.slice(1).map((img, i) => (
                   <button
                     key={img.url + (i + 1)}
