@@ -105,6 +105,17 @@ input[type='number'] {
   }
 }
 
+.variant-button.is-disabled {
+  opacity: 0.5;
+  text-decoration: line-through;
+  cursor: not-allowed;
+  pointer-events: none;
+
+  &:hover {
+    opacity: 0.5;
+  }
+}
+
 .fav-wrapper,
 .fav-placeholder {
   position: absolute;
