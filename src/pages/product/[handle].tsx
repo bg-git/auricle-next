@@ -393,23 +393,76 @@ const approved: true | false | null = loading ? null : Boolean(user?.approved);
 
   {/* Price (tri-state; no CLS) */}
   <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-    <p
-      style={{ fontSize: '14px', fontWeight: 500, minHeight: 24, margin: 0 }}
-      aria-live="polite"
-    >
-      {approved === true ? (
-        <>£{formattedPrice}</>
-      ) : approved === false ? (
-        <>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+      <div
+        style={{
+          width: '80px',
+          height: '24px',
+          position: 'relative',
+        }}
+      >
+        {/* Final price */}
+        <span
+          aria-live="polite"
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            fontSize: '14px',
+            fontWeight: 500,
+            lineHeight: '24px',
+            visibility: approved === true ? 'visible' : 'hidden',
+            opacity: approved === true ? 1 : 0,
+            transition: 'opacity 0.2s ease',
+          }}
+        >
+          £{formattedPrice}
+        </span>
+
+        {/* Skeleton while loading */}
+        <span
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            borderRadius: '4px',
+            background: '#eee',
+            visibility: approved === null ? 'visible' : 'hidden',
+            opacity: approved === null ? 1 : 0,
+            transition: 'opacity 0.2s ease',
+          }}
+        />
+
+        {/* Invisible placeholder for non-approved users */}
+        <span
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            fontSize: '14px',
+            fontWeight: 500,
+            lineHeight: '24px',
+            color: 'transparent',
+            visibility: approved === false ? 'visible' : 'hidden',
+            opacity: approved === false ? 1 : 0,
+            transition: 'opacity 0.2s ease',
+          }}
+        >
+          £{formattedPrice}
+        </span>
+      </div>
+
+      {approved === false && (
+        <div style={{ marginTop: '4px', fontSize: '12px', textAlign: 'right' }}>
           <span style={{ opacity: 0.6 }}>Sign in to view pricing</span>{' '}
           <Link href="/sign-in" style={{ textDecoration: 'underline' }}>
             Sign in
           </Link>
-        </>
-      ) : (
-        <span style={{ opacity: 0.6 }}>Loading price…</span>
+        </div>
       )}
-    </p>
+    </div>
   </div>
 
   {/* Variant options (unchanged) */}
