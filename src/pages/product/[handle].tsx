@@ -363,7 +363,7 @@ const [qty, setQty] = useState(0);
                   color: '#888',
                   marginTop: '10px',
                   marginBottom: '16px',
-                  textAlign: 'right',
+                  textAlign: 'left',
                 }}
               >
                 {selectedSku}
