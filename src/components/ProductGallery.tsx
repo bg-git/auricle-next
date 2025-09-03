@@ -56,9 +56,10 @@ export default function ProductGallery({ images }: { images: GalleryImage[] }) {
   height={main.height}
   priority={active === 0}
   fetchPriority="high"
-  sizes="(min-width: 1024px) min(700px, 50vw), 100vw"
+  sizes="(min-width:1024px) calc((min(1400px,100vw) - 32px - 24px)/2), 100vw"
   style={{ width: "100%", height: "auto", objectFit: "cover", display: "block" }}
 />
+
 
             {safeImages.length > 1 && (
               <div
@@ -191,10 +192,6 @@ export default function ProductGallery({ images }: { images: GalleryImage[] }) {
           aspect-ratio: 4 / 5;
           position: relative;
         }
-        /* styles at the bottom of ProductGallery.tsx */
-.img-wrap { position: relative; width: 100%; }          /* <— updated */
-.snap-card { min-width: 100%; scroll-snap-align: start; aspect-ratio: 4 / 5; position: relative; }
-
       `}</style>
     </div>
   );
