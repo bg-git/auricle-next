@@ -95,6 +95,8 @@ export default function ProductPage({ product, ugcItems }: ProductPageProps) {
   const { showToast } = useToast();
   const router = useRouter();
 
+  
+
   // Build the combined gallery: product images + up to 2 “Styled By You” images
   const galleryImages = useMemo<GalleryImage[]>(() => {
     const official: GalleryImage[] =
@@ -158,7 +160,9 @@ const [qty, setQty] = useState(0);
 
 
   const { user, refreshUser, loading } = useAuth();
-  const hasRefreshed = useRef(false);
+  const hasRefreshed = useRef(false); 
+const approved: true | false | null = loading ? null : Boolean(user?.approved);
+
 
   useEffect(() => {
     if (user && !user.approved && !hasRefreshed.current) {
@@ -166,6 +170,13 @@ const [qty, setQty] = useState(0);
       refreshUser();
     }
   }, [user, refreshUser]);
+
+  useEffect(() => {
+  const v = variantEdges.find(e => e.node.id === selectedVariantId)?.node;
+  if (!v) return;
+  setQty((v.quantityAvailable ?? 0) > 0 ? 1 : 0);
+}, [selectedVariantId, variantEdges]);
+
 
   const selectedVariant = product?.variants?.edges?.find(
     v => v.node.id === selectedVariantId
@@ -252,6 +263,13 @@ const [qty, setQty] = useState(0);
     sold_as: 'Sold As',
     shipping: 'Shipping'
   };
+
+  const disablePurchase = approved !== true || isSoldOut;
+const ctaLabel =
+  approved === true ? (isSoldOut ? 'SOLD OUT' : 'ADD TO BAG')
+  : approved === null ? 'CHECKING ACCESS…'
+  : 'SIGN IN';
+
 
   // ✅ Viewport-gate "Styled By You"
   const sbyAnchorRef = useRef<HTMLDivElement | null>(null);
@@ -355,269 +373,287 @@ const [qty, setQty] = useState(0);
           </div>
 
           <div className="product-info">
-            <h1 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '4px' }}>{product.title}</h1>
-            {selectedSku && (
-              <p
-                style={{
-                  fontSize: '12px',
-                  color: '#888',
-                  marginTop: '10px',
-                  marginBottom: '16px',
-                  textAlign: 'left',
-                }}
-              >
-                {selectedSku}
-              </p>
-            )}
-            {!loading && (user?.approved ? (
-              <>
-                {/* Price */}
-                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                  <p style={{ fontSize: '14px', fontWeight: 500 }}>
-                    £{formattedPrice}
-                  </p>
-                </div>
+  <h1 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '4px' }}>
+    {product.title}
+  </h1>
 
-                {/* Variant options */}
-                {variantOptions.length > 0 && (
-                  <div style={{ marginTop: '24px' }}>
-                    <p style={{ fontSize: '14px', fontWeight: 500, marginBottom: '8px' }}>Available in:</p>
-                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                      {variantOptions.map((variant) => {
-                        const isCurrent = variant.label === currentVariantLabel;
-                        return isCurrent ? (
-                          <span
-                            key={variant.label}
-                            style={{
-                              padding: '8px 12px',
-                              borderRadius: '5px',
-                              background: '#181818',
-                              color: '#fff',
-                              fontSize: '14px',
-                              fontWeight: 500,
-                              border: '2px solid #181818',
-                            }}
-                          >
-                            {variant.label}
-                          </span>
-                        ) : (
-                          <Link
-                            key={variant.url}
-                            href={variant.url}
-                            style={{
-                              padding: '8px 12px',
-                              borderRadius: '5px',
-                              background: '#fff',
-                              color: '#181818',
-                              fontSize: '14px',
-                              fontWeight: 500,
-                              border: '1px solid #ccc',
-                              textDecoration: 'none',
-                              transition: 'all 0.2s',
-                            }}
-                          >
-                            {variant.label}
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
+  {selectedSku && (
+    <p
+      style={{
+        fontSize: '12px',
+        color: '#888',
+        marginTop: '10px',
+        marginBottom: '16px',
+        textAlign: 'left',
+      }}
+    >
+      {selectedSku}
+    </p>
+  )}
 
-                {/* Variant buttons */}
-                {product.variants?.edges?.length > 1 && (
-                  <div className="variant-wrapper">
-                    <p className="variant-label">Select an option:</p>
-                    <div className="variant-grid">
-                      {product.variants.edges.map(({ node }) => {
-                        const isSelected = selectedVariantId === node.id;
-                        return (
-                          <button
-                            key={node.id}
-                            onClick={() => setSelectedVariantId(node.id)}
-                            className={`variant-button${isSelected ? ' selected' : ''}`}
-                          >
-                            {node.title}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
+  {/* Price (tri-state; no CLS) */}
+  <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+    <p
+      style={{ fontSize: '14px', fontWeight: 500, minHeight: 24, margin: 0 }}
+      aria-live="polite"
+    >
+      {approved === true ? (
+        <>£{formattedPrice}</>
+      ) : approved === false ? (
+        <>
+          <span style={{ opacity: 0.6 }}>PRICE HIDDEN</span>{' '}
+          <Link href="/sign-in" style={{ textDecoration: 'underline' }}>
+            SIGN IN
+          </Link>
+        </>
+      ) : (
+        <span style={{ opacity: 0.6 }}>Loading price…</span>
+      )}
+    </p>
+  </div>
 
-                {/* Quantity + Add to Cart */}
-                <div className="desktop-add-to-cart" style={{ marginTop: '24px' }}>
-                  <div style={{ display: 'flex', gap: '12px' }}>
-                    <label htmlFor="qty" style={{ position: 'absolute', left: '-9999px' }}>Quantity</label>
-                    <div
-                      style={{
-                        flex: '0 0 120px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        border: '1px solid #ccc',
-                        borderRadius: '4px',
-                        overflow: 'hidden',
-                        paddingInline: '4px',
-                      }}
-                    >
-                      <button
-                        style={{
-                          width: '48px',
-                          height: '48px',
-                          minWidth: '48px',
-                          minHeight: '48px',
-                          background: '#fff',
-                          border: 'none',
-                          fontSize: '20px',
-                          cursor: 'pointer',
-                        }}
-                        onClick={() => setQty((prev) => Math.max(isSoldOut ? 0 : 1, prev - 1))}
-                      >
-                        −
-                      </button>
-                      <span
-                        id="qty"
-                        style={{
-                          width: '100%',
-                          height: '40px',
-                          textAlign: 'center',
-                          fontSize: '14px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          userSelect: 'none',
-                        }}
-                      >
-                        {qty}
-                      </span>
-                      <button
-                        style={{
-                          width: '48px',
-                          height: '48px',
-                          minWidth: '48px',
-                          minHeight: '48px',
-                          fontSize: '20px',
-                          background: '#fff',
-                          border: 'none',
-                          cursor: 'pointer',
-                        }}
-                        onClick={() => {
-                          if (maxQty <= 0) {
-                            showToast('More coming soon 😉');
-                            return;
-                          }
-                          if (qty >= maxQty) {
-                            showToast(`We only have ${maxQty} available. Sorry 😞`);
-                            return;
-                          }
-                          setQty((prev) => prev + 1);
-                        }}
-                      >
-                        +
-                      </button>
-                    </div>
+  {/* Variant options (unchanged) */}
+  {variantOptions.length > 0 && (
+    <div style={{ marginTop: '24px' }}>
+      <p style={{ fontSize: '14px', fontWeight: 500, marginBottom: '8px' }}>
+        Available in:
+      </p>
+      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+        {variantOptions.map((variant) => {
+          const isCurrent = variant.label === currentVariantLabel;
+          return isCurrent ? (
+            <span
+              key={variant.label}
+              style={{
+                padding: '8px 12px',
+                borderRadius: '5px',
+                background: '#181818',
+                color: '#fff',
+                fontSize: '14px',
+                fontWeight: 500,
+                border: '2px solid #181818',
+              }}
+            >
+              {variant.label}
+            </span>
+          ) : (
+            <Link
+              key={variant.url}
+              href={variant.url}
+              style={{
+                padding: '8px 12px',
+                borderRadius: '5px',
+                background: '#fff',
+                color: '#181818',
+                fontSize: '14px',
+                fontWeight: 500,
+                border: '1px solid #ccc',
+                textDecoration: 'none',
+                transition: 'all 0.2s',
+              }}
+            >
+              {variant.label}
+            </Link>
+          );
+        })}
+      </div>
+    </div>
+  )}
 
-                    <button
-                      style={{
-                        flex: '1',
-                        height: '48px',
-                        minHeight: '48px',
-                        background: '#181818',
-                        color: '#fff',
-                        border: 'none',
-                        fontSize: '14px',
-                        fontWeight: 900,
-                        cursor: 'pointer',
-                        borderRadius: '4px',
-                        whiteSpace: 'nowrap',
-                      }}
-                      onClick={() => {
-                        if (isSoldOut) {
-                          showToast('SOLD OUT. More coming soon.');
-                          return;          // Prevent action when sold out
-                        }
-                        if (!selectedVariantId || !selectedVariant) {
-                          return;
-                        }
-                        addToCart(selectedVariantId, qty, {
-                          handle: router.query.handle as string,
-                          title: product.title,
-                          variantTitle: selectedVariant.title,
-                          selectedOptions: selectedVariant.selectedOptions,
-                          price: selectedVariant.price.amount,
-                          image: product.images?.edges?.[0]?.node?.url || undefined,
-                          metafields: product.metafields,
-                          quantityAvailable: selectedVariant.quantityAvailable,
-                        });
-                        openDrawer();
-                      }}
-                    >
-                      {isSoldOut ? 'SOLD OUT' : 'ADD TO BAG'}
-                    </button>
-                  </div>
-                </div>
+  {/* Variant buttons (optional: disable OOS) */}
+  {product.variants?.edges?.length > 1 && (
+    <div className="variant-wrapper">
+      <p className="variant-label">Select an option:</p>
+      <div className="variant-grid">
+        {product.variants.edges.map(({ node }) => {
+          const isSelected = selectedVariantId === node.id;
+          const oos = !node.availableForSale || (node.quantityAvailable ?? 0) <= 0;
+          return (
+            <button
+              key={node.id}
+              onClick={() => setSelectedVariantId(node.id)}
+              className={`variant-button${isSelected ? ' selected' : ''}${oos ? ' is-disabled' : ''}`}
+              disabled={oos}
+              aria-disabled={oos}
+              title={oos ? 'Sold out' : undefined}
+            >
+              {node.title}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  )}
 
-                {/* VAT Note */}
-                <p
-                  style={{
-                    fontSize: '12px',
-                    color: '#888',
-                    marginTop: '10px',
-                    marginBottom: '16px',
-                    textAlign: 'right',
-                  }}
-                >
-                  VAT & shipping calculated at checkout
-                </p>
-              </>
-            ) : (
-              <div
-                style={{
-                  marginTop: '24px',
-                  padding: '16px',
-                  background: '#f9f9f9',
-                  border: '1px solid #ddd',
-                  textAlign: 'center',
-                  fontSize: '14px',
-                }}
-              >
-                <p style={{ fontWeight: 600 }}>CATALOGUE VIEW</p><br />
-                <p>Sign in to your wholesale account to view pricing.</p></div>
+  {/* Quantity + Add to Cart (always rendered; masked when not approved) */}
+  <div className="desktop-add-to-cart" style={{ marginTop: '24px' }}>
+    <div style={{ display: 'flex', gap: '12px' }}>
+      <label htmlFor="qty" style={{ position: 'absolute', left: '-9999px' }}>
+        Quantity
+      </label>
 
-            ))}
+      {/* Qty control */}
+      <div
+        style={{
+          flex: '0 0 120px',
+          display: 'flex',
+          alignItems: 'center',
+          border: '1px solid #ccc',
+          borderRadius: '4px',
+          overflow: 'hidden',
+          paddingInline: '4px',
+          opacity: approved !== true ? 0.6 : 1,
+        }}
+      >
+        <button
+          style={{
+            width: '48px',
+            height: '48px',
+            minWidth: '48px',
+            minHeight: '48px',
+            background: '#fff',
+            border: 'none',
+            fontSize: '20px',
+            cursor: approved === true ? 'pointer' : 'not-allowed',
+          }}
+          onClick={() => setQty((prev) => Math.max(isSoldOut ? 0 : 1, prev - 1))}
+          disabled={approved !== true}
+          aria-disabled={approved !== true}
+          title={approved !== true ? 'Sign in to purchase' : undefined}
+        >
+          −
+        </button>
+        <span
+          id="qty"
+          style={{
+            width: '100%',
+            height: '40px',
+            textAlign: 'center',
+            fontSize: '14px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            userSelect: 'none',
+          }}
+        >
+          {qty}
+        </span>
+        <button
+          style={{
+            width: '48px',
+            height: '48px',
+            minWidth: '48px',
+            minHeight: '48px',
+            fontSize: '20px',
+            background: '#fff',
+            border: 'none',
+            cursor: approved === true ? 'pointer' : 'not-allowed',
+          }}
+          onClick={() => {
+            if (approved !== true) return;
+            if (maxQty <= 0) { showToast('More coming soon 😉'); return; }
+            if (qty >= maxQty) { showToast(`We only have ${maxQty} available. Sorry 😞`); return; }
+            setQty((prev) => prev + 1);
+          }}
+          disabled={approved !== true}
+          aria-disabled={approved !== true}
+          title={approved !== true ? 'Sign in to purchase' : undefined}
+        >
+          +
+        </button>
+      </div>
 
-            <div style={{ marginTop: '32px' }}>
-              <h2 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '8px' }}>Details</h2>
-              <table
-                style={{
-                  width: '100%',
-                  borderCollapse: 'collapse',
-                  fontSize: '14px',
-                  border: '1px solid #e0e0e0',
-                }}
-              >
-                <tbody>
-                  {Object.entries(fieldLabels).map(([key, label]) => {
-                    const value = getFieldValue(key);
-                    return value ? (
-                      <tr key={key}>
-                        <td style={cellLabelStyle}>{label.toUpperCase()}</td>
-                        <td style={cellValueStyle}>{value}</td>
-                      </tr>
-                    ) : null;
-                  })}
-                </tbody>
-              </table>
+      {/* CTA */}
+      <button
+        style={{
+          flex: '1',
+          height: '48px',
+          minHeight: '48px',
+          background: '#181818',
+          color: '#fff',
+          border: 'none',
+          fontSize: '14px',
+          fontWeight: 900,
+          cursor: 'pointer',
+          borderRadius: '4px',
+          whiteSpace: 'nowrap',
+          opacity: approved !== true ? 0.85 : 1,
+        }}
+        onClick={() => {
+    if (approved !== true) {
+      router.push(`/sign-in?next=${encodeURIComponent(router.asPath)}`);
+      return;
+    }
+    if (isSoldOut) { showToast('SOLD OUT. More coming soon.'); return; }
+    if (!selectedVariantId || !selectedVariant) return;
 
-              {product.descriptionHtml && (
-                <div
-                  style={{ marginTop: '24px', fontSize: '14px', lineHeight: '1.6' }}
-                  dangerouslySetInnerHTML={{ __html: product.descriptionHtml }}
-                />
-              )}
-            </div>
-          </div>
-        </div>
+    addToCart(selectedVariantId, qty, {
+      handle: router.query.handle as string,
+      title: product.title,
+      variantTitle: selectedVariant.title,
+      selectedOptions: selectedVariant.selectedOptions,
+      price: selectedVariant.price.amount,
+      image: product.images?.edges?.[0]?.node?.url || undefined,
+      metafields: product.metafields,
+      quantityAvailable: selectedVariant.quantityAvailable,
+    });
+    openDrawer();
+  }}
+  disabled={disablePurchase}
+  aria-disabled={disablePurchase}
+>
+  {ctaLabel}
+</button>
+    </div>
+  </div>
+
+  {/* VAT Note (reserve height to avoid CLS) */}
+  <p
+    style={{
+      fontSize: '12px',
+      color: '#888',
+      marginTop: '10px',
+      marginBottom: '16px',
+      textAlign: 'right',
+      minHeight: 18,
+    }}
+  >
+    VAT & shipping calculated at checkout
+  </p>
+
+  {/* Details block (unchanged) */}
+  <div style={{ marginTop: '32px' }}>
+    <h2 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '8px' }}>Details</h2>
+    <table
+      style={{
+        width: '100%',
+        borderCollapse: 'collapse',
+        fontSize: '14px',
+        border: '1px solid #e0e0e0',
+      }}
+    >
+      <tbody>
+        {Object.entries(fieldLabels).map(([key, label]) => {
+          const value = getFieldValue(key);
+          return value ? (
+            <tr key={key}>
+              <td style={cellLabelStyle}>{label.toUpperCase()}</td>
+              <td style={cellValueStyle}>{value}</td>
+            </tr>
+          ) : null;
+        })}
+      </tbody>
+    </table>
+
+    {product.descriptionHtml && (
+      <div
+        style={{ marginTop: '24px', fontSize: '14px', lineHeight: '1.6' }}
+        dangerouslySetInnerHTML={{ __html: product.descriptionHtml }}
+      />
+    )}
+  </div>
+</div>
+</div>
 
         {/* ✅ Styled By You (renders when near viewport) */}
         <div ref={sbyAnchorRef} />
