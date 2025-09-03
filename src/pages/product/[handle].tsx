@@ -377,7 +377,7 @@ const approved: true | false | null = loading ? null : Boolean(user?.approved);
     <p
       style={{
         fontSize: '12px',
-        color: '#888',
+        color: '#666',
         marginTop: '10px',
         marginBottom: '16px',
         textAlign: 'left',
@@ -607,7 +607,7 @@ const approved: true | false | null = loading ? null : Boolean(user?.approved);
   <p
     style={{
       fontSize: '12px',
-      color: '#888',
+      color: '#666',
       marginTop: '10px',
       marginBottom: '16px',
       textAlign: 'right',
