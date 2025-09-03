@@ -609,7 +609,7 @@ const approved: true | false | null = loading ? null : Boolean(user?.approved);
         disabled={approved !== true || isSoldOut}
         aria-disabled={approved !== true || isSoldOut}
       >
-        {approved !== true ? 'SIGN IN TO BUY' : (isSoldOut ? 'SOLD OUT' : 'ADD TO BAG')}
+        {approved !== true ? 'SIGN IN' : (isSoldOut ? 'SOLD OUT' : 'ADD TO BAG')}
       </button>
     </div>
   </div>
