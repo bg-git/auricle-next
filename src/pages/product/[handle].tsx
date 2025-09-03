@@ -264,11 +264,7 @@ const approved: true | false | null = loading ? null : Boolean(user?.approved);
     shipping: 'Shipping'
   };
 
-  const disablePurchase = approved !== true || isSoldOut;
-const ctaLabel =
-  approved === true ? (isSoldOut ? 'SOLD OUT' : 'ADD TO BAG')
-  : approved === null ? 'CHECKING ACCESS…'
-  : 'SIGN IN';
+
 
 
   // ✅ Viewport-gate "Styled By You"
@@ -401,9 +397,9 @@ const ctaLabel =
         <>£{formattedPrice}</>
       ) : approved === false ? (
         <>
-          <span style={{ opacity: 0.6 }}>PRICE HIDDEN</span>{' '}
+          <span style={{ opacity: 0.6 }}>Sign in to view pricing</span>{' '}
           <Link href="/sign-in" style={{ textDecoration: 'underline' }}>
-            SIGN IN
+            Sign in
           </Link>
         </>
       ) : (
@@ -580,30 +576,30 @@ const ctaLabel =
           opacity: approved !== true ? 0.85 : 1,
         }}
         onClick={() => {
-    if (approved !== true) {
-      router.push(`/sign-in?next=${encodeURIComponent(router.asPath)}`);
-      return;
-    }
-    if (isSoldOut) { showToast('SOLD OUT. More coming soon.'); return; }
-    if (!selectedVariantId || !selectedVariant) return;
+          if (approved !== true) {
+            router.push(`/sign-in?next=${encodeURIComponent(router.asPath)}`);
+            return;
+          }
+          if (isSoldOut) { showToast('SOLD OUT. More coming soon.'); return; }
+          if (!selectedVariantId || !selectedVariant) return;
 
-    addToCart(selectedVariantId, qty, {
-      handle: router.query.handle as string,
-      title: product.title,
-      variantTitle: selectedVariant.title,
-      selectedOptions: selectedVariant.selectedOptions,
-      price: selectedVariant.price.amount,
-      image: product.images?.edges?.[0]?.node?.url || undefined,
-      metafields: product.metafields,
-      quantityAvailable: selectedVariant.quantityAvailable,
-    });
-    openDrawer();
-  }}
-  disabled={disablePurchase}
-  aria-disabled={disablePurchase}
->
-  {ctaLabel}
-</button>
+          addToCart(selectedVariantId, qty, {
+            handle: router.query.handle as string,
+            title: product.title,
+            variantTitle: selectedVariant.title,
+            selectedOptions: selectedVariant.selectedOptions,
+            price: selectedVariant.price.amount,
+            image: product.images?.edges?.[0]?.node?.url || undefined,
+            metafields: product.metafields,
+            quantityAvailable: selectedVariant.quantityAvailable,
+          });
+          openDrawer();
+        }}
+        disabled={approved !== true || isSoldOut}
+        aria-disabled={approved !== true || isSoldOut}
+      >
+        {approved !== true ? 'SIGN IN TO BUY' : (isSoldOut ? 'SOLD OUT' : 'ADD TO BAG')}
+      </button>
     </div>
   </div>
 
