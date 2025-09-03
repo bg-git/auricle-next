@@ -357,15 +357,19 @@ const approved: true | false | null = loading ? null : Boolean(user?.approved);
           <div className="product-image" style={{ position: 'relative' }}>
             <ProductGallery images={galleryImages} />
 
-            {showFav && (
-              <FavouriteToggleLazy
-                handle={router.query.handle as string}
-                title={product.title}
-                image={galleryImages[0]?.url || '/placeholder.png'}
-                price={formattedPrice}
-                metafields={metafields}
-              />
-            )}
+            <div className="fav-wrapper">
+              {showFav ? (
+                <FavouriteToggleLazy
+                  handle={router.query.handle as string}
+                  title={product.title}
+                  image={galleryImages[0]?.url || '/placeholder.png'}
+                  price={formattedPrice}
+                  metafields={metafields}
+                />
+              ) : (
+                <span className="fav-placeholder" />
+              )}
+            </div>
           </div>
 
           <div className="product-info">
