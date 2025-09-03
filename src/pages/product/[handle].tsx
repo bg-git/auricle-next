@@ -40,11 +40,12 @@ interface ProductVariantNode {
     amount: string;
   };
   availableForSale: boolean;
-  quantityAvailable: number; 
+  quantityAvailable: number;
   selectedOptions: {
     name: string;
     value: string;
   }[];
+  sku: string;
 }
 
 interface Product {
@@ -203,6 +204,8 @@ const [qty, setQty] = useState(0);
     }
   };
 
+  const selectedSku = selectedVariant?.sku || getFieldValue('sku');
+
   const currentVariantLabel = getFieldValue('variant_label') || 'Select an option';
   const rawVariants = getFieldValue('variants');
 
@@ -353,6 +356,19 @@ const [qty, setQty] = useState(0);
 
           <div className="product-info">
             <h1 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '4px' }}>{product.title}</h1>
+            {selectedSku && (
+              <p
+                style={{
+                  fontSize: '12px',
+                  color: '#888',
+                  marginTop: '10px',
+                  marginBottom: '16px',
+                  textAlign: 'right',
+                }}
+              >
+                {selectedSku}
+              </p>
+            )}
             {!loading && (user?.approved ? (
               <>
                 {/* Price */}
@@ -675,6 +691,7 @@ export const getStaticProps: GetStaticProps<ProductPageProps> = async (
             availableForSale
             quantityAvailable
             selectedOptions { name value }
+            sku
           }
         }
       }
