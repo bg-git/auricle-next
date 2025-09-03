@@ -100,7 +100,16 @@ export default function ProductGallery({ images }: { images: GalleryImage[] }) {
       ) : (
         /* MOBILE: swipe-only (scroll-snap), no thumbnails */
         <div className="gallery-mobile" aria-label="Product images">
-          <div className="snap-row">
+          <div
+            className="snap-row"
+            onScroll={(e) =>
+              setActive(
+                Math.round(
+                  e.currentTarget.scrollLeft / e.currentTarget.offsetWidth
+                )
+              )
+            }
+          >
             {safeImages.map((img, i) => (
               <div className="snap-card" key={img.url + i}>
                 {img.isUGC && (
@@ -126,6 +135,16 @@ export default function ProductGallery({ images }: { images: GalleryImage[] }) {
               </div>
             ))}
           </div>
+          {safeImages.length > 1 && (
+            <div className="dots">
+              {safeImages.map((_, i) => (
+                <div
+                  key={i}
+                  className={`dot ${i === active ? "is-active" : ""}`}
+                />
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -194,6 +213,22 @@ export default function ProductGallery({ images }: { images: GalleryImage[] }) {
           aspect-ratio: 4 / 5;
           position: relative;
         }
+        .gallery-mobile { position: relative; }
+        .dots {
+          position: absolute;
+          bottom: 8px;
+          left: 50%;
+          transform: translateX(-50%);
+          display: flex;
+          gap: 6px;
+        }
+        .dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.6);
+        }
+        .dot.is-active { background: #181818; }
       `}</style>
     </div>
   );
