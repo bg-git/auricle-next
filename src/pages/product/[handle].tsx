@@ -474,19 +474,20 @@ const approved: true | false | null = loading ? null : Boolean(user?.approved);
         {product.variants.edges.map(({ node }) => {
           const isSelected = selectedVariantId === node.id;
           const oos = !node.availableForSale || (node.quantityAvailable ?? 0) <= 0;
-          return (
-            <button
-              key={node.id}
-              onClick={() => setSelectedVariantId(node.id)}
-              className={`variant-button${isSelected ? ' selected' : ''}${oos ? ' is-disabled' : ''}`}
-              disabled={oos}
-              aria-disabled={oos}
-              title={oos ? 'Sold out' : undefined}
-            >
-              {node.title}
-            </button>
-          );
-        })}
+            return (
+              <button
+                key={node.id}
+                onClick={() => setSelectedVariantId(node.id)}
+                className={`variant-button${isSelected ? ' selected' : ''}${oos ? ' is-disabled' : ''}`}
+                disabled={oos}
+                aria-disabled={oos}
+                title={oos ? 'Sold out' : undefined}
+                aria-label={oos ? `${node.title} (Sold out)` : undefined}
+              >
+                {node.title}
+              </button>
+            );
+          })}
       </div>
     </div>
   )}
