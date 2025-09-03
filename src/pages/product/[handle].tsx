@@ -709,8 +709,12 @@ const approved: true | false | null = loading ? null : Boolean(user?.approved);
 </div>
 
         {/* ✅ Styled By You (renders when near viewport) */}
-        <div ref={sbyAnchorRef} />
-        {showSBY ? <StyledByYouLazy items={ugcItems} /> : null}
+        <div
+          ref={sbyAnchorRef}
+          style={{ minHeight: showSBY ? undefined : '400px' }}
+        >
+          {showSBY ? <StyledByYouLazy items={ugcItems} /> : null}
+        </div>
 
         <div style={{ height: '80px' }} />
         
