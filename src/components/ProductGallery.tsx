@@ -69,12 +69,12 @@ export default function ProductGallery({ images }: { images: GalleryImage[] }) {
                 role="group" /* simpler ARIA; avoids tablist requirements */
                 aria-label="Product thumbnails"
               >
-                {safeImages.map((img, i) => (
+                {safeImages.slice(1).map((img, i) => (
                   <button
-                    key={img.url + i}
-                    aria-label={`Show image ${i + 1}`}
-                    className={`thumb ${i === active ? "is-active" : ""}`}
-                    onClick={() => setActive(i)}
+                    key={img.url + (i + 1)}
+                    aria-label={`Show image ${i + 2}`}
+                    className={`thumb ${i + 1 === active ? "is-active" : ""}`}
+                    onClick={() => setActive(i + 1)}
                     type="button"
                   >
                     <div className="thumb-frame">
@@ -88,7 +88,7 @@ export default function ProductGallery({ images }: { images: GalleryImage[] }) {
                         decoding="async"
                         fetchPriority="low"
                         sizes="60px"
-                        quality={40} 
+                        quality={40}
                       />
                     </div>
                   </button>

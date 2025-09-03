@@ -171,14 +171,17 @@ const approved: true | false | null = loading ? null : Boolean(user?.approved);
         }]
       : [];
 
+    const variantBase = selectedVariant?.image?.url.split("?")[0];
     const official: GalleryImage[] =
-      (product.images?.edges || []).map(({ node }) => ({
-        url: node.url,
-        width: node.width,
-        height: node.height,
-        alt: node.altText || product.title,
-        isUGC: false,
-      }));
+      (product.images?.edges || [])
+        .filter(({ node }) => node.url.split("?")[0] !== variantBase)
+        .map(({ node }) => ({
+          url: node.url,
+          width: node.width,
+          height: node.height,
+          alt: node.altText || product.title,
+          isUGC: false,
+        }));
 
     const sby: GalleryImage[] = (ugcItems || []).slice(0, 2).map((it) => ({
       url: it.image.url,
@@ -189,11 +192,12 @@ const approved: true | false | null = loading ? null : Boolean(user?.approved);
       credit: it.credit || undefined,
     }));
 
-    // De-dupe by URL, preserving order
+    // De-dupe by base URL, preserving order
     const seen = new Set<string>();
     return [...variantImg, ...official, ...sby].filter((img) => {
-      if (seen.has(img.url)) return false;
-      seen.add(img.url);
+      const base = img.url.split("?")[0];
+      if (seen.has(base)) return false;
+      seen.add(base);
       return true;
     });
   }, [product.images, product.title, ugcItems, selectedVariant?.image, selectedVariant?.image?.url]);
