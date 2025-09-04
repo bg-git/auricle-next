@@ -69,31 +69,36 @@ export default function ProductGallery({ images }: { images: GalleryImage[] }) {
                 role="group" /* simpler ARIA; avoids tablist requirements */
                 aria-label="Product thumbnails"
               >
-                {/* Skip the main image; thumbnails start from second image */}
-                {safeImages.slice(1).map((img, i) => (
-                  <button
-                    key={img.url + (i + 1)}
-                    aria-label={`Show image ${i + 2}`}
-                    className={`thumb ${i + 1 === active ? "is-active" : ""}`}
-                    onClick={() => setActive(i + 1)}
-                    type="button"
-                  >
-                    <div className="thumb-frame">
-                      {/* No labels on thumbnails */}
-                      <Image
-                        src={img.url}
-                        alt=""
-                        width={60}
-                        height={75}
-                        loading="lazy"
-                        decoding="async"
-                        fetchPriority="low"
-                        sizes="60px"
-                        quality={40}
-                      />
-                    </div>
-                  </button>
-                ))}
+                {/* Only show thumbnails for the main image and UGC images */}
+                {safeImages.map((img, i) => {
+                  if (i === 0 || img.isUGC) {
+                    return (
+                      <button
+                        key={img.url + i}
+                        aria-label={`Show image ${i + 1}`}
+                        className={`thumb ${i === active ? "is-active" : ""}`}
+                        onClick={() => setActive(i)}
+                        type="button"
+                      >
+                        <div className="thumb-frame">
+                          {/* No labels on thumbnails */}
+                          <Image
+                            src={img.url}
+                            alt=""
+                            width={60}
+                            height={75}
+                            loading="lazy"
+                            decoding="async"
+                            fetchPriority="low"
+                            sizes="60px"
+                            quality={40}
+                          />
+                        </div>
+                      </button>
+                    );
+                  }
+                  return null;
+                })}
               </div>
             )}
           </div>
