@@ -24,11 +24,17 @@ function useIsDesktop() {
   return isDesktop;
 }
 
-export default function ProductGallery({ images }: { images: GalleryImage[] }) {
-  const [active, setActive] = useState(0);
+export default function ProductGallery({
+  images,
+  defaultActive = 0,
+}: {
+  images: GalleryImage[];
+  defaultActive?: number;
+}) {
+  const [active, setActive] = useState(defaultActive);
   const isDesktop = useIsDesktop();
 
-  useEffect(() => setActive(0), [images]);
+  useEffect(() => setActive(defaultActive), [images, defaultActive]);
 
   const safeImages = useMemo(() => (images || []).filter(Boolean), [images]);
   if (!safeImages.length) return null;
