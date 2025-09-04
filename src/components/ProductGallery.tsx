@@ -32,13 +32,22 @@ export default function ProductGallery({
   defaultActive?: number;
 }) {
   const [active, setActive] = useState(defaultActive);
+  const [heroIndex, setHeroIndex] = useState(defaultActive);
   const isDesktop = useIsDesktop();
   const snapRowRef = useRef<HTMLDivElement | null>(null);
 
-  // Keep active in sync if images or requested default changes
-  useEffect(() => setActive(defaultActive), [images, defaultActive]);
-
   const safeImages = useMemo(() => (images || []).filter(Boolean), [images]);
+
+  // Keep active in sync if images or requested default changes
+  useEffect(() => {
+    setActive(defaultActive);
+    setHeroIndex(defaultActive);
+  }, [images, defaultActive]);
+
+  // Track the last non-UGC image that was active (hero image)
+  useEffect(() => {
+    if (!safeImages[active]?.isUGC) setHeroIndex(active);
+  }, [active, safeImages]);
 
   // Thumbnails: hero + UGC images (if any UGC exists)
   const thumbs = useMemo(() => {
@@ -51,15 +60,26 @@ export default function ProductGallery({
     ];
   }, [safeImages]);
 
+  // Mobile: active hero + all UGC images
+  const mobileImages = useMemo(() => {
+    const imgs: { img: GalleryImage; i: number }[] = [];
+    if (safeImages[heroIndex]) imgs.push({ img: safeImages[heroIndex], i: heroIndex });
+    safeImages.forEach((img, i) => {
+      if (img.isUGC && i !== heroIndex) imgs.push({ img, i });
+    });
+    return imgs;
+  }, [safeImages, heroIndex]);
+
   // Scroll the mobile carousel when the active index changes (e.g. variant switch)
   useEffect(() => {
     if (isDesktop) return;
     const el = snapRowRef.current;
     if (!el) return;
-    const target = el.offsetWidth * active;
+    const slideIndex = mobileImages.findIndex(({ i }) => i === active);
+    const target = el.offsetWidth * Math.max(slideIndex, 0);
     if (Math.abs(el.scrollLeft - target) < 1) return;
     el.scrollTo({ left: target });
-  }, [active, isDesktop]);
+  }, [active, isDesktop, mobileImages]);
 
   if (!safeImages.length) return null;
 
@@ -135,13 +155,15 @@ export default function ProductGallery({
           <div
             className="snap-row"
             ref={snapRowRef}
-            onScroll={(e) =>
-              setActive(
-                Math.round(e.currentTarget.scrollLeft / e.currentTarget.offsetWidth)
-              )
-            }
+            onScroll={(e) => {
+              const idx = Math.round(
+                e.currentTarget.scrollLeft / e.currentTarget.offsetWidth
+              );
+              const safeIdx = mobileImages[idx]?.i ?? 0;
+              setActive(safeIdx);
+            }}
           >
-            {safeImages.map((img, i) => (
+            {mobileImages.map(({ img, i }, mIdx) => (
               <div className="snap-card" key={img.url + i}>
                 {img.isUGC && (
                   <div className="badges">
@@ -156,9 +178,9 @@ export default function ProductGallery({
                   alt={img.alt || ""}
                   width={img.width}
                   height={img.height}
-                  priority={i === 0}
-                  fetchPriority={i === 0 ? "high" : "low"}
-                  loading={i === 0 ? undefined : "lazy"}
+                  priority={mIdx === 0}
+                  fetchPriority={mIdx === 0 ? "high" : "low"}
+                  loading={mIdx === 0 ? undefined : "lazy"}
                   decoding="async"
                   sizes="100vw"
                   style={{ width: "100%", height: "auto", objectFit: "cover", display: "block" }}
@@ -166,10 +188,10 @@ export default function ProductGallery({
               </div>
             ))}
           </div>
-          {safeImages.length > 1 && (
+          {mobileImages.length > 1 && (
             <div className="dots">
-              {safeImages.map((_, i) => (
-                <div key={i} className={`dot ${i === active ? "is-active" : ""}`} />
+              {mobileImages.map(({ i }, idx) => (
+                <div key={idx} className={`dot ${i === active ? "is-active" : ""}`} />
               ))}
             </div>
           )}
