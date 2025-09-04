@@ -148,10 +148,13 @@ const approved: true | false | null = loading ? null : Boolean(user?.approved);
   }, [user, refreshUser]);
 
   useEffect(() => {
-  const v = variantEdges.find(e => e.node.id === selectedVariantId)?.node;
-  if (!v) return;
-  setQty((v.quantityAvailable ?? 0) > 0 ? 1 : 0);
-}, [selectedVariantId, variantEdges]);
+    const v = variantEdges.find(e => e.node.id === selectedVariantId)?.node;
+    if (!v) return;
+    setQty((v.quantityAvailable ?? 0) > 0 ? 1 : 0);
+    if (!v.image) {
+      setShowVariantImage(false);
+    }
+  }, [selectedVariantId, variantEdges]);
 
 
   const selectedVariant = product?.variants?.edges?.find(
