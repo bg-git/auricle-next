@@ -31,6 +31,16 @@ export default function ProductGallery({ images }: { images: GalleryImage[] }) {
   useEffect(() => setActive(0), [images]);
 
   const safeImages = useMemo(() => (images || []).filter(Boolean), [images]);
+
+  // Skip non-UGC images beyond the first when rendering thumbnails
+  const thumbs = useMemo(
+    () =>
+      safeImages
+        .map((img, i) => ({ img, i }))
+        .filter(({ img, i }) => i > 0 && img.isUGC),
+    [safeImages]
+  );
+
   if (!safeImages.length) return null;
 
   const main = safeImages[Math.min(active, safeImages.length - 1)];
@@ -63,19 +73,18 @@ export default function ProductGallery({ images }: { images: GalleryImage[] }) {
 />
 
 
-            {safeImages.length > 1 && (
+            {thumbs.length > 0 && (
               <div
                 className="thumbs-overlay"
                 role="group" /* simpler ARIA; avoids tablist requirements */
                 aria-label="Product thumbnails"
               >
-                {/* Skip the main image; thumbnails start from second image */}
-                {safeImages.slice(1).map((img, i) => (
+                {thumbs.map(({ img, i }) => (
                   <button
-                    key={img.url + (i + 1)}
-                    aria-label={`Show image ${i + 2}`}
-                    className={`thumb ${i + 1 === active ? "is-active" : ""}`}
-                    onClick={() => setActive(i + 1)}
+                    key={img.url + i}
+                    aria-label={`Show image ${i + 1}`}
+                    className={`thumb ${i === active ? "is-active" : ""}`}
+                    onClick={() => setActive(i)}
                     type="button"
                   >
                     <div className="thumb-frame">
