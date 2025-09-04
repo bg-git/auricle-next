@@ -53,6 +53,7 @@ export default function ProductGallery({
   if (!safeImages.length) return null;
 
   const main = safeImages[Math.min(active, safeImages.length - 1)];
+  let thumbIndex = 0;
 
   return (
     <div>
@@ -87,29 +88,32 @@ export default function ProductGallery({
                 role="group"
                 aria-label="Product thumbnails"
               >
-                {thumbs.map(({ img, i }) => (
-                  <button
-                    key={img.url + i}
-                    aria-label={`Show image ${i + 1}`}
-                    className={`thumb ${i === active ? "is-active" : ""}`}
-                    onClick={() => setActive(i)}
-                    type="button"
-                  >
-                    <div className="thumb-frame">
-                      <Image
-                        src={img.url}
-                        alt=""
-                        width={60}
-                        height={75}
-                        loading="lazy"
-                        decoding="async"
-                        fetchPriority="low"
-                        sizes="60px"
-                        quality={40}
-                      />
-                    </div>
-                  </button>
-                ))}
+                {thumbs.map(({ img, i }) => {
+                  thumbIndex += 1;
+                  return (
+                    <button
+                      key={img.url + i}
+                      aria-label={`Show image ${thumbIndex}`}
+                      className={`thumb ${i === active ? "is-active" : ""}`}
+                      onClick={() => setActive(i)}
+                      type="button"
+                    >
+                      <div className="thumb-frame">
+                        <Image
+                          src={img.url}
+                          alt=""
+                          width={60}
+                          height={75}
+                          loading="lazy"
+                          decoding="async"
+                          fetchPriority="low"
+                          sizes="60px"
+                          quality={40}
+                        />
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>
