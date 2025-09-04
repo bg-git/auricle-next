@@ -80,7 +80,7 @@ const nextConfig = {
       { protocol: 'https', hostname: 'cdn.shopify.com', pathname: '**' },
     ],
     formats: ['image/avif', 'image/webp'],
-    deviceSizes: [360, 414, 480, 540, 640, 750, 828, 1024, 1280, 1400, 1600],
+    deviceSizes: [360, 414, 480, 540, 640, 680, 750, 828, 1024, 1280, 1400, 1600],
     imageSizes: [48, 60, 64, 75, 96, 128, 256, 300, 350, 400, 500, 600, 750, 900],
     minimumCacheTTL: 60 * 60 * 24 * 30,
   },
