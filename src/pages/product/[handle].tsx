@@ -102,10 +102,9 @@ export default function ProductPage({ product, ugcItems }: ProductPageProps) {
   const router = useRouter();
 
   
-
   const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
-const [qty, setQty] = useState(0);
-
+  const [showVariantImage, setShowVariantImage] = useState(false);
+  const [qty, setQty] = useState(0);
 
   const variantEdges = useMemo(() => product?.variants?.edges || [], [product]);
   const defaultVariant = useMemo<ProductVariantNode | null>(() => {
@@ -121,18 +120,19 @@ const [qty, setQty] = useState(0);
 
 
   useEffect(() => {
-  if (!defaultVariant) {
-    setSelectedVariantId(null);
-    setQty(0);
-    return;
-  }
-  setSelectedVariantId(defaultVariant.id);
-  setQty(
-    defaultVariant.availableForSale && (defaultVariant.quantityAvailable ?? 0) > 0
-      ? 1
-      : 0
-  );
-}, [router.asPath, product?.id, defaultVariant]);
+    if (!defaultVariant) {
+      setSelectedVariantId(null);
+      setQty(0);
+      return;
+    }
+    setSelectedVariantId(defaultVariant.id);
+    setShowVariantImage(false);
+    setQty(
+      defaultVariant.availableForSale && (defaultVariant.quantityAvailable ?? 0) > 0
+        ? 1
+        : 0
+    );
+  }, [router.asPath, product?.id, defaultVariant]);
 
 
   const { user, refreshUser, loading } = useAuth();
@@ -158,29 +158,11 @@ const approved: true | false | null = loading ? null : Boolean(user?.approved);
     v => v.node.id === selectedVariantId
   )?.node;
 
-  // Build the combined gallery: selected variant image first (if any),
-  // followed by product images and up to 2 “Styled By You” images
+  // Build the combined gallery: official image first, optional variant image,
+  // then up to 2 “Styled By You” images
   const galleryImages = useMemo<GalleryImage[]>(() => {
-    // Track variant image base URLs to prevent duplicates in gallery
-    const variantImageBases = new Set(
-      variantEdges
-        .map(({ node }) => node.image?.url.split("?")[0])
-        .filter((u): u is string => Boolean(u))
-    );
-
-    const variantImg: GalleryImage[] = selectedVariant?.image
-      ? [{
-          url: selectedVariant.image.url,
-          width: selectedVariant.image.width,
-          height: selectedVariant.image.height,
-          alt: selectedVariant.image.altText || product.title,
-          isUGC: false,
-        }]
-      : [];
-
     const official: GalleryImage[] =
       (product.images?.edges || [])
-        .filter(({ node }) => !variantImageBases.has(node.url.split("?")[0]))
         .slice(0, 1)
         .map(({ node }) => ({
           url: node.url,
@@ -189,6 +171,17 @@ const approved: true | false | null = loading ? null : Boolean(user?.approved);
           alt: node.altText || product.title,
           isUGC: false,
         }));
+
+    const variantImg: GalleryImage[] =
+      showVariantImage && selectedVariant?.image
+        ? [{
+            url: selectedVariant.image.url,
+            width: selectedVariant.image.width,
+            height: selectedVariant.image.height,
+            alt: selectedVariant.image.altText || product.title,
+            isUGC: false,
+          }]
+        : [];
 
     const sby: GalleryImage[] = (ugcItems || []).slice(0, 2).map((it) => ({
       url: it.image.url,
@@ -201,13 +194,13 @@ const approved: true | false | null = loading ? null : Boolean(user?.approved);
 
     // De-dupe by base URL, preserving order
     const seen = new Set<string>();
-    return [...variantImg, ...official, ...sby].filter((img) => {
+    return [...official, ...variantImg, ...sby].filter((img) => {
       const base = img.url.split("?")[0];
       if (seen.has(base)) return false;
       seen.add(base);
       return true;
     });
-  }, [product.images, product.title, ugcItems, selectedVariant?.image, variantEdges]);
+  }, [product.images, product.title, ugcItems, selectedVariant?.image, showVariantImage]);
 
   const isSoldOut =
     !selectedVariant?.availableForSale ||
@@ -504,7 +497,10 @@ const approved: true | false | null = loading ? null : Boolean(user?.approved);
             return (
               <button
                 key={node.id}
-                onClick={() => setSelectedVariantId(node.id)}
+                onClick={() => {
+                  setSelectedVariantId(node.id);
+                  setShowVariantImage(true);
+                }}
                 className={`variant-button${isSelected ? ' selected' : ''}${oos ? ' is-disabled' : ''}`}
                 disabled={oos}
                 aria-disabled={oos}
