@@ -375,7 +375,10 @@ const approved: true | false | null = loading ? null : Boolean(user?.approved);
       <main style={{ maxWidth: '1400px', margin: '0 auto', padding: '16px' }}>
         <div className="product-layout">
           <div className="product-image" style={{ position: 'relative' }}>
-            <ProductGallery images={galleryImages} />
+            <ProductGallery
+              images={galleryImages}
+              defaultActive={showVariantImage ? 1 : 0}
+            />
 
             <div className="fav-wrapper">
               {showFav ? (
