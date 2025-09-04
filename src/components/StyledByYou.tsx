@@ -23,7 +23,7 @@ export default function StyledByYou({
 
   return (
     <section aria-label="Styled by you" className="ugc">
-      <h2>STYLED BY YOU</h2>
+      <h2 className="ugc-title">STYLED BY YOU</h2>
       <p>Upload your photo for a chance to be featured.</p>
       <a
         className="ugc-upload-btn"
