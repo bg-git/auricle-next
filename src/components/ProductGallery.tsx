@@ -24,15 +24,23 @@ function useIsDesktop() {
   return isDesktop;
 }
 
-export default function ProductGallery({ images }: { images: GalleryImage[] }) {
-  const [active, setActive] = useState(0);
+export default function ProductGallery({
+  images,
+  defaultActive = 0,
+}: {
+  images: GalleryImage[];
+  defaultActive?: number;
+}) {
+  const [active, setActive] = useState(defaultActive);
   const isDesktop = useIsDesktop();
 
-  useEffect(() => setActive(0), [images]);
+  // Keep active in sync if images or requested default changes
+  useEffect(() => setActive(defaultActive), [images, defaultActive]);
 
   const safeImages = useMemo(() => (images || []).filter(Boolean), [images]);
+  if (!safeImages.length) return null;
 
-  // Skip non-UGC images beyond the first when rendering thumbnails
+  // UGC-only thumbnails (skip index 0 so we don't duplicate the hero)
   const thumbs = useMemo(
     () =>
       safeImages
@@ -40,8 +48,6 @@ export default function ProductGallery({ images }: { images: GalleryImage[] }) {
         .filter(({ img, i }) => i > 0 && img.isUGC),
     [safeImages]
   );
-
-  if (!safeImages.length) return null;
 
   const main = safeImages[Math.min(active, safeImages.length - 1)];
 
@@ -61,22 +67,21 @@ export default function ProductGallery({ images }: { images: GalleryImage[] }) {
             )}
 
             <Image
-  key={main.url}
-  src={main.url}
-  alt={main.alt || ""}
-  width={main.width}
-  height={main.height}
-  priority={active === 0}
-  fetchPriority="high"
-  sizes="(min-width:1024px) calc((min(1400px,100vw) - 32px - 24px)/2), 100vw"
-  style={{ width: "100%", height: "auto", objectFit: "cover", display: "block" }}
-/>
-
+              key={main.url}
+              src={main.url}
+              alt={main.alt || ""}
+              width={main.width}
+              height={main.height}
+              priority={active === 0}
+              fetchPriority="high"
+              sizes="(min-width:1024px) calc((min(1400px,100vw) - 32px - 24px)/2), 100vw"
+              style={{ width: "100%", height: "auto", objectFit: "cover", display: "block" }}
+            />
 
             {thumbs.length > 0 && (
               <div
                 className="thumbs-overlay"
-                role="group" /* simpler ARIA; avoids tablist requirements */
+                role="group"
                 aria-label="Product thumbnails"
               >
                 {thumbs.map(({ img, i }) => (
@@ -88,7 +93,6 @@ export default function ProductGallery({ images }: { images: GalleryImage[] }) {
                     type="button"
                   >
                     <div className="thumb-frame">
-                      {/* No labels on thumbnails */}
                       <Image
                         src={img.url}
                         alt=""
@@ -108,15 +112,13 @@ export default function ProductGallery({ images }: { images: GalleryImage[] }) {
           </div>
         </div>
       ) : (
-        /* MOBILE: swipe-only (scroll-snap), no thumbnails */
+        /* MOBILE: swipe-only (scroll-snap), with dots */
         <div className="gallery-mobile" aria-label="Product images">
           <div
             className="snap-row"
             onScroll={(e) =>
               setActive(
-                Math.round(
-                  e.currentTarget.scrollLeft / e.currentTarget.offsetWidth
-                )
+                Math.round(e.currentTarget.scrollLeft / e.currentTarget.offsetWidth)
               )
             }
           >
@@ -131,27 +133,24 @@ export default function ProductGallery({ images }: { images: GalleryImage[] }) {
                   </div>
                 )}
                 <Image
-  src={img.url}
-  alt={img.alt || ""}
-  width={img.width}
-  height={img.height}
-  priority={i === 0}
-  fetchPriority={i === 0 ? "high" : "low"}
-  loading={i === 0 ? undefined : "lazy"}
-  decoding="async"
-  sizes="100vw"
-  style={{ width: "100%", height: "auto", objectFit: "cover", display: "block" }}
-/>
+                  src={img.url}
+                  alt={img.alt || ""}
+                  width={img.width}
+                  height={img.height}
+                  priority={i === 0}
+                  fetchPriority={i === 0 ? "high" : "low"}
+                  loading={i === 0 ? undefined : "lazy"}
+                  decoding="async"
+                  sizes="100vw"
+                  style={{ width: "100%", height: "auto", objectFit: "cover", display: "block" }}
+                />
               </div>
             ))}
           </div>
           {safeImages.length > 1 && (
             <div className="dots">
               {safeImages.map((_, i) => (
-                <div
-                  key={i}
-                  className={`dot ${i === active ? "is-active" : ""}`}
-                />
+                <div key={i} className={`dot ${i === active ? "is-active" : ""}`} />
               ))}
             </div>
           )}
@@ -182,9 +181,9 @@ export default function ProductGallery({ images }: { images: GalleryImage[] }) {
           line-height: 1;
           padding: 6px 8px;
           white-space: nowrap;
-          max-width: 90%;
-          overflow: hidden;
           max-width: max-content;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
 
         /* Overlayed horizontal thumbs on the LEFT (desktop) */
@@ -211,8 +210,10 @@ export default function ProductGallery({ images }: { images: GalleryImage[] }) {
         .thumb.is-active .thumb-frame { outline: 2px solid #181818; outline-offset: -2px; }
 
         /* Mobile swipe-only */
+        .gallery-mobile { position: relative; }
         .snap-row {
-          display: flex; overflow-x: auto;
+          display: flex;
+          overflow-x: auto;
           scroll-snap-type: x mandatory;
           -webkit-overflow-scrolling: touch;
           gap: 8px;
@@ -223,7 +224,8 @@ export default function ProductGallery({ images }: { images: GalleryImage[] }) {
           aspect-ratio: 4 / 5;
           position: relative;
         }
-        .gallery-mobile { position: relative; }
+
+        /* Mobile dots */
         .dots {
           position: absolute;
           bottom: 8px;
@@ -236,7 +238,7 @@ export default function ProductGallery({ images }: { images: GalleryImage[] }) {
           width: 6px;
           height: 6px;
           border-radius: 50%;
-          background: rgba(255, 255, 255, 0.6);
+          background: rgba(24, 24, 24, 0.25);
         }
         .dot.is-active { background: #181818; }
       `}</style>
