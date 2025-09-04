@@ -38,16 +38,19 @@ export default function ProductGallery({
   useEffect(() => setActive(defaultActive), [images, defaultActive]);
 
   const safeImages = useMemo(() => (images || []).filter(Boolean), [images]);
-  if (!safeImages.length) return null;
 
-  // UGC-only thumbnails (skip index 0 so we don't duplicate the hero)
-  const thumbs = useMemo(
-    () =>
-      safeImages
+  // Thumbnails: hero + UGC images (if any UGC exists)
+  const thumbs = useMemo(() => {
+    if (!safeImages.some((img) => img.isUGC)) return [];
+    return [
+      { img: safeImages[0], i: 0 },
+      ...safeImages
         .map((img, i) => ({ img, i }))
         .filter(({ img, i }) => i > 0 && img.isUGC),
-    [safeImages]
-  );
+    ];
+  }, [safeImages]);
+
+  if (!safeImages.length) return null;
 
   const main = safeImages[Math.min(active, safeImages.length - 1)];
 
