@@ -1,6 +1,6 @@
 // src/components/ProductGallery.tsx
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 
 export type GalleryImage = {
   url: string;
@@ -33,6 +33,7 @@ export default function ProductGallery({
 }) {
   const [active, setActive] = useState(defaultActive);
   const isDesktop = useIsDesktop();
+  const snapRowRef = useRef<HTMLDivElement | null>(null);
 
   // Keep active in sync if images or requested default changes
   useEffect(() => setActive(defaultActive), [images, defaultActive]);
@@ -49,6 +50,16 @@ export default function ProductGallery({
         .filter(({ img, i }) => i > 0 && img.isUGC),
     ];
   }, [safeImages]);
+
+  // Scroll the mobile carousel when the active index changes (e.g. variant switch)
+  useEffect(() => {
+    if (isDesktop) return;
+    const el = snapRowRef.current;
+    if (!el) return;
+    const target = el.offsetWidth * active;
+    if (Math.abs(el.scrollLeft - target) < 1) return;
+    el.scrollTo({ left: target });
+  }, [active, isDesktop]);
 
   if (!safeImages.length) return null;
 
@@ -123,6 +134,7 @@ export default function ProductGallery({
         <div className="gallery-mobile" aria-label="Product images">
           <div
             className="snap-row"
+            ref={snapRowRef}
             onScroll={(e) =>
               setActive(
                 Math.round(e.currentTarget.scrollLeft / e.currentTarget.offsetWidth)
