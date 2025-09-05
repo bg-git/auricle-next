@@ -7,15 +7,15 @@ const sections = [
     title: 'CARE',
     links: [
       { label: 'Contact Us', href: '/contact' },
-      { label: 'Returns', href: '/returns' },
-      { label: 'Shipping Info', href: '/shipping' },
+      { label: 'Sign in', href: '/sign-in' },
+      { label: 'Register', href: '/register' },
     ],
   },
   {
     title: 'COMPANY',
     links: [
-      { label: 'About Us', href: '/about' },
-      { label: 'Careers', href: '/careers' },
+      { label: 'About Us', href: '/information/about-us' },
+      { label: 'Pricing & Efficiency', href: '/information/pricing-and-efficiency' },
       { label: 'Blog', href: '/piercing-magazine' },
     ],
   },
@@ -37,7 +37,6 @@ const sections = [
     title: 'SOCIALS',
     links: [
       { label: 'Instagram', href: 'https://instagram.com/auricle.co.uk' },
-      { label: 'Facebook', href: 'https://facebook.com' },
     ],
   },
 ];
