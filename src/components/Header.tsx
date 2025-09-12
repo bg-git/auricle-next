@@ -176,7 +176,7 @@ const { favourites } = useFavourites();
           {[
   { label: 'ENDS & GEMS', href: '/collection/ends-gems' },
   { label: 'CHAINS & CHARMS', href: '/collection/chains-charms' },
-  { label: 'BACKS & BARS', href: '/collection/backs-bars' },
+  { label: 'RINGS & HOOPS', href: '/collection/rings-hoops' },
   { label: 'SEARCH', href: '/search' },
 
 ].map(({ label, href }) => (

@@ -1,4 +1,4 @@
-import type { AppProps } from 'next/app';
+import App, { type AppContext, type AppProps } from 'next/app';
 import Head from 'next/head';
 import dynamic from 'next/dynamic';
 
@@ -18,6 +18,7 @@ import '@/styles/pages/filters.scss';
 import '@/styles/pages/resetPassword.scss';
 import '@/styles/pages/blog-page.scss';
 import '@/styles/pages/blog.scss';
+import '@/styles/pages/information.scss';
 
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -79,4 +80,18 @@ export default function MyApp({ Component, pageProps }: MyAppProps) {
       </AuthProvider>
     </ToastProvider>
   );
+}
+
+MyApp.getInitialProps = async (appContext: AppContext) => {
+  const appProps = await App.getInitialProps(appContext)
+  const customerHeader = appContext.ctx.req?.headers['x-customer']
+  if (customerHeader && typeof customerHeader === 'string') {
+    try {
+      appProps.pageProps = appProps.pageProps || {}
+      appProps.pageProps.customer = JSON.parse(customerHeader)
+    } catch {
+      // ignore parse errors
+    }
+  }
+  return appProps
 }

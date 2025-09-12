@@ -8,6 +8,32 @@ import {
 import { useRouter } from 'next/router';
 import { COOKIE_NAME, COOKIE_MAX_AGE } from '@/lib/cookies';
 
+const STORAGE_KEY = 'auricle-auth-user';
+
+type Debounced<T extends (...args: unknown[]) => void> = ((...args: Parameters<T>) => void) & {
+  cancel: () => void;
+};
+
+function debounce<T extends (...args: unknown[]) => void>(
+  fn: T,
+  delay: number,
+): Debounced<T> {
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
+  const debounced = (...args: Parameters<T>) => {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+    timeoutId = setTimeout(() => fn(...args), delay);
+  };
+  debounced.cancel = () => {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+      timeoutId = null;
+    }
+  };
+  return debounced;
+}
+
 export interface ShopifyCustomer {
   id: string;
   email: string;
@@ -33,13 +59,55 @@ interface AuthProviderProps {
   initialUser?: ShopifyCustomer | null;
 }
 
+function getInitialAuth(initialUser?: ShopifyCustomer | null) {
+  if (initialUser) {
+    return { user: initialUser, isAuthenticated: true };
+  }
+
+  if (typeof window !== 'undefined') {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        return { user: JSON.parse(stored) as ShopifyCustomer, isAuthenticated: true };
+      }
+    } catch {
+      // ignore parse errors
+    }
+
+    const hasCookie = document.cookie
+      .split('; ')
+      .some((cookie) => cookie.startsWith(`${COOKIE_NAME}=`));
+
+    if (hasCookie) {
+      return { user: null, isAuthenticated: true };
+    }
+  }
+
+  return { user: null, isAuthenticated: false };
+}
+
 export function AuthProvider({ children, initialUser }: AuthProviderProps) {
-  const [user, setUser] = useState<ShopifyCustomer | null>(initialUser ?? null);
-  const [isAuthenticated, setIsAuthenticated] = useState(!!initialUser);
-  const [loading, setLoading] = useState(!initialUser);
+  const { user: initialStateUser, isAuthenticated: initialAuth } =
+    getInitialAuth(initialUser);
+  const [user, setUser] = useState<ShopifyCustomer | null>(initialStateUser);
+  const [isAuthenticated, setIsAuthenticated] = useState(initialAuth);
+  const [loading] = useState(false);
   const router = useRouter();
 
   const verifySession = async (): Promise<boolean> => {
+    const hasCookie = document.cookie
+      .split('; ')
+      .some((cookie) => cookie.startsWith(`${COOKIE_NAME}=`));
+
+    if (!hasCookie) {
+      setUser(null);
+      setIsAuthenticated(false);
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+      return false;
+    }
+
     try {
       const res = await fetch('/api/shopify/verify-customer', {
         method: 'POST',
@@ -51,37 +119,71 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
         const data = await res.json();
         setUser(data.customer);
         setIsAuthenticated(true);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(data.customer));
+        }
         return true;
       } else {
         setUser(null);
         setIsAuthenticated(false);
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem(STORAGE_KEY);
+        }
         return false;
       }
     } catch (error) {
       console.error('Auth check failed:', error);
       setUser(null);
       setIsAuthenticated(false);
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem(STORAGE_KEY);
+      }
       return false;
     }
   };
 
   useEffect(() => {
-    if (initialUser) {
-      setLoading(false);
-      return;
-    }
+    verifySession();
 
-    const handleVisibility = () => {
-      if (document.visibilityState === 'visible') {
-        verifySession().finally(() => setLoading(false));
+    let intervalId: ReturnType<typeof setInterval> | null = null;
+
+    const startInterval = () => {
+      if (intervalId === null) {
+        intervalId = setInterval(verifySession, 60_000);
       }
     };
 
-    document.addEventListener('visibilitychange', handleVisibility);
-    handleVisibility();
+    const stopInterval = () => {
+      if (intervalId !== null) {
+        clearInterval(intervalId);
+        intervalId = null;
+      }
+    };
 
-    return () => document.removeEventListener('visibilitychange', handleVisibility);
-  }, [initialUser]);
+    if (document.visibilityState === 'visible') {
+      startInterval();
+    }
+
+    const debouncedVerifySession = debounce(verifySession, 1_000);
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        debouncedVerifySession();
+        startInterval();
+      } else {
+        debouncedVerifySession.cancel();
+        stopInterval();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      stopInterval();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      debouncedVerifySession.cancel();
+    };
+  }, []);
 
 
   const signIn = async (email: string, password: string) => {
@@ -114,6 +216,12 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
         if (userResponse.ok) {
           const userData = await userResponse.json();
           setUser(userData.customer);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem(
+              STORAGE_KEY,
+              JSON.stringify(userData.customer),
+            );
+          }
         }
 
         // Verify session after sign in
@@ -139,6 +247,9 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
 
     setIsAuthenticated(false);
     setUser(null);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(STORAGE_KEY);
+    }
     router.push('/');
   };
 
@@ -153,6 +264,9 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
       if (res.ok) {
         const data = await res.json();
         setUser(data.customer);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(data.customer));
+        }
       }
     } catch (err) {
       console.error('Failed to refresh user:', err);

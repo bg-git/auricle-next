@@ -104,17 +104,211 @@ input[type='number'] {
     border-color: #181818;
   }
 }
-.favourite-toggle {
+
+.variant-button.is-disabled {
+  opacity: 0.5;
+  text-decoration: line-through;
+  cursor: not-allowed;
+  pointer-events: none;
+
+  &:hover {
+    opacity: 0.5;
+  }
+}
+
+.fav-wrapper,
+.fav-placeholder {
   position: absolute;
   bottom: 12px;
   right: 12px;
+  width: 44px;
+  height: 44px;
+}
+
+.fav-wrapper {
+  z-index: 5;
+}
+
+.fav-wrapper .fav-placeholder {
+  bottom: 0;
+  right: 0;
+}
+
+.favourite-toggle {
   background: transparent;
   border: none;
   padding: 12px; // ← optional for larger touch target
   cursor: pointer;
-  z-index: 5;
 
   svg {
     transition: fill 0.2s ease;
   }
+}
+
+/* Styled By You (UGC) – product.scss */
+
+.ugc {
+  margin-top: 24px;
+
+  .ugc-title {
+    margin: 0 0 12px;
+    font-size: 2.5rem;
+    font-weight: 900;
+    width: 100%;
+    max-width: 100%;
+  }
+  p {
+        margin: 0 0 12px;
+    font-size: 16px;
+    
+  }
+
+  /* Grid */
+  .ugc-grid {
+    display: grid;
+    grid-template-columns: 1fr; /* Mobile: 1 column */
+    gap: 8px;
+  }
+
+  figure {
+    margin: 0;
+    position: relative; /* for overlay positioning */
+  }
+
+  /* 4:5 image frame */
+  .ugc-frame {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+
+    img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  /* Caption overlay – bottom-left (credit above link) */
+  figcaption.ugc-caption {
+    position: absolute;
+    left: 8px;
+    bottom: 8px;
+    display: flex;
+    flex-direction: column; /* stack credit over link */
+    gap: 6px;
+    max-width: calc(100% - 16px);
+    z-index: 2;
+  }
+
+  .ugc-credit,
+  .ugc-link {
+    display: inline-block;
+    padding: 6px 8px;
+    font-size: 12px;
+    line-height: 1;
+    background: #181818;
+    color: #fff;
+    border: 1px solid #181818;
+    text-decoration: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+
+  .ugc-link:hover {
+    text-decoration: underline;
+  }
+
+  /* Desktop: 5 columns */
+  @media (min-width: 1024px) {
+    .ugc-grid {
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+    }
+
+    .ugc-title {
+      max-width: calc((min(1400px, 100vw) - 32px - 24px) / 2);
+      margin-left: 0;
+    }
+  }
+}
+.ugc-upload-btn {
+  display: inline-block;
+  margin: 8px 0 12px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  background: #fff;
+  color: #000;
+  border: 1px solid #181818;
+  border-radius: 4px;
+  text-decoration: none;
+}
+
+.ugc-upload-btn:hover {
+  text-decoration: underline;
+}
+/* Skeleton card for empty state */
+.ugc-skeleton .ugc-frame {
+  background: #f1f1f1;
+  border: 1px solid #e5e5e5;
+}
+
+/* Simple shimmer effect */
+.skeleton-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.skeleton-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0) 0%,
+    rgba(255,255,255,0.6) 50%,
+    rgba(255,255,255,0) 100%
+  );
+  transform: translateX(-100%);
+  animation: ugc-shimmer 1.2s ease-in-out infinite;
+}
+@keyframes ugc-shimmer {
+  100% { transform: translateX(100%); }
+}
+/* Placeholder gets a subtle border */
+.ugc-placeholder .ugc-frame { border: 1px solid #e5e5e5; }
+
+/* Shimmer overlay on top of the image */
+.ugc .ugc-frame.has-shimmer {
+  position: relative;
+}
+.ugc .ugc-frame.has-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;               /* above the image */
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0) 0%,
+    rgba(255,255,255,0.6) 50%,
+    rgba(255,255,255,0) 100%
+  );
+  transform: translateX(-100%);
+  animation: ugc-shimmer 2s ease-in-out infinite;
+}
+
+/* Caption stays above the shimmer */
+.ugc .ugc-caption { z-index: 2; }
+
+/* Motion safety */
+@keyframes ugc-shimmer {
+  100% { transform: translateX(100%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ugc .ugc-frame.has-shimmer::after { animation: none; }
 }
