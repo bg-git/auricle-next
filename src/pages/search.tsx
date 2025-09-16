@@ -66,14 +66,9 @@ export default function SearchPage() {
     setLoading(true);
     setQuery(value);
 
-    router.replace(
-      {
-        pathname: '/search',
-        query: value ? { q: value } : {},
-      },
-      undefined,
-      { shallow: true }
-    );
+    router.replace(`/search${value ? `?q=${encodeURIComponent(value)}` : ''}`, undefined, {
+      shallow: true,
+    });
   };
 
   return (
