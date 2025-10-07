@@ -165,6 +165,18 @@ export default function CartDrawer() {
                   });
                 }
               });
+
+              // The PWA service worker interferes with Shopify's checkout pages
+              // (they live on the same origin), leaving the checkout stuck in a
+              // skeleton state. Remove active registrations before redirecting.
+              if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
+                try {
+                  const registrations = await navigator.serviceWorker.getRegistrations();
+                  await Promise.all(registrations.map((registration) => registration.unregister()));
+                } catch (err) {
+                  console.error('Failed to unregister service workers before checkout:', err);
+                }
+              }
               window.location.href = url;
             }}
           >
