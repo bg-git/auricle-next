@@ -19,6 +19,45 @@ const displayTitle = (title?: string, variantTitle?: string) => {
   return `${base} | ${variant}`;
 };
 
+const unregisterServiceWorkersForCheckout = async () => {
+  if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
+    return;
+  }
+
+  try {
+    const registrations = await navigator.serviceWorker.getRegistrations();
+    await Promise.all(
+      registrations.map(async (registration) => {
+        try {
+          const scope = registration.scope;
+          const isSameOrigin = !scope || scope.startsWith(window.location.origin);
+
+          if (isSameOrigin) {
+            const unregistered = await registration.unregister();
+
+            if (!unregistered) {
+              console.warn(
+                'Service worker registration returned false when unregistering before checkout; continuing anyway.',
+                { scope }
+              );
+            }
+          }
+        } catch (error) {
+          console.warn(
+            'Error while unregistering a service worker before checkout; continuing to Shopify checkout.',
+            { scope: registration.scope, error }
+          );
+        }
+      })
+    );
+  } catch (error) {
+    console.warn(
+      'Failed to list service worker registrations before checkout; continuing to Shopify checkout.',
+      error
+    );
+  }
+};
+
 export default function CartDrawer() {
   const {
     cartItems,
@@ -165,6 +204,14 @@ export default function CartDrawer() {
                   });
                 }
               });
+              try {
+                await unregisterServiceWorkersForCheckout();
+              } catch (error) {
+                console.warn(
+                  'Unexpected error while preparing checkout; continuing to Shopify checkout.',
+                  error
+                );
+              }
               window.location.href = url;
             }}
           >
