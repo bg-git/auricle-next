@@ -16,8 +16,46 @@ async function shopifyFetch(query: string, variables: Record<string, unknown>) {
   });
   return res.json();
 }
+type CartLineEdge = {
+  node: {
+    id: string;
+    quantity: number;
+    merchandise: { id: string };
+  };
+};
 
-const CART_FRAGMENT = `fragment CartFields on Cart {\n  id\n  checkoutUrl\n  lines(first: 250) {\n    edges {\n      node {\n        id\n        quantity\n        merchandise { ... on ProductVariant { id } }\n      }\n    }\n  }\n}`;
+const CART_FRAGMENT = `
+fragment CartFields on Cart {
+  id
+  checkoutUrl
+  lines(first: 250) {
+    edges {
+      node {
+        id
+        quantity
+        merchandise {
+          ... on ProductVariant {
+            id
+            title
+            selectedOptions { name value }
+            image { url }
+            product {
+              title
+              handle
+              featuredImage { url }
+            }
+          }
+        }
+        cost {
+          amountPerQuantity { amount }
+          totalAmount { amount }
+        }
+      }
+    }
+  }
+}
+`;
+
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -45,14 +83,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   // }
 
   const existing: { [variantId: string]: { lineId: string; qty: number } } = {};
-  for (const edge of cart.lines.edges as any[]) {
-    existing[edge.node.merchandise.id] = { lineId: edge.node.id, qty: edge.node.quantity };
-  }
+  for (const edge of (cart.lines.edges as CartLineEdge[])) {
+  existing[edge.node.merchandise.id] = {
+    lineId: edge.node.id,
+    qty: edge.node.quantity,
+  };
+}
+
 
   const desired = new Map<string, number>();
-  for (const item of items as any[]) {
-    if (item.quantity > 0) desired.set(item.variantId, item.quantity);
-  }
+  for (const item of items) {
+  if (item.quantity > 0) desired.set(item.variantId, item.quantity);
+}
+
 
   const toRemove: string[] = [];
   const toUpdate: { id: string; quantity: number }[] = [];

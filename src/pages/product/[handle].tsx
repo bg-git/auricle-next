@@ -17,6 +17,7 @@ import type { UGCItem } from "@/components/StyledByYou";
 import ProductGallery from "@/components/ProductGallery";
 import dynamic from 'next/dynamic';
 
+
 // ✅ Lazy-loaded, non-critical UI
 const StyledByYouLazy = dynamic(() => import('@/components/StyledByYou'), {
   ssr: false,
@@ -29,9 +30,15 @@ const FavouriteToggleLazy = dynamic(() => import('@/components/FavouriteToggle')
 
 // TYPES
 interface Metafield {
-  key: string;
-  value: string;
+  key?: string | null;
+  value?: string | null;
 }
+type StrictMetafield = { key: string; value: string };
+
+function isStrictMetafield(m: Metafield | null | undefined): m is StrictMetafield {
+  return !!m && typeof m.key === 'string' && typeof m.value === 'string';
+}
+
 
 interface ProductVariantNode {
   id: string;
@@ -59,6 +66,7 @@ interface Product {
   title: string;
   handle: string;
   descriptionHtml: string;
+  tags?: string[];
   priceRange: {
     minVariantPrice: {
       amount: string;
@@ -84,6 +92,10 @@ interface Product {
 interface ProductPageProps {
   product: Product;
   ugcItems: UGCItem[];
+  twinId?: string | null;
+ /** Optional: when wholesale SSR is used, keep retail title & retail schema price */
+retailTitle?: string;
+retailMinPrice?: string; // number as string, like Shopify
 }
 
 type GalleryImage = {
@@ -95,18 +107,60 @@ type GalleryImage = {
   credit?: string;
 };
 
-export default function ProductPage({ product, ugcItems }: ProductPageProps) {
+export default function ProductPage({ product, ugcItems, twinId }: ProductPageProps) {
+  
+  const { isApproved, authReady } = useAuth();
+
+  // wholesale override (when user is Approved)
+const [overrideProduct, setOverrideProduct] = useState<Product | null>(null);
+
+// fetch wholesale twin after mount if allowed
+useEffect(() => {
+  let cancelled = false;
+  (async () => {
+    if (isApproved && twinId) {
+      try {
+        const res = await fetch('/api/shopify/product-by-id', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: twinId }),
+        });
+        const json = await res.json();
+        const twin = json?.product as Product | null;
+        if (!cancelled && twin) setOverrideProduct(twin);
+      } catch {
+        // fail silently; stay on retail
+      }
+    } else {
+      // if user lost approval or no twin, revert to retail
+      setOverrideProduct(null);
+    }
+  })();
+  return () => { cancelled = true; };
+}, [isApproved, twinId]);
+
+// use P everywhere instead of product
+const P: Product = (overrideProduct ?? product) as Product;
 
   const { addToCart, openDrawer } = useCart();
   const { showToast } = useToast();
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
+useEffect(() => { setMounted(true); }, []);
+
+
+// Price is safe to show when:
+// - auth has hydrated, AND
+// - user is not approved (retail), OR there's no twin to fetch, OR we've loaded the twin
+const priceReady =
+  authReady && (!isApproved || !twinId || overrideProduct !== null);
 
   
   const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
   const [showVariantImage, setShowVariantImage] = useState(false);
   const [qty, setQty] = useState(0);
 
-  const variantEdges = useMemo(() => product?.variants?.edges || [], [product]);
+  const variantEdges = useMemo(() => P?.variants?.edges || [], [P]);
   const defaultVariant = useMemo<ProductVariantNode | null>(() => {
   const nodes = (variantEdges || []).map(v => v.node);
   if (nodes.length === 0) return null;
@@ -132,21 +186,11 @@ export default function ProductPage({ product, ugcItems }: ProductPageProps) {
         ? 1
         : 0
     );
-  }, [router.asPath, product?.id, defaultVariant]);
+  }, [router.asPath, P?.id, defaultVariant]);
 
 
-  const { user, refreshUser, loading } = useAuth();
-  const hasRefreshed = useRef(false); 
-const approved: true | false | null = loading ? null : Boolean(user?.approved);
 
-
-  useEffect(() => {
-    if (user && !user.approved && !hasRefreshed.current) {
-      hasRefreshed.current = true;
-      refreshUser();
-    }
-  }, [user, refreshUser]);
-
+  
   useEffect(() => {
     const v = variantEdges.find(e => e.node.id === selectedVariantId)?.node;
     if (!v) return;
@@ -157,7 +201,7 @@ const approved: true | false | null = loading ? null : Boolean(user?.approved);
   }, [selectedVariantId, variantEdges]);
 
 
-  const selectedVariant = product?.variants?.edges?.find(
+  const selectedVariant = P?.variants?.edges?.find(
     v => v.node.id === selectedVariantId
   )?.node;
 
@@ -165,26 +209,29 @@ const approved: true | false | null = loading ? null : Boolean(user?.approved);
   // then up to 2 “Styled By You” images
   const galleryImages = useMemo<GalleryImage[]>(() => {
     const official: GalleryImage[] =
-      (product.images?.edges || [])
-        .slice(0, 1)
-        .map(({ node }) => ({
-          url: node.url,
-          width: node.width,
-          height: node.height,
-          alt: node.altText || product.title,
-          isUGC: false,
-        }));
+  (P.images?.edges || [])
+    .slice(0, 1)
+    .map(({ node }) => ({
+      url: node.url,
+      width: node.width,
+      height: node.height,
+      alt: node.altText || product.title,
 
-    const variantImg: GalleryImage[] =
-      showVariantImage && selectedVariant?.image
-        ? [{
-            url: selectedVariant.image.url,
-            width: selectedVariant.image.width,
-            height: selectedVariant.image.height,
-            alt: selectedVariant.image.altText || product.title,
-            isUGC: false,
-          }]
-        : [];
+      isUGC: false,
+    }));
+
+const variantImg: GalleryImage[] =
+  showVariantImage && selectedVariant?.image
+    ? [{
+        url: selectedVariant.image.url,
+        width: selectedVariant.image.width,
+        height: selectedVariant.image.height,
+        alt: selectedVariant.image.altText || product.title,
+
+        isUGC: false,
+      }]
+    : [];
+
 
     const sby: GalleryImage[] = (ugcItems || []).slice(0, 2).map((it) => ({
       url: it.image.url,
@@ -203,7 +250,9 @@ const approved: true | false | null = loading ? null : Boolean(user?.approved);
       seen.add(base);
       return true;
     });
-  }, [product.images, product.title, ugcItems, selectedVariant?.image, showVariantImage]);
+  },[ P.images, product.title, ugcItems, selectedVariant?.image, showVariantImage ]
+);
+
 
   const isSoldOut =
     !selectedVariant?.availableForSale ||
@@ -212,20 +261,21 @@ const approved: true | false | null = loading ? null : Boolean(user?.approved);
   const maxQty = selectedVariant?.quantityAvailable ?? 9999;
 
   const rawPrice = selectedVariant
-    ? parseFloat(selectedVariant.price.amount)
-    : parseFloat(product?.priceRange?.minVariantPrice?.amount || '0');
+  ? parseFloat(selectedVariant.price.amount)
+  : parseFloat(P?.priceRange?.minVariantPrice?.amount || '0');
+
   const formattedPrice = rawPrice % 1 === 0 ? rawPrice.toFixed(0) : rawPrice.toFixed(2);
 
-  const metafields = useMemo(
-    () => product?.metafields || [],
-    [product?.metafields]
-  );
+  const metafields = useMemo<StrictMetafield[]>(
+  () => (Array.isArray(P?.metafields) ? P.metafields.filter(isStrictMetafield) : []),
+  [P?.metafields]
+);
+
 
   const getFieldValue = (key: string): string | null => {
-    const field = metafields.find((f: Metafield) => f?.key === key);
-    if (!field?.value) return null;
-
-    const value = field.value.trim();
+  const field = metafields.find((f) => f.key === key);
+  if (!field?.value) return null;
+  const value = field.value.trim();
     if (!value.startsWith('{') && !value.startsWith('[')) {
       return value;
     }
@@ -337,12 +387,12 @@ const approved: true | false | null = loading ? null : Boolean(user?.approved);
   return (
     <>
       <Seo
-        title={getFieldValue('title') || product.title}
-        description={
-          getFieldValue('description') || `Buy ${product.title} in 14k gold or titanium.`
-        }
-        canonical={`https://www.auricle.co.uk/product/${product.handle}`}
-      />
+  title={getFieldValue('title') || product.title}
+
+  description={getFieldValue('description') || `Buy ${product.title} in 14k gold or titanium.`}
+
+  canonical={`https://www.auricle.co.uk/product/${P.handle ?? router.query.handle}`}
+/>
 
       <script
         type="application/ld+json"
@@ -351,17 +401,17 @@ const approved: true | false | null = loading ? null : Boolean(user?.approved);
             "@context": "https://schema.org",
             "@type": "Product",
             "name": product.title,
-            "image": product.images?.edges?.map(img => img?.node?.url).filter(Boolean),
-            "description":
-              product.metafields?.find((m) => m?.key === "description")?.value || "",
-            "sku": product.metafields?.find((m) => m?.key === "sku")?.value || "",
+
+            "image": P.images?.edges?.map(img => img?.node?.url).filter(Boolean),
+            "description": P.metafields?.find((m) => m?.key === "description")?.value || "",
+            "sku": P.metafields?.find((m) => m?.key === "sku")?.value || "",
             "brand": {
               "@type": "Brand",
               "name": "AURICLE"
             },
             "offers": {
               "@type": "Offer",
-              "url": `https://www.auricle.co.uk/product/${product.handle}`,
+              "url": `https://www.auricle.co.uk/product/${P.handle ?? router.query.handle}`,
               "priceCurrency": "GBP",
               "price": "0.01",
               "availability": "https://schema.org/InStock",
@@ -386,12 +436,13 @@ const approved: true | false | null = loading ? null : Boolean(user?.approved);
             <div className="fav-wrapper">
               {showFav ? (
                 <FavouriteToggleLazy
-                  handle={router.query.handle as string}
-                  title={product.title}
-                  image={galleryImages[0]?.url || '/placeholder.png'}
-                  price={formattedPrice}
-                  metafields={metafields}
-                />
+  handle={router.query.handle as string}
+  title={product.title}
+
+  image={galleryImages[0]?.url || '/placeholder.png'}
+  price={formattedPrice}
+  metafields={metafields}   // now StrictMetafield[]
+/>
               ) : (
                 <span className="fav-placeholder" />
               )}
@@ -401,6 +452,8 @@ const approved: true | false | null = loading ? null : Boolean(user?.approved);
           <div className="product-info">
   <h1 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '4px' }}>
     {product.title}
+
+
   </h1>
 
   <p
@@ -417,32 +470,45 @@ const approved: true | false | null = loading ? null : Boolean(user?.approved);
   </p>
 
     {/* Price */}
+        {/* Price (always visible) */}
     <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-      <div
+  <div style={{ width: '80px', height: '24px', position: 'relative' }}>
+    {mounted && priceReady ? (
+      <span
+        aria-live="polite"
         style={{
-          width: '80px',
-          height: '24px',
-          position: 'relative',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          fontSize: '14px',
+          fontWeight: 500,
+          lineHeight: '24px',
         }}
       >
-        <span
-          aria-live="polite"
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            fontSize: '14px',
-            fontWeight: 500,
-            lineHeight: '24px',
-            visibility: approved === true ? 'visible' : 'hidden',
-            opacity: approved === true ? 1 : 0,
-            transition: 'opacity 0.2s ease',
-          }}
-        >
-          £{formattedPrice}
-        </span>
-      </div>
-    </div>
+        £{formattedPrice}
+      </span>
+    ) : (
+      // placeholder to reserve space; renders nothing visible
+      <span
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          fontSize: '14px',
+          fontWeight: 500,
+          lineHeight: '24px',
+          visibility: 'hidden',
+        }}
+      >
+        £0
+      </span>
+    )}
+  </div>
+</div>
+
+
+
 
   {/* Variant options (unchanged) */}
   {variantOptions.length > 0 && (
@@ -493,11 +559,11 @@ const approved: true | false | null = loading ? null : Boolean(user?.approved);
   )}
 
   {/* Variant buttons (optional: disable OOS) */}
-  {product.variants?.edges?.length > 1 && (
+  {P.variants?.edges?.length > 1 && (
     <div className="variant-wrapper">
       <p className="variant-label">Select an option:</p>
       <div className="variant-grid">
-        {product.variants.edges.map(({ node }) => {
+        {P.variants.edges.map(({ node }) => {
           const isSelected = selectedVariantId === node.id;
           const oos = !node.availableForSale || (node.quantityAvailable ?? 0) <= 0;
             return (
@@ -528,134 +594,144 @@ const approved: true | false | null = loading ? null : Boolean(user?.approved);
         Quantity
       </label>
 
-      {/* Qty control */}
-      <div
-        style={{
-          flex: '0 0 120px',
-          display: 'flex',
-          alignItems: 'center',
-          border: '1px solid #ccc',
-          borderRadius: '4px',
-          overflow: 'hidden',
-          paddingInline: '4px',
-          opacity: approved !== true ? 0.6 : 1,
-        }}
-      >
-        <button
-          style={{
-            width: '48px',
-            height: '48px',
-            minWidth: '48px',
-            minHeight: '48px',
-            background: '#fff',
-            border: 'none',
-            fontSize: '20px',
-            cursor: approved === true ? 'pointer' : 'not-allowed',
-          }}
-          onClick={() => setQty((prev) => Math.max(isSoldOut ? 0 : 1, prev - 1))}
-          disabled={approved !== true}
-          aria-disabled={approved !== true}
-          title={approved !== true ? 'Sign in to purchase' : undefined}
-        >
-          −
-        </button>
-        <span
-          id="qty"
-          style={{
-            width: '100%',
-            height: '40px',
-            textAlign: 'center',
-            fontSize: '14px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            userSelect: 'none',
-          }}
-        >
-          {qty}
-        </span>
-        <button
-          style={{
-            width: '48px',
-            height: '48px',
-            minWidth: '48px',
-            minHeight: '48px',
-            fontSize: '20px',
-            background: '#fff',
-            border: 'none',
-            cursor: approved === true ? 'pointer' : 'not-allowed',
-          }}
-          onClick={() => {
-            if (approved !== true) return;
-            if (maxQty <= 0) { showToast('More coming soon 😉'); return; }
-            if (qty >= maxQty) { showToast(`We only have ${maxQty} available. Sorry 😞`); return; }
-            setQty((prev) => prev + 1);
-          }}
-          disabled={approved !== true}
-          aria-disabled={approved !== true}
-          title={approved !== true ? 'Sign in to purchase' : undefined}
-        >
-          +
-        </button>
-      </div>
+   {/* Qty control */}
+<div
+  style={{
+    flex: '0 0 120px',
+    display: 'flex',
+    alignItems: 'center',
+    border: '1px solid #ccc',
+    borderRadius: '4px',
+    overflow: 'hidden',
+    paddingInline: '4px',
+    opacity: isSoldOut ? 0.6 : 1,
+  }}
+>
+  <button
+    style={{
+      width: '48px',
+      height: '48px',
+      minWidth: '48px',
+      minHeight: '48px',
+      background: '#fff',
+      border: 'none',
+      fontSize: '20px',
+      cursor: isSoldOut ? 'not-allowed' : 'pointer',
+    }}
+    onClick={() => setQty((prev) => Math.max(isSoldOut ? 0 : 1, prev - 1))}
+    disabled={isSoldOut}
+    aria-disabled={isSoldOut}
+    title={isSoldOut ? 'Sold out' : undefined}
+  >
+    −
+  </button>
+
+  <span
+    id="qty"
+    style={{
+      width: '100%',
+      height: '40px',
+      textAlign: 'center',
+      fontSize: '14px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      userSelect: 'none',
+    }}
+  >
+    {qty}
+  </span>
+
+  <button
+    style={{
+      width: '48px',
+      height: '48px',
+      minWidth: '48px',
+      minHeight: '48px',
+      fontSize: '20px',
+      background: '#fff',
+      border: 'none',
+      cursor: isSoldOut ? 'not-allowed' : 'pointer',
+    }}
+    onClick={() => {
+      if (isSoldOut) return;
+      if (maxQty <= 0) { showToast('More coming soon 😉'); return; }
+      if (qty >= maxQty) { showToast(`We only have ${maxQty} available. Sorry 😞`); return; }
+      setQty((prev) => prev + 1);
+    }}
+    disabled={isSoldOut}
+    aria-disabled={isSoldOut}
+    title={isSoldOut ? 'Sold out' : undefined}
+  >
+    +
+  </button>
+</div>
+
+
 
       {/* CTA */}
       <button
-        style={{
-          flex: '1',
-          height: '48px',
-          minHeight: '48px',
-          background: '#181818',
-          color: '#fff',
-          border: 'none',
-          fontSize: '14px',
-          fontWeight: 900,
-          cursor: 'pointer',
-          borderRadius: '4px',
-          whiteSpace: 'nowrap',
-          opacity: approved !== true ? 0.85 : 1,
-        }}
-        onClick={() => {
-          if (approved !== true) {
-            router.push(`/sign-in?next=${encodeURIComponent(router.asPath)}`);
-            return;
-          }
-          if (isSoldOut) { showToast('SOLD OUT. More coming soon.'); return; }
-          if (!selectedVariantId || !selectedVariant) return;
+  style={{
+    flex: '1',
+    height: '48px',
+    minHeight: '48px',
+    background: '#181818',
+    color: '#fff',
+    border: 'none',
+    fontSize: '14px',
+    fontWeight: 900,
+    cursor: isSoldOut ? 'not-allowed' : 'pointer',
+    borderRadius: '4px',
+    whiteSpace: 'nowrap',
+    opacity: isSoldOut ? 0.85 : 1,
+  }}
+  onClick={() => {
+    if (isSoldOut) { showToast('SOLD OUT. More coming soon.'); return; }
+    if (!selectedVariantId || !selectedVariant) return;
 
-          addToCart(selectedVariantId, qty, {
-            handle: router.query.handle as string,
-            title: product.title,
-            variantTitle: selectedVariant.title,
-            selectedOptions: selectedVariant.selectedOptions,
-            price: selectedVariant.price.amount,
-            image: product.images?.edges?.[0]?.node?.url || undefined,
-            metafields: product.metafields,
-            quantityAvailable: selectedVariant.quantityAvailable,
-          });
-          openDrawer();
-        }}
-        disabled={approved !== true || isSoldOut}
-        aria-disabled={approved !== true || isSoldOut}
-      >
-        {approved !== true ? 'SIGN IN' : (isSoldOut ? 'SOLD OUT' : 'ADD TO BAG')}
-      </button>
+    addToCart(selectedVariantId, qty, {
+  handle: router.query.handle as string,
+  title: product.title,
+
+  variantTitle: selectedVariant.title,
+  selectedOptions: selectedVariant.selectedOptions,
+  price: selectedVariant.price.amount,
+  image: P.images?.edges?.[0]?.node?.url || undefined,
+  metafields, // StrictMetafield[]
+  quantityAvailable: selectedVariant.quantityAvailable,
+});
+    openDrawer();
+  }}
+  disabled={isSoldOut}
+  aria-disabled={isSoldOut}
+>
+  {isSoldOut ? 'SOLD OUT' : 'ADD TO BAG'}
+</button>
+
+
     </div>
   </div>
 
-  {/* VAT Note (reserve height to avoid CLS) */}
-  <p
+  {/* VAT note: show only for wholesale; keep height to avoid CLS */}
+<div
+  style={{
+    marginTop: '10px',
+    marginBottom: '16px',
+    textAlign: 'right',
+    minHeight: 18, // reserve space
+  }}
+>
+  <span
     style={{
       fontSize: '12px',
       color: '#666',
-      marginTop: '10px',
-      marginBottom: '16px',
-      textAlign: 'right',
-      minHeight: 18,
+      visibility: isApproved ? 'visible' : 'hidden', // no layout shift
     }}
   >
-    VAT & shipping calculated at checkout
-  </p>
+    VAT &amp; shipping calculated at checkout
+  </span>
+</div>
+
 
   {/* Details block (unchanged) */}
   <div style={{ marginTop: '32px' }}>
@@ -684,7 +760,7 @@ const approved: true | false | null = loading ? null : Boolean(user?.approved);
     {product.descriptionHtml && (
       <div
         style={{ marginTop: '24px', fontSize: '14px', lineHeight: '1.6' }}
-        dangerouslySetInnerHTML={{ __html: product.descriptionHtml }}
+        dangerouslySetInnerHTML={{ __html: P.descriptionHtml }}
       />
     )}
   </div>
@@ -710,29 +786,18 @@ const approved: true | false | null = loading ? null : Boolean(user?.approved);
 export const getStaticPaths: GetStaticPaths = async () => {
   const query = `
     {
-      products(first: 250) {
-        edges {
-          node {
-            handle
-          }
-        }
+      products(first: 250, query: "tag:'channel:retail'") {
+        edges { node { handle } }
       }
     }
   `;
-
   const data = await shopifyFetch({ query });
-
   const paths = data.products.edges.map(
-    ({ node }: { node: { handle: string } }) => ({
-      params: { handle: node.handle },
-    })
+    ({ node }: { node: { handle: string } }) => ({ params: { handle: node.handle } })
   );
-
-  return {
-    paths,
-    fallback: 'blocking',
-  };
+  return { paths, fallback: 'blocking' };
 };
+
 
 export const getStaticProps: GetStaticProps<ProductPageProps> = async (
   context: GetStaticPropsContext
@@ -743,9 +808,15 @@ export const getStaticProps: GetStaticProps<ProductPageProps> = async (
   query ProductByHandle($handle: String!) {
     productByHandle(handle: $handle) {
       id
+      handle
       title
       descriptionHtml
+      tags
       priceRange { minVariantPrice { amount } }
+
+      twin: metafield(namespace: "custom", key: "twin_product") {
+  value
+}
 
       images(first: 5) {
         edges {
@@ -797,7 +868,9 @@ export const getStaticProps: GetStaticProps<ProductPageProps> = async (
         { namespace: "custom", key: "base_size" },
         { namespace: "custom", key: "variants" },
         { namespace: "custom", key: "variant_label" },
-        { namespace: "custom", key: "fitting" }
+        { namespace: "custom", key: "fitting" },
+         { namespace: "custom", key: "noindex" },
+          { namespace: "custom", key: "redirect_handle" }
       ]) {
         key
         value
@@ -837,15 +910,48 @@ export const getStaticProps: GetStaticProps<ProductPageProps> = async (
 
   const data = await shopifyFetch({ query, variables: { handle } });
 
-  const ugcItems = mapStyledByYou(
-    data.productByHandle.styledByYou?.references?.edges ?? [],
-    data.productByHandle.id
-  );
+const p = data?.productByHandle;
+if (!p) {
+  return { notFound: true };
+}
+
+const ugcItems = mapStyledByYou(
+  p.styledByYou?.references?.edges ?? [],
+  p.id
+);
+// Normalize metafields: drop nulls/empties
+const metafields: Metafield[] = Array.isArray(p.metafields)
+  ? (p.metafields.filter(Boolean) as Metafield[])
+  : [];
+
+// Read redirect handle from metafields
+// Read redirect handle from metafields (safe)
+const redirectHandle = metafields.find((m) => m?.key === 'redirect_handle')?.value?.trim();
+
+// If redirect_handle is present and isn't the current handle, redirect
+if (redirectHandle && redirectHandle !== p.handle) {
+  const destination = /^https?:\/\//i.test(redirectHandle)
+    ? redirectHandle
+    : `/product/${encodeURIComponent(redirectHandle)}`;
+
+  return {
+    redirect: { destination, permanent: true },
+  };
+}
+
+// Derive noindex flag (safe)
+const mfNoindex = metafields.some((m) => m?.key === 'noindex' && m?.value === 'true');
+const tags = Array.isArray(p.tags) ? p.tags : [];
+const tagNoindex = tags.includes('NOINDEX') || tags.includes('channel:wholesale');
+const noindex = mfNoindex || tagNoindex;
+
 
   return {
     props: {
-      product: data.productByHandle,
+      product: p,
       ugcItems,
+      twinId: p.twin?.value ?? null,
+      meta: { noindex },
     },
     revalidate: 60,
   };

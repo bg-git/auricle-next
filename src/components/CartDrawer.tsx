@@ -2,6 +2,9 @@ import { useCart } from '@/context/CartContext';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { useFavourites } from '@/context/FavouritesContext';
+import { useAuth } from '@/context/AuthContext';
+import Head from 'next/head';
+
 
 const formatPrice = (price: string | undefined) => {
   const num = parseFloat(price || '0');
@@ -28,8 +31,18 @@ export default function CartDrawer() {
     updateQuantity,
     flushSync,
   } = useCart();
+useEffect(() => {
+  if (!isDrawerOpen || !checkoutUrl) return;
+
+  try {
+    const origin = new URL(checkoutUrl).origin;
+    // Fire-and-forget to warm DNS/TLS to checkout host
+    fetch(origin, { mode: 'no-cors', keepalive: true }).catch(() => {});
+  } catch {/* ignore bad URLs */}
+}, [isDrawerOpen, checkoutUrl]);
 
   const { addFavourite } = useFavourites();
+  const { isApproved } = useAuth();
 
   const [isCheckingOut, setIsCheckingOut] = useState(false);
 
@@ -70,6 +83,12 @@ export default function CartDrawer() {
             <h2 id="cart-drawer-title">MY BAG</h2>
             <button onClick={closeDrawer}>&times;</button>
           </div>
+{checkoutUrl && (
+  <Head>
+    {/* Some browsers will ignore cross-origin prefetch, but it’s cheap to try */}
+    <link rel="prefetch" as="document" href={checkoutUrl} crossOrigin="" />
+  </Head>
+)}
 
           {cartItems.length === 0 ? (
             <p className="empty-message">Your cart is empty.</p>
@@ -172,17 +191,26 @@ export default function CartDrawer() {
           </a>
 
 
-          <p
+          {/* VAT note: wholesale only; keep height to avoid CLS */}
+<div
   style={{
-    fontSize: '12px',
-    color: '#595959',
     marginTop: '8px',
     marginBottom: '16px',
     textAlign: 'right',
+    minHeight: 18, // reserve space
   }}
 >
-  VAT & shipping calculated at checkout
-</p>
+  <span
+    style={{
+      fontSize: '12px',
+      color: '#595959',
+      visibility: isApproved ? 'visible' : 'hidden', // no layout shift
+    }}
+  >
+    VAT &amp; shipping calculated at checkout
+  </span>
+</div>
+
         </div>
       </div>
     </div>

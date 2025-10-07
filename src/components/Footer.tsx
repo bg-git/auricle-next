@@ -4,13 +4,14 @@ import { useChatDrawer } from '@/context/ChatDrawerContext';
 
 const sections = [
   {
-    title: 'CARE',
-    links: [
-      { label: 'Contact Us', href: '/contact' },
-      { label: 'Sign in', href: '/sign-in' },
-      { label: 'Register', href: '/register' },
-    ],
-  },
+  title: 'CARE',
+  links: [
+    { label: 'Contact Us', href: '/contact' },
+    { label: 'Sign in', href: '/sign-in' },
+    { label: 'Register', href: '/register' },
+    { label: 'Wholesale Register', href: 'https://form.jotform.com/252673512499062' },
+  ],
+},
   {
     title: 'COMPANY',
     links: [
@@ -68,25 +69,28 @@ function Footer() {
             <ul className="footer-links">
               {section.links.map((link) => (
                 <li key={link.href}>
-                  {link.label === 'Contact Us' ? (
-                    <p
-                      onClick={openChatDrawer}
-                      style={{ cursor: 'pointer', margin: 0 }}
-                    >
-                      {link.label}
-                    </p>
-                  ) : link.href.startsWith('/') ? (
-                    <Link href={link.href}>{link.label}</Link>
-                  ) : (
-                    <a
-                      href={link.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {link.label}
-                    </a>
-                  )}
-                </li>
+  {link.label === 'Contact Us' ? (
+    <p onClick={openChatDrawer} style={{ cursor: 'pointer', margin: 0 }}>
+      {link.label}
+    </p>
+  ) : link.href.startsWith('/') ? (
+    <Link href={link.href}>{link.label}</Link>
+  ) : (
+    <a
+      href={link.href}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={
+        link.href.startsWith('https://form.jotform.com/')
+          ? `${link.label} (opens in new tab)`
+          : undefined
+      }
+    >
+      {link.label}
+    </a>
+  )}
+</li>
+
               ))}
             </ul>
           </div>

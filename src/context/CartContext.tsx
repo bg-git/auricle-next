@@ -8,6 +8,7 @@ import {
 } from 'react';
 import { useFavourites } from '@/context/FavouritesContext';
 import { useToast } from '@/context/ToastContext';
+import { useAuth } from '@/context/AuthContext';
 
 export interface CartItem {
   variantId: string;
@@ -61,7 +62,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const openDrawer = () => setIsDrawerOpen(true);
   const closeDrawer = () => setIsDrawerOpen(false);
-
+const { isApproved } = useAuth();
   useEffect(() => {
     checkoutUrlRef.current = checkoutUrl;
   }, [checkoutUrl]);
@@ -159,29 +160,54 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
             return;
           }
 
-          const items = (cart.lines.edges || []).map(
-            (
-              edge: {
-                node: { merchandise: { id: string }; quantity: number };
-              }
-            ) => {
-              // Try to find existing item data from localStorage
-              const existingItem = parsedItems.find(item => item.variantId === edge.node.merchandise.id);
-              return {
-                variantId: edge.node.merchandise.id,
-                quantity: edge.node.quantity,
-                // Preserve existing metadata from localStorage
-                title: existingItem?.title,
-                variantTitle: existingItem?.variantTitle,
-                selectedOptions: existingItem?.selectedOptions,
-                price: existingItem?.price,
-                image: existingItem?.image,
-                handle: existingItem?.handle,
-                metafields: existingItem?.metafields,
-                quantityAvailable: existingItem?.quantityAvailable,
-              };
-            }
-          );
+          const items = (cart.lines.edges || []).map((edge: {
+  node: {
+    quantity: number;
+    merchandise: {
+      id: string;
+      title?: string | null;
+      selectedOptions?: { name: string; value: string }[];
+      image?: { url?: string | null } | null;
+      product?: {
+        title?: string | null;
+        handle?: string | null;
+        featuredImage?: { url?: string | null } | null;
+      } | null;
+    };
+    cost?: { amountPerQuantity?: { amount?: string } };
+  };
+}) => {
+  const m = edge.node.merchandise;
+  const p = m.product;
+
+  const prodTitle = p?.title || '';
+  const variantTitle = m?.title || '';
+  const isDefaultVariant = /^default\s*title$/i.test(variantTitle || '');
+  const selectedOptions = m?.selectedOptions || [];
+
+  const imageUrl =
+    m?.image?.url ||
+    p?.featuredImage?.url ||
+    undefined;
+
+  const unitPrice =
+    edge.node.cost?.amountPerQuantity?.amount || undefined;
+
+  return {
+    variantId: m.id,
+    quantity: edge.node.quantity,
+    title: prodTitle || 'Untitled Product',
+    variantTitle: isDefaultVariant ? '' : variantTitle,
+    selectedOptions,
+    price: unitPrice,   // ← authoritative unit price
+    image: imageUrl,
+    handle: p?.handle || undefined,
+    // keep your custom fields if you later add them
+    metafields: undefined,
+    quantityAvailable: undefined,
+  } as CartItem;
+});
+
           setCartItems(items);
           setCheckoutUrl(cart.checkoutUrl);
           checkoutUrlRef.current = cart.checkoutUrl;
@@ -206,6 +232,53 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     latestItemsRef.current = cartItems;
   }, [cartItems]);
+// When wholesale status flips, swap each line to its twin variant (retail ↔ wholesale)
+useEffect(() => {
+  let cancelled = false;
+
+  // nothing to do
+  if (!cartItems.length) return;
+
+  (async () => {
+    const replacements: Record<string, string> = {}; // oldVariantId -> newVariantId
+
+    // ask the API for each line's twin variant
+    for (const li of cartItems) {
+      if (cancelled) return;
+      try {
+        const resp = await fetch('/api/shopify/variant-to-twin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ variantId: li.variantId }),
+        });
+        if (!resp.ok) continue;
+        const { twinVariantId } = await resp.json();
+        if (twinVariantId && twinVariantId !== li.variantId) {
+          replacements[li.variantId] = twinVariantId;
+        }
+      } catch {
+        // ignore; leave this line unchanged if lookup fails
+      }
+    }
+
+    if (cancelled) return;
+    const ids = Object.keys(replacements);
+    if (ids.length === 0) return;
+
+    // swap variantId in-place; keep product/title/image/meta the same
+    const updated = cartItems.map((i) => {
+      const newId = replacements[i.variantId];
+      return newId ? { ...i, variantId: newId } : i;
+    });
+
+    setCartItems(updated);
+    // push the new variant ids to Shopify so prices recalc server-side
+    scheduleSync(updated);
+  })();
+
+  return () => { cancelled = true; };
+  // re-run any time approval toggles (sign-in/out or tag change)
+}, [isApproved]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const syncShopifyCheckout = async (
     items: CartItem[],
@@ -266,28 +339,57 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
             latestItemsRef.current.map(item => [item.variantId, item])
           );
           
-          const updated = (cart.lines.edges || []).map(
-            (
-              edge: {
-                node: { merchandise: { id: string }; quantity: number };
-              }
-            ) => {
-              const existingItem = existingItemsMap.get(edge.node.merchandise.id);
-              return {
-                variantId: edge.node.merchandise.id,
-                quantity: edge.node.quantity,
-                // Preserve existing metadata
-                title: existingItem?.title,
-                variantTitle: existingItem?.variantTitle,
-                selectedOptions: existingItem?.selectedOptions,
-                price: existingItem?.price,
-                image: existingItem?.image,
-                handle: existingItem?.handle,
-                metafields: existingItem?.metafields,
-                quantityAvailable: existingItem?.quantityAvailable,
-              };
-            }
-          );
+          const updated = (cart.lines.edges || []).map((edge: {
+  node: {
+    quantity: number;
+    merchandise: {
+      id: string;
+      title?: string | null;
+      selectedOptions?: { name: string; value: string }[];
+      image?: { url?: string | null } | null;
+      product?: {
+        title?: string | null;
+        handle?: string | null;
+        featuredImage?: { url?: string | null } | null;
+      } | null;
+    };
+    cost?: { amountPerQuantity?: { amount?: string } };
+  };
+}) => {
+  const m = edge.node.merchandise;
+  const p = m.product;
+  const existingItem = existingItemsMap.get(m.id);
+
+  const prodTitle = p?.title || existingItem?.title || '';
+  const variantTitle = m?.title || existingItem?.variantTitle || '';
+  const isDefaultVariant = /^default\s*title$/i.test(variantTitle || '');
+  const selectedOptions = m?.selectedOptions || existingItem?.selectedOptions || [];
+
+  const imageUrl =
+    m?.image?.url ||
+    p?.featuredImage?.url ||
+    existingItem?.image ||
+    undefined;
+
+  const unitPrice =
+    edge.node.cost?.amountPerQuantity?.amount ||
+    existingItem?.price ||
+    undefined;
+
+  return {
+    variantId: m.id,
+    quantity: edge.node.quantity,
+    title: prodTitle || 'Untitled Product',
+    variantTitle: isDefaultVariant ? '' : variantTitle,
+    selectedOptions,
+    price: unitPrice,   // ← authoritative unit price
+    image: imageUrl,
+    handle: p?.handle || existingItem?.handle || undefined,
+    metafields: existingItem?.metafields,
+    quantityAvailable: existingItem?.quantityAvailable,
+  } as CartItem;
+});
+
           if (current !== syncVersion.current) return;
           setCartItems(updated);
           setCheckoutUrl(cart.checkoutUrl);
@@ -301,35 +403,75 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const addToCart = (
-    variantId: string,
-    quantity: number,
-    meta: Omit<CartItem, 'variantId' | 'quantity'> = {}
-  ) => {
-    const existing = cartItems.find((item) => item.variantId === variantId);
-    const maxQty = meta.quantityAvailable ?? existing?.quantityAvailable ?? Infinity;
+  variantId: string,
+  quantity: number,
+  meta: Omit<CartItem, 'variantId' | 'quantity'> = {}
+) => {
+  // run the normalization asynchronously without changing the function’s type
+  (async () => {
+    // 1) Determine the twin of the incoming variant (if any)
+    let twinOfIncoming: string | null = null;
+    try {
+      const resp = await fetch('/api/shopify/variant-to-twin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ variantId }),
+      });
+      if (resp.ok) {
+        const json = await resp.json();
+        twinOfIncoming = json?.twinVariantId ?? null;
+      }
+    } catch {
+      // ignore; we’ll still add the item
+    }
+
+    // 2) Build a helper to detect “same item” across channels
+    const sameItemAsIncoming = (id: string) =>
+      id === variantId || (twinOfIncoming && id === twinOfIncoming);
+
+    // 3) If the cart already has this item (retail OR wholesale),
+    //    merge the quantities under the *current* variantId.
+    const existingSame = cartItems.find(i => sameItemAsIncoming(i.variantId));
+
+    // quantity guard
+    const maxQty =
+      meta.quantityAvailable ??
+      existingSame?.quantityAvailable ??
+      Infinity;
+
     if (maxQty <= 0) {
       showToast('More coming soon.');
       return;
     }
-    const desiredQty = existing ? existing.quantity + quantity : quantity;
-    if (desiredQty > maxQty && maxQty !== Infinity) {
-      showToast(`More coming soon 😉`);
-    }
+
+    const desiredQty = (existingSame ? existingSame.quantity : 0) + quantity;
     const finalQty = Math.min(desiredQty, maxQty);
-    const updatedItems = existing
-      ? cartItems.map((item) =>
-          item.variantId === variantId
-            ? { ...item, quantity: finalQty, quantityAvailable: maxQty }
-            : item
-        )
-      : [{ variantId, quantity: finalQty, ...meta }, ...cartItems];
+
+    // 4) Remove any existing twin line(s), then insert/replace with current variantId
+    const filtered = cartItems.filter(i => !sameItemAsIncoming(i.variantId));
+
+    const updatedItems: CartItem[] = [
+      {
+        variantId,                 // normalize to the variant we’re adding now
+        quantity: finalQty,
+        title: meta.title,
+        variantTitle: meta.variantTitle,
+        selectedOptions: meta.selectedOptions,
+        price: meta.price,         // drawer will refresh from Shopify on sync
+        image: meta.image,
+        handle: meta.handle,
+        metafields: meta.metafields,
+        quantityAvailable: maxQty,
+      },
+      ...filtered,
+    ];
 
     setCartItems(updatedItems);
-    
+
     // Open drawer immediately for better UX
     openDrawer();
 
-    // ✅ Add to favourites silently
+    // Add to favourites silently
     if (meta.handle && !isFavourite(meta.handle)) {
       addFavourite({
         handle: meta.handle,
@@ -340,8 +482,11 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       });
     }
 
+    // 5) Sync to Shopify — prices will update to retail/wholesale correctly
     scheduleSync(updatedItems);
-  };
+  })();
+};
+
 
   const updateQuantity = (variantId: string, newQty: number) => {
     const item = cartItems.find((i) => i.variantId === variantId);

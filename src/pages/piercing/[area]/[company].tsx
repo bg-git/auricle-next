@@ -1,6 +1,7 @@
-import { GetServerSideProps } from 'next';
+import type { GetServerSideProps, GetServerSidePropsContext } from 'next';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
+import Image from 'next/image';
 
 interface Studio {
   id: number;
@@ -16,7 +17,9 @@ interface Studio {
   logo_url?: string;
 }
 
-export const getServerSideProps: GetServerSideProps = async ({ params }) => {
+export const getServerSideProps: GetServerSideProps<{ studio: Studio }> = async (
+  { params }: GetServerSidePropsContext
+) => {
   const area = params?.area as string;
   const company = params?.company as string;
 
@@ -31,11 +34,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
     return { notFound: true };
   }
 
-  return {
-    props: {
-      studio: studios[0],
-    },
-  };
+  return { props: { studio: studios[0] as Studio } };
 };
 
 export default function StudioPage({ studio }: { studio: Studio }) {
@@ -44,10 +43,15 @@ export default function StudioPage({ studio }: { studio: Studio }) {
       <div className="studio-card">
         <h1 className="studio-name">{studio.name}</h1>
 
-        <img
+        <Image
           src={studio.logo_url || '/default-logo.jpg'}
           alt={`${studio.name} logo`}
+          width={240}
+          height={240}
+          sizes="240px"
           className="studio-logo"
+          // allows arbitrary external logo hosts without configuring next.config.js
+          unoptimized={Boolean(studio.logo_url && studio.logo_url.startsWith('http'))}
         />
 
         {studio.address && (

@@ -5,10 +5,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "npm run sitemap && next build",
+    "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "sitemap": "node --loader ts-node/esm scripts/generate-sitemap.ts"
+    "lint": "next lint"
   },
   "dependencies": {
     "@react-email/components": "^0.3.3",
@@ -27,7 +26,6 @@
     "remark-html": "^16.0.1",
     "resend": "^4.7.0",
     "sass": "^1.89.2",
-    "sitemap": "^8.0.0",
     "swr": "^2.3.4"
   },
   "devDependencies": {

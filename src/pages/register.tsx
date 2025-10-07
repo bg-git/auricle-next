@@ -49,7 +49,7 @@ export default function Register() {
       <div className="register-container">
         <div className="register-info">
           <h1>REGISTER FREE</h1>
-          <p>B2B Business Account</p>
+          
         </div>
 
         <form className="register-form" onSubmit={handleSubmit}>

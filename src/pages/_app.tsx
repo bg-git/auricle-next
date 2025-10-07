@@ -1,4 +1,4 @@
-import App, { type AppContext, type AppProps } from 'next/app';
+import type { AppProps } from 'next/app';
 import Head from 'next/head';
 import dynamic from 'next/dynamic';
 
@@ -39,6 +39,9 @@ const ChatDrawer = dynamic(() => import('@/components/ChatDrawer'), { ssr: false
 interface MyAppProps extends AppProps {
   pageProps: {
     customer?: ShopifyCustomer | null;
+    meta?: {
+ noindex?: boolean;
+};
     [key: string]: unknown;
   };
 }
@@ -61,6 +64,12 @@ export default function MyApp({ Component, pageProps }: MyAppProps) {
                 <link rel="manifest" href="/site.webmanifest" />
                 <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#181818" />
                 <meta name="msapplication-TileColor" content="#ffffff" />
+                {pageProps.meta?.noindex && (
+                 <>
+                    <meta name="robots" content="noindex,nofollow" />
+                    <meta name="googlebot" content="noindex,nofollow" />
+                  </>
+                )}
               </Head>
               <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100dvh' }}>
                 <AccountCompletionBanner />
@@ -80,18 +89,4 @@ export default function MyApp({ Component, pageProps }: MyAppProps) {
       </AuthProvider>
     </ToastProvider>
   );
-}
-
-MyApp.getInitialProps = async (appContext: AppContext) => {
-  const appProps = await App.getInitialProps(appContext)
-  const customerHeader = appContext.ctx.req?.headers['x-customer']
-  if (customerHeader && typeof customerHeader === 'string') {
-    try {
-      appProps.pageProps = appProps.pageProps || {}
-      appProps.pageProps.customer = JSON.parse(customerHeader)
-    } catch {
-      // ignore parse errors
-    }
-  }
-  return appProps
 }

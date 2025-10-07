@@ -40,17 +40,21 @@ export interface ShopifyCustomer {
   firstName?: string;
   lastName?: string;
   tags?: string[];
+  approved?: boolean;
   [key: string]: unknown;
 }
 
 interface AuthContextType {
   isAuthenticated: boolean;
   user: ShopifyCustomer | null;
+  isApproved: boolean;
+  authReady: boolean;                                 // ← add this
   signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   signOut: () => void;
   loading: boolean;
   refreshUser: () => Promise<void>;
 }
+
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -68,8 +72,10 @@ function getInitialAuth(initialUser?: ShopifyCustomer | null) {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
-        return { user: JSON.parse(stored) as ShopifyCustomer, isAuthenticated: true };
-      }
+  // Use cached user for UI, but don't trust it for auth.
+  return { user: JSON.parse(stored) as ShopifyCustomer, isAuthenticated: false };
+}
+
     } catch {
       // ignore parse errors
     }
@@ -92,55 +98,66 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
   const [user, setUser] = useState<ShopifyCustomer | null>(initialStateUser);
   const [isAuthenticated, setIsAuthenticated] = useState(initialAuth);
   const [loading] = useState(false);
+  const [authReady, setAuthReady] = useState(false);
   const router = useRouter();
 
+const wholesaleTagEnv = (process.env.NEXT_PUBLIC_WHOLESALE_TAG || 'Approved').toLowerCase();
+
+const isApproved =
+  authReady &&                      // ← require hydration
+  isAuthenticated &&
+  (
+    user?.approved === true ||
+    (user?.tags ?? []).some(t => (t || '').toLowerCase() === wholesaleTagEnv)
+  );
+
+
+
+
+
   const verifySession = async (): Promise<boolean> => {
-    const hasCookie = document.cookie
-      .split('; ')
-      .some((cookie) => cookie.startsWith(`${COOKIE_NAME}=`));
+  const hasCookie = document.cookie.split('; ').some((c) => c.startsWith(`${COOKIE_NAME}=`));
+  if (!hasCookie) {
+    setUser(null);
+    setIsAuthenticated(false);
+    if (typeof window !== 'undefined') localStorage.removeItem(STORAGE_KEY);
+    setAuthReady(true);
+    return false;
+  }
 
-    if (!hasCookie) {
-      setUser(null);
-      setIsAuthenticated(false);
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem(STORAGE_KEY);
-      }
-      return false;
-    }
+  try {
+    const res = await fetch('/api/shopify/verify-customer', {
+   method: 'POST',
+   headers: { 'Content-Type': 'application/json' },
+   credentials: 'include',
+ });
+ if (!res.ok) {
+   setUser(null);
+   setIsAuthenticated(false);
+   if (typeof window !== 'undefined') localStorage.removeItem(STORAGE_KEY);
+   setAuthReady(true);
+   return false;
+ }
+ const { customer } = await res.json(); // returns tags + approved
+ setUser(customer ?? null);
+ setIsAuthenticated(Boolean(customer));
+ if (typeof window !== 'undefined' && customer) {
+   localStorage.setItem(STORAGE_KEY, JSON.stringify(customer));
+ } else {
+   localStorage.removeItem(STORAGE_KEY);
+ }
+ setAuthReady(true);
+ return Boolean(customer);
+  } catch (err) {
+    console.error('Auth check failed:', err);
+    setUser(null);
+    setIsAuthenticated(false);
+    if (typeof window !== 'undefined') localStorage.removeItem(STORAGE_KEY);
+    setAuthReady(true);
+    return false;
+  }
+};
 
-    try {
-      const res = await fetch('/api/shopify/verify-customer', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        setUser(data.customer);
-        setIsAuthenticated(true);
-        if (typeof window !== 'undefined') {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(data.customer));
-        }
-        return true;
-      } else {
-        setUser(null);
-        setIsAuthenticated(false);
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem(STORAGE_KEY);
-        }
-        return false;
-      }
-    } catch (error) {
-      console.error('Auth check failed:', error);
-      setUser(null);
-      setIsAuthenticated(false);
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem(STORAGE_KEY);
-      }
-      return false;
-    }
-  };
 
   useEffect(() => {
     verifySession();
@@ -275,8 +292,10 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
 
   return (
     <AuthContext.Provider
-      value={{ isAuthenticated, user, signIn, signOut, loading, refreshUser }}
-    >
+  value={{ isAuthenticated, user, isApproved, authReady, signIn, signOut, loading, refreshUser }}
+>
+
+
       {children}
     </AuthContext.Provider>
   );

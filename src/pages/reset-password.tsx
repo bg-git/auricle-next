@@ -2,10 +2,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 
 export default function ResetPassword() {
-  const [form, setForm] = useState({
-    password: '',
-    confirmPassword: '',
-  });
+  const [form, setForm] = useState({ password: '', confirmPassword: '' });
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
   const [resetToken, setResetToken] = useState<string | null>(null);
@@ -13,17 +10,16 @@ export default function ResetPassword() {
   const router = useRouter();
 
   useEffect(() => {
+    // Ensure router is ready so query is stable
+    if (!router.isReady) return;
+
     const { id, token } = router.query;
-    if (id && typeof id === 'string') {
-      setUserId(id);
-    }
-    if (token && typeof token === 'string') {
-      setResetToken(token);
-    }
-  }, [router.query]);
+    if (typeof id === 'string') setUserId(id);
+    if (typeof token === 'string') setResetToken(token);
+  }, [router.isReady, router.query]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -59,8 +55,9 @@ export default function ResetPassword() {
           password: form.password,
         }),
       });
-      const data = await res.json();
-      
+
+      const data: { success?: boolean; error?: string } = await res.json();
+
       if (!res.ok || !data.success) {
         setStatus('error');
         setErrorMessage(data.error || 'Failed to reset password');
@@ -70,10 +67,10 @@ export default function ResetPassword() {
           router.push('/sign-in');
         }, 1000);
       }
-    } catch (err: any) {
-      setStatus('error');
-      setErrorMessage('Network error. Please try again.');
-    }
+    } catch {
+  setStatus('error');
+  setErrorMessage('Network error. Please try again.');
+}
   };
 
   if (!resetToken || !userId) {
@@ -88,10 +85,7 @@ export default function ResetPassword() {
             <p style={{ color: 'red', marginBottom: '20px' }}>
               This password reset link is invalid.
             </p>
-            <button
-              className="primary-btn"
-              onClick={() => router.push('/sign-in')}
-            >
+            <button className="primary-btn" onClick={() => router.push('/sign-in')}>
               Back to Sign In
             </button>
           </div>
@@ -140,13 +134,11 @@ export default function ResetPassword() {
           </button>
 
           {status === 'success' && (
-            <p className="success-msg">
-              Password reset successfully! Redirecting to sign-in page...
-            </p>
+            <p className="success-msg">Password reset successfully! Redirecting to sign-in page...</p>
           )}
           {status === 'error' && <p className="error-msg">{errorMessage}</p>}
         </form>
       </div>
     </main>
   );
-} 
+}

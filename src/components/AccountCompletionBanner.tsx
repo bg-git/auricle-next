@@ -1,14 +1,18 @@
 import Link from 'next/link';
 import { useAccountValidationContext } from '@/context/AccountValidationContext';
+import { useAuth } from '@/context/AuthContext';
 
 export default function AccountCompletionBanner() {
-  try {
-    const { isAccountComplete, isLoading } = useAccountValidationContext();
+  // ❗ Call hooks unconditionally at the top level
+  const { isAccountComplete, isLoading } = useAccountValidationContext();
+  const { isApproved, authReady } = useAuth();
 
-  // Don't show banner if loading or account is complete
-  if (isLoading || isAccountComplete) {
-    return null;
-  }
+  // Only show to wholesale users, and only after auth is hydrated
+  if (!authReady) return null;
+  if (!isApproved) return null;
+
+  // Don’t show if still loading or already complete
+  if (isLoading || isAccountComplete) return null;
 
   return (
     <div
@@ -24,23 +28,18 @@ export default function AccountCompletionBanner() {
       }}
     >
       <span>
-        You must complete your account setup.{' '}
-        <Link 
-          href="/account" 
-          style={{ 
-            color: 'white', 
+        Complete your trade account setup.{' '}
+        <Link
+          href="/account"
+          style={{
+            color: 'white',
             textDecoration: 'underline',
-            fontWeight: 'bold'
+            fontWeight: 'bold',
           }}
         >
-          Complete setup here
+          Click Here
         </Link>
       </span>
     </div>
   );
-  } catch (error) {
-    // Silently fail if context is not available - don't break the page
-    console.warn('AccountCompletionBanner failed to render:', error);
-    return null;
-  }
 }

@@ -11,18 +11,24 @@ type ProductLite = {
   sku: string;
 };
 
+type SearchApiResponse = {
+  products?: ProductLite[];
+  error?: string;
+};
+
 export default function SearchPage() {
   const router = useRouter();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<ProductLite[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Load initial query from URL
+  // Load initial query from URL (only once router is ready)
   useEffect(() => {
+    if (!router.isReady) return;
     const initial = typeof router.query.q === 'string' ? router.query.q : '';
     setQuery(initial);
     if (initial) setLoading(true);
-  }, [router.query.q]);
+  }, [router.isReady, router.query.q]);
 
   // Fetch results when query changes
   useEffect(() => {
@@ -34,21 +40,27 @@ export default function SearchPage() {
     }
 
     const controller = new AbortController();
+
     const fetchResults = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/search-products?q=${encodeURIComponent(q)}`, { signal: controller.signal });
+        const res = await fetch(
+          `/api/search-products?q=${encodeURIComponent(q)}`,
+          { signal: controller.signal }
+        );
         if (res.ok) {
-          const json = await res.json();
-          setResults(json.products || []);
+          const json: SearchApiResponse = await res.json();
+          setResults(json.products ?? []);
         } else {
           console.error('Failed to search products');
           setResults([]);
         }
-      } catch (err: any) {
-        if (err.name !== 'AbortError') console.error('Search error:', err);
-      }
-      finally {
+      } catch (e: unknown) {
+        // Ignore abort errors, log others
+        if (!(e instanceof DOMException && e.name === 'AbortError')) {
+          console.error('Search error:', e);
+        }
+      } finally {
         setLoading(false);
       }
     };
@@ -78,95 +90,96 @@ export default function SearchPage() {
 
   return (
     <div className="page-content">
+      <div
+        style={{
+          padding: '32px 16px',
+          maxWidth: '870px',
+          margin: '0 auto',
+          minHeight: '600px',
+        }}
+      >
+        <h1 style={{ fontSize: '24px', marginBottom: '16px' }}>SEARCH</h1>
 
-    <div style={{
-  padding: '32px 16px',
-  maxWidth: '870px',
-  margin: '0 auto',
-  minHeight: '600px' 
-}}>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px' }}>
+          <input
+            type="text"
+            placeholder="Search by product name or SKU..."
+            value={query}
+            onChange={handleInputChange}
+            style={{
+              width: '100%',
+              maxWidth: '870px',
+              padding: '12px',
+              fontSize: '16px',
+              border: '1px solid #181818',
+              borderRadius: '0',
+              outline: 'none',
+            }}
+          />
+        </div>
 
-      <h1 style={{ fontSize: '24px', marginBottom: '16px' }}>SEARCH</h1>
+        {query && (
+          <>
+            {loading ? (
+              <p style={{ marginTop: '8px' }}>Searching...</p>
+            ) : results.length === 0 ? (
+              <p style={{ marginTop: '8px' }}>No results found.</p>
+            ) : (
+              <p style={{ marginTop: '8px' }}>Matching products: {results.length}</p>
+            )}
+          </>
+        )}
 
-      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px' }}>
-        <input
-          type="text"
-          placeholder="Search by product name or SKU..."
-          value={query}
-          onChange={handleInputChange}
-          style={{
-            width: '100%',
-            maxWidth: '870px',
-            padding: '12px',
-            fontSize: '16px',
-            border: '1px solid #181818',
-            borderRadius: '0',
-            outline: 'none',
-          }}
-        />
+        <div className="search-results">
+          {results.map((product) => (
+            <Link
+              key={product.id}
+              href={`/product/${product.handle}`}
+              prefetch
+              style={{ textDecoration: 'none', color: '#181818' }}
+            >
+              <div>
+                {product.image ? (
+                  <Image
+                    src={product.image}
+                    alt={product.title}
+                    width={400}
+                    height={500}
+                    sizes="(max-width: 870px) 100vw, 400px"
+                    style={{
+                      width: '100%',
+                      height: 'auto',
+                      objectFit: 'cover',
+                      aspectRatio: '4 / 5',
+                      border: '1px solid #ececec',
+                    }}
+                    // remove this if your image host is whitelisted in next.config.js
+                    unoptimized
+                  />
+                ) : (
+                  <div
+                    style={{
+                      width: '100%',
+                      aspectRatio: '4 / 5',
+                      background: '#f2f2f2',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '12px',
+                      color: '#999',
+                      border: '1px solid #ececec',
+                    }}
+                  >
+                    No image
+                  </div>
+                )}
+                <div style={{ marginTop: '8px', fontSize: '14px' }}>{product.title}</div>
+                <div style={{ fontSize: '12px', color: '#666' }}>{product.sku}</div>
+              </div>
+            </Link>
+          ))}
+        </div>
       </div>
-
-      {query && (
-        <>
-          {loading ? (
-            <p style={{ marginTop: '8px' }}>Searching...</p>
-          ) : results.length === 0 ? (
-            <p style={{ marginTop: '8px' }}>No results found.</p>
-          ) : (
-            <p style={{ marginTop: '8px' }}>
-              Matching products: {results.length}
-            </p>
-          )}
-        </>
-      )}
-
-      <div className="search-results">
-        {results.map((product) => (
-          <Link
-            key={product.id}
-            href={`/product/${product.handle}`}
-            prefetch={true}
-            style={{ textDecoration: 'none', color: '#181818' }}
-          >
-            <div>
-              {product.image ? (
-                <Image
-                  src={product.image}
-                  alt={product.title}
-                  width={400}
-                  height={500}
-                  style={{
-                    width: '100%',
-                    height: 'auto',
-                    objectFit: 'cover',
-                    aspectRatio: '4 / 5',
-                    border: '1px solid #ececec',
-                  }}
-                />
-              ) : (
-                <div
-                  style={{
-                    width: '100%',
-                    aspectRatio: '4 / 5',
-                    background: '#f2f2f2',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '12px',
-                    color: '#999',
-                    border: '1px solid #ececec',
-                  }}
-                >
-                  No image
-                </div>
-              )}
-              <div style={{ marginTop: '8px', fontSize: '14px' }}>{product.title}</div>
-              <div style={{ fontSize: '12px', color: '#666' }}>{product.sku}</div>
-            </div>
-          </Link>
-        ))}
-      </div>
-    </div>
     </div>
   );
 }

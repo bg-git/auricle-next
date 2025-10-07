@@ -1,6 +1,7 @@
-import { GetServerSideProps } from 'next';
+import type { GetServerSideProps, GetServerSidePropsContext } from 'next';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface Studio {
   id: number;
@@ -12,7 +13,9 @@ interface Studio {
   logo_url?: string;
 }
 
-export const getServerSideProps: GetServerSideProps = async ({ params }) => {
+export const getServerSideProps: GetServerSideProps<{ studios: Studio[] }> = async (
+  { params }: GetServerSidePropsContext
+) => {
   const area = params?.area as string;
 
   const { data: studios } = await supabase
@@ -21,9 +24,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
     .eq('area_slug', area);
 
   return {
-    props: {
-      studios: studios ?? [],
-    },
+    props: { studios: studios ?? [] },
   };
 };
 
@@ -43,10 +44,15 @@ export default function AreaPage({ studios }: { studios: Studio[] }) {
               <Link href={`/piercing/${studio.area_slug}/${studio.slug}`}>
                 <div>
                   {studio.logo_url && (
-                    <img
+                    <Image
                       src={studio.logo_url}
                       alt={`${studio.name} logo`}
+                      width={160}
+                      height={160}
+                      sizes="160px"
                       className="studio-logo"
+                      // Allows any external logo URLs without configuring next.config images
+                      unoptimized
                     />
                   )}
                   <h2>{studio.name}</h2>

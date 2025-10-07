@@ -4,6 +4,42 @@ import { useAuth } from "@/context/AuthContext";
 import { useAccountValidationContext } from "@/context/AccountValidationContext";
 import { useRouter } from "next/router";
 
+type MoneyV2 = { amount: string; currencyCode: string };
+
+type OrderLineItemEdge = {
+  node: {
+    title: string;
+    quantity: number;
+    originalTotalPrice?: MoneyV2 | null;
+  };
+};
+
+type Address = {
+  id?: string;
+  firstName?: string;
+  lastName?: string;
+  company?: string;
+  address1?: string;
+  address2?: string;
+  city?: string;
+  province?: string;
+  country?: string;
+  zip?: string;
+  phone?: string;
+};
+
+type CustomerMinimal = {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  website?: string;
+  social?: string;
+  addresses?: {
+    edges?: { node: Address }[];
+  };
+};
+
 const tabs = [
   "Orders",
   "Billing Address",
@@ -15,17 +51,15 @@ const tabs = [
 export default function AccountPage() {
   const [activeTab, setActiveTab] = useState("Orders");
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
-  const { isAuthenticated, user, loading } = useAuth();
+  const { isAuthenticated, user, loading, isApproved, authReady } = useAuth();
+
+const shouldValidate = authReady && isApproved;
+
   const router = useRouter();
   
   // Safely get validation context - handle case where it might not be available
-  let refreshValidation = () => {};
-  try {
-    const validationContext = useAccountValidationContext();
-    refreshValidation = validationContext.refreshValidation;
-  } catch (error) {
-    console.warn('AccountValidationContext not available:', error);
-  }
+  const { refreshValidation } = useAccountValidationContext();
+
 
   const fetcher = (url: string) =>
     fetch(url, { 
@@ -74,14 +108,22 @@ export default function AccountPage() {
   }
 
   if (dataError) {
-    return (
-      <main className="account-page">
-        <div style={{ textAlign: "center", padding: "50px", color: "red" }}>
-          <p>Error: {dataError}</p>
-        </div>
-      </main>
-    );
-  }
+  const msg =
+    dataError instanceof Error
+      ? dataError.message
+      : typeof dataError === 'string'
+      ? dataError
+      : JSON.stringify(dataError);
+
+  return (
+    <main className="account-page">
+      <div style={{ textAlign: "center", padding: "50px", color: "red" }}>
+        <p>Error: {msg}</p>
+      </div>
+    </main>
+  );
+}
+
 
   const toggleOrder = (orderId: string) => {
     setExpandedOrder(expandedOrder === orderId ? null : orderId);
@@ -89,7 +131,9 @@ export default function AccountPage() {
 
   // Function to check if a tab has missing mandatory fields
   const hasTabValidationErrors = (tabName: string) => {
-    if (!customer) return false;
+  if (!shouldValidate) return false; // ← retail users never see warnings
+  if (!customer) return false;
+
     
     switch (tabName) {
       case "Profile":
@@ -148,7 +192,7 @@ export default function AccountPage() {
               {orders.length === 0 ? (
                 <div style={{ textAlign: "center", padding: "30px" }}>No orders found.</div>
               ) : (
-                orders.map((order, index) => (
+                orders.map((order) => (
                   <div key={order.id} className="order-item">
                     <div className="order-header">
                       <div className="order-id">Order #{order.orderNumber || order.name}</div>
@@ -172,7 +216,7 @@ export default function AccountPage() {
                           <strong>Items in this order:</strong>
                         </p>
                         {order.lineItems && order.lineItems.edges.length > 0 ? (
-                          order.lineItems.edges.map((itemEdge: any, idx: number) => (
+                          order.lineItems.edges.map((itemEdge: OrderLineItemEdge, idx: number) => (
                             <div className="order-product-row" key={idx}>
                               <span className="product-title">{itemEdge.node.title}</span>
                               <span className="product-qty">×{itemEdge.node.quantity}</span>
@@ -268,7 +312,16 @@ export default function AccountPage() {
   );
 }
 
-function ProfileForm({ customer, refreshCustomer }: { customer: any; refreshCustomer: () => Promise<any> }) {
+function ProfileForm({
+  customer,
+  refreshCustomer,
+}: {
+  customer: CustomerMinimal;
+  refreshCustomer: () => Promise<{ customer?: CustomerMinimal }>;
+}) {
+
+  const { isApproved, authReady } = useAuth();
+const shouldValidate = authReady && isApproved;
   
   // Safely get validation context - handle case where it might not be available
   let refreshValidation = () => {};
@@ -289,7 +342,7 @@ function ProfileForm({ customer, refreshCustomer }: { customer: any; refreshCust
 
   // Add a prop or callback to update parent customer state
   const [refreshing, setRefreshing] = useState(false);
-  const updateCustomerState = (newCustomer: any) => {
+  const updateCustomerState = (newCustomer: CustomerMinimal) => {
     setFirstName(newCustomer?.firstName || "");
     setLastName(newCustomer?.lastName || "");
     setPhone(newCustomer?.phone || "");
@@ -298,6 +351,7 @@ function ProfileForm({ customer, refreshCustomer }: { customer: any; refreshCust
   };
 
   const validateMandatoryFields = () => {
+    if (!shouldValidate) return true; 
     const errors: {[key: string]: boolean} = {};
     
     if (!firstName.trim()) errors.firstName = true;
@@ -316,6 +370,7 @@ function ProfileForm({ customer, refreshCustomer }: { customer: any; refreshCust
 
   // Helper function to check if a field should show red border (for real-time validation)
   const shouldShowFieldError = (field: string) => {
+    if (!shouldValidate) return false;
     switch (field) {
       case 'firstName':
         return !firstName.trim();
@@ -361,7 +416,8 @@ const fetchLatestCustomer = async () => {
     
     setLoading(true);
       try {
-        const payload: any = { firstName, lastName, phone, website, social };
+        const payload = { firstName, lastName, phone, website, social };
+
         const res = await fetch("/api/shopify/update-customer", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -376,9 +432,11 @@ const fetchLatestCustomer = async () => {
           await fetchLatestCustomer();
           refreshValidation(); // Refresh site-wide banner status
         }
-    } catch (err: any) {
-      setError(err.message || "Unknown error");
-    } finally {
+    } catch (err: unknown) {
+  const msg = err instanceof Error ? err.message : 'Unknown error';
+  setError(msg);
+}
+ finally {
       setLoading(false);
     }
   };
@@ -523,9 +581,11 @@ function SecurityForm() {
           signOut();
         }, 2000);
       }
-    } catch (err: any) {
-      setError(err.message || "Unknown error");
-    } finally {
+    } catch (err: unknown) {
+  const msg = err instanceof Error ? err.message : "Unknown error";
+  setError(msg);
+}
+ finally {
       setLoading(false);
     }
   };
@@ -562,11 +622,18 @@ function SecurityForm() {
   );
 }
 
-function AddressForm({ type, address, onAddressUpdated }: {
+function AddressForm({
+  type,
+  address,
+  onAddressUpdated,
+}: {
   type: "edit";
-  address: any;
-  onAddressUpdated: () => Promise<any>;
+  address: Address;
+  onAddressUpdated: () => Promise<void>;
 }) {
+
+  const { isApproved, authReady } = useAuth();
+const shouldValidate = authReady && isApproved;
   const [form, setForm] = useState({
     firstName: address?.firstName || "",
     lastName: address?.lastName || "",
@@ -582,7 +649,7 @@ function AddressForm({ type, address, onAddressUpdated }: {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [validationErrors, setValidationErrors] = useState<{[key: string]: boolean}>({});
+  
 
   useEffect(() => {
     setForm({
@@ -604,22 +671,23 @@ function AddressForm({ type, address, onAddressUpdated }: {
   };
 
   const validateMandatoryAddressFields = () => {
-    const errors: {[key: string]: boolean} = {};
-    
-    if (!form.firstName.trim()) errors.firstName = true;
-    if (!form.lastName.trim()) errors.lastName = true;
-    if (!form.address1.trim()) errors.address1 = true;
-    if (!form.city.trim()) errors.city = true;
-    if (!form.zip.trim()) errors.zip = true;
-    if (!form.country.trim()) errors.country = true;
-    if (!form.phone.trim()) errors.phone = true;
-    
-    setValidationErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
+  if (!shouldValidate) return true;
+  const errors: {[key: string]: boolean} = {};
+  
+  if (!form.firstName.trim()) errors.firstName = true;
+  if (!form.lastName.trim()) errors.lastName = true;
+  if (!form.address1.trim()) errors.address1 = true;
+  if (!form.city.trim()) errors.city = true;
+  if (!form.zip.trim()) errors.zip = true;
+  if (!form.country.trim()) errors.country = true;
+  if (!form.phone.trim()) errors.phone = true;
+  
+  return Object.keys(errors).length === 0;
+};
 
   // Helper function to check if a field should show red border (for real-time validation)
   const shouldShowAddressFieldError = (field: string) => {
+    if (!shouldValidate) return false;
     switch (field) {
       case 'firstName':
         return !form.firstName.trim();
@@ -653,21 +721,25 @@ function AddressForm({ type, address, onAddressUpdated }: {
     
     setLoading(true);
       try {
-        const payload: any = {
-          address: {
-            firstName: form.firstName,
-            lastName: form.lastName,
-            company: form.company,
-            address1: form.address1,
-            address2: form.address2,
-          city: form.city,
-          province: form.province,
-          country: form.country,
-          zip: form.zip,
-          phone: form.phone,
-        },
-      };
-        if (address?.id) payload.addressId = address.id;
+        const payload: { address: Address; addressId?: string } = {
+  address: {
+    firstName: form.firstName,
+    lastName: form.lastName,
+    company: form.company,
+    address1: form.address1,
+    address2: form.address2,
+    city: form.city,
+    province: form.province,
+    country: form.country,
+    zip: form.zip,
+    phone: form.phone,
+  },
+};
+
+if (address?.id) {
+  payload.addressId = String(address.id); // ensure string
+}
+
         const res = await fetch("/api/shopify/update-address", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -680,9 +752,11 @@ function AddressForm({ type, address, onAddressUpdated }: {
         setSuccess("Address updated successfully.");
         await onAddressUpdated();
       }
-    } catch (err: any) {
-      setError(err.message || "Unknown error");
-    } finally {
+    } catch (err: unknown) {
+  const msg = err instanceof Error ? err.message : 'Unknown error';
+  setError(msg);
+}
+ finally {
       setLoading(false);
     }
   };

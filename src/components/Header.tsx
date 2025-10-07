@@ -5,12 +5,11 @@ import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { useFavourites } from '@/context/FavouritesContext';
 
-
 function Header() {
   const { openDrawer, cartItems } = useCart();
-  const { isAuthenticated, user, signOut, loading } = useAuth();
+  const { isAuthenticated, user, signOut, loading, isApproved } = useAuth(); // ⬅ added isApproved
   const itemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
-const { favourites } = useFavourites();
+  const { favourites } = useFavourites();
 
   return (
     <>
@@ -32,47 +31,64 @@ const { favourites } = useFavourites();
             margin: '0 auto',
             padding: '0 16px',
             display: 'flex',
-            justifyContent: 'flex-end',
+            justifyContent: 'space-between', // ⬅ left & right sections
             alignItems: 'center',
             fontSize: '12px',
             color: '#fff',
           }}
         >
-          {!loading && (
-            isAuthenticated ? (
-              <>
-                <Link href="/account" style={{ color: '#fff', textDecoration: 'none', marginRight: '12px' }}>
-                  {user?.firstName ? 'My Account' : 'My Account'}
-
-
-                </Link>
-                <span style={{ marginRight: '12px' }}>|</span>
-                <button 
-                  onClick={signOut}
-                  style={{ 
-                    background: 'none', 
-                    border: 'none', 
-                    color: '#fff', 
-                    cursor: 'pointer',
-                    fontSize: '12px',
-                    padding: 0
-                  }}
+          {/* LEFT: Wholesale Register (only if not approved) */}
+          <div>
+            {!loading && (
+              (!isAuthenticated || (isAuthenticated && !isApproved)) && (
+                <a
+                  href="https://form.jotform.com/252673512499062"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: '#fff', textDecoration: 'none' }}
                 >
-                  Sign Out
-                </button>
-              </>
-            ) : (
-              <>
-                <Link href="/register" style={{ color: '#fff', textDecoration: 'none', marginRight: '12px' }}>
-                  Join Us
-                </Link>
-                <span style={{ marginRight: '12px' }}>|</span>
-                <Link href="/sign-in" style={{ color: '#fff', textDecoration: 'none' }}>
-                  Sign In
-                </Link>
-              </>
-            )
-          )}
+                  Wholesale Register
+                </a>
+              )
+            )}
+          </div>
+
+          {/* RIGHT: account / auth links */}
+          <div>
+            {!loading && (
+              isAuthenticated ? (
+                <>
+                  <Link href="/account" style={{ color: '#fff', textDecoration: 'none', marginRight: '12px' }}>
+                    {user?.firstName ? 'My Account' : 'My Account'}
+                  </Link>
+                  <span style={{ marginRight: '12px' }}>|</span>
+                  <button
+                    onClick={signOut}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: '#fff',
+                      cursor: 'pointer',
+                      fontSize: '12px',
+                      padding: 0
+                    }}
+                  >
+                    Sign Out
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link href="/register" style={{ color: '#fff', textDecoration: 'none', marginRight: '12px' }}>
+                    Join Us
+                  </Link>
+                  <span style={{ marginRight: '12px' }}>|</span>
+                  <Link href="/sign-in" style={{ color: '#fff', textDecoration: 'none' }}>
+                    Sign In
+                  </Link>
+                </>
+              )
+            )}
+          </div>
         </div>
       </header>
 
@@ -111,47 +127,46 @@ const { favourites } = useFavourites();
           </Link>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-  <Link
-    href="/favourites"
-    aria-label="My Favourites"
-    style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
-  >
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      fill={favourites.length > 0 ? 'red' : 'none'}
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      strokeWidth="2"
-      width="24"
-      height="24"
-      style={{ display: 'block' }}
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M12 21c-1.1-1.04-5.55-5.08-7.62-7.51C2.64 11.21 2 9.66 2 8.25 2 5.4 4.4 3 7.25 3c1.49 0 2.94.68 3.75 1.75A5.48 5.48 0 0116.75 3C19.6 3 22 5.4 22 8.25c0 1.41-.64 2.96-2.38 5.24C17.55 15.92 13.1 19.96 12 21z"
-      />
-    </svg>
-  </Link>
+            <Link
+              href="/favourites"
+              aria-label="My Favourites"
+              style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill={favourites.length > 0 ? 'red' : 'none'}
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth="2"
+                width="24"
+                height="24"
+                style={{ display: 'block' }}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 21c-1.1-1.04-5.55-5.08-7.62-7.51C2.64 11.21 2 9.66 2 8.25 2 5.4 4.4 3 7.25 3c1.49 0 2.94.68 3.75 1.75A5.48 5.48 0 0116.75 3C19.6 3 22 5.4 22 8.25c0 1.41-.64 2.96-2.38 5.24C17.55 15.92 13.1 19.96 12 21z"
+                />
+              </svg>
+            </Link>
 
-  <button
-    onClick={openDrawer}
-    style={{
-      background: 'none',
-      border: 'none',
-      padding: 0,
-      margin: 0,
-      fontSize: '14px',
-      fontWeight: 500,
-      color: '#181818',
-      cursor: 'pointer',
-      textDecoration: 'none',
-    }}
-  >
-    My Bag{itemCount > 0 ? ` (${itemCount})` : ''}
-  </button>
-</div>
-
+            <button
+              onClick={openDrawer}
+              style={{
+                background: 'none',
+                border: 'none',
+                padding: 0,
+                margin: 0,
+                fontSize: '14px',
+                fontWeight: 500,
+                color: '#181818',
+                cursor: 'pointer',
+                textDecoration: 'none',
+              }}
+            >
+              My Bag{itemCount > 0 ? ` (${itemCount})` : ''}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -174,28 +189,26 @@ const { favourites } = useFavourites();
           }}
         >
           {[
-  { label: 'ENDS & GEMS', href: '/collection/ends-gems' },
-  { label: 'CHAINS & CHARMS', href: '/collection/chains-charms' },
-  { label: 'RINGS & HOOPS', href: '/collection/rings-hoops' },
-  { label: 'SEARCH', href: '/search' },
-
-].map(({ label, href }) => (
-  <Link
-    key={label}
-    href={href}
-    style={{
-      padding: '16px 12px',
-      fontSize: '16px',
-      color: '#181818',
-      fontWeight: '600',
-      textDecoration: 'none',
-      flexShrink: 0,
-    }}
-  >
-    {label}
-  </Link>
-))}
-
+            { label: 'ENDS & GEMS', href: '/collection/ends-gems' },
+            { label: 'CHAINS & CHARMS', href: '/collection/chains-charms' },
+            { label: 'RINGS & HOOPS', href: '/collection/rings-hoops' },
+            { label: 'SEARCH', href: '/search' },
+          ].map(({ label, href }) => (
+            <Link
+              key={label}
+              href={href}
+              style={{
+                padding: '16px 12px',
+                fontSize: '16px',
+                color: '#181818',
+                fontWeight: '600',
+                textDecoration: 'none',
+                flexShrink: 0,
+              }}
+            >
+              {label}
+            </Link>
+          ))}
         </div>
       </nav>
     </>
@@ -203,4 +216,3 @@ const { favourites } = useFavourites();
 }
 
 export default memo(Header);
-

@@ -15,25 +15,39 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const query = `
-    query cart($id: ID!) {
-      cart(id: $id) {
-        id
-        status
-        checkoutUrl
-        lines(first: 250) {
-          edges {
-            node {
-              id
-              quantity
-              merchandise {
-                ... on ProductVariant { id }
+  query cart($id: ID!) {
+    cart(id: $id) {
+      id
+      checkoutUrl
+      lines(first: 250) {
+        edges {
+          node {
+            id
+            quantity
+            merchandise {
+              ... on ProductVariant {
+                id
+                title                          # variant title
+                selectedOptions { name value } # variant options
+                image { url }                  # variant image
+                product {
+                  title                        # product title
+                  handle                       # product handle (for links/favourites)
+                  featuredImage { url }        # fallback image
+                }
               }
+            }
+            cost {
+              amountPerQuantity { amount }     # unit price
+              totalAmount { amount }           # line total (optional)
             }
           }
         }
       }
     }
-  `;
+  }
+`;
+
 
   try {
     const response = await fetch(URL, {
