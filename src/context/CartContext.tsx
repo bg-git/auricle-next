@@ -218,8 +218,16 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       console.error('❌ Invalid variant IDs found:', invalidItems);
       return;
     }
-    
-    if (items.length === 0) {
+
+    const validItems = items.filter((item) => item.quantity > 0);
+
+    if (validItems.length !== items.length) {
+      if (current !== syncVersion.current) return;
+      setCartItems(validItems);
+      latestItemsRef.current = validItems;
+    }
+
+    if (validItems.length === 0) {
       if (current !== syncVersion.current) return;
       setCheckoutUrl(null);
       setCheckoutId(null);
@@ -232,7 +240,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         const res = await fetch('/api/create-checkout', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ items }),
+          body: JSON.stringify({ items: validItems }),
           credentials: 'include',
           signal,
         });
@@ -245,7 +253,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         const res = await fetch('/api/update-checkout', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ checkoutId, items }),
+          body: JSON.stringify({ checkoutId, items: validItems }),
           credentials: 'include',
           signal,
         });
