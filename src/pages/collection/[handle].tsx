@@ -6,7 +6,7 @@ import type {
 import { shopifyFetch } from '@/lib/shopify';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import Seo from '@/components/Seo';
 import FavouriteToggle from '@/components/FavouriteToggle';
 
@@ -42,6 +42,20 @@ type Product = {
       };
     }[];
   };
+};
+const FILTER_TTL_MS = 60 * 60 * 1000; // 1 hour
+
+const getFilterStorageKey = (handle: string) =>
+  `auricle_filters_${handle}`;
+
+type SavedFilters = {
+  selectedMetals: string[];
+  selectedFinishes: string[];
+  selectedGemColours: string[];
+  selectedGemTypes: string[];
+  selectedFittings: string[];
+  selectedMetalColours: string[];
+  lastActive: number;
 };
 
 
@@ -104,6 +118,69 @@ export default function CollectionPage({ products, title, seoTitle, seoDescripti
 
   const [showFilters, setShowFilters] = useState(false);
   const [filtersChanged, setFiltersChanged] = useState(false);
+
+    // Restore saved filters (if any) when the page loads
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (!handle) return;
+
+    const key = getFilterStorageKey(handle);
+    const raw = window.localStorage.getItem(key);
+    if (!raw) return;
+
+    try {
+      const saved: SavedFilters = JSON.parse(raw);
+      const now = Date.now();
+
+      if (now - saved.lastActive <= FILTER_TTL_MS) {
+        setSelectedMetals(saved.selectedMetals || []);
+        setSelectedFinishes(saved.selectedFinishes || []);
+        setSelectedGemColours(saved.selectedGemColours || []);
+        setSelectedGemTypes(saved.selectedGemTypes || []);
+        setSelectedFittings(saved.selectedFittings || []);
+        setSelectedMetalColours(saved.selectedMetalColours || []);
+      } else {
+        // Expired – clean up
+        window.localStorage.removeItem(key);
+      }
+    } catch (err) {
+      console.error('Failed to restore collection filters', err);
+      window.localStorage.removeItem(key);
+    }
+  }, [handle]);
+
+    // Persist filters whenever they change
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (!handle) return;
+
+    const key = getFilterStorageKey(handle);
+
+    const payload: SavedFilters = {
+      selectedMetals,
+      selectedFinishes,
+      selectedGemColours,
+      selectedGemTypes,
+      selectedFittings,
+      selectedMetalColours,
+      lastActive: Date.now(),
+    };
+
+    try {
+      window.localStorage.setItem(key, JSON.stringify(payload));
+    } catch (err) {
+      console.error('Failed to save collection filters', err);
+    }
+  }, [
+    handle,
+    selectedMetals,
+    selectedFinishes,
+    selectedGemColours,
+    selectedGemTypes,
+    selectedFittings,
+    selectedMetalColours,
+  ]);
+
 
   const toggle = useCallback(
     (
