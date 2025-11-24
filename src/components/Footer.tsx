@@ -2,13 +2,45 @@ import { useState, memo } from 'react';
 import Link from 'next/link';
 import { useChatDrawer } from '@/context/ChatDrawerContext';
 
+const wholesaleMailto = `mailto:info@auricle.co.uk?subject=${encodeURIComponent(
+  'Wholesale Enquiry'
+)}&body=${encodeURIComponent(
+  `Hey,
+    
+Thank you for your interest in becoming an authorised AURICLE stockist.
+
+To ensure access is reserved exclusively for verified piercing studios and jewellery retailers, please complete the details below. This helps us confirm eligibility and activate your wholesale account as quickly as possible.
+
+First Name = 
+
+Last Name = 
+
+Company Name = 
+
+Email Address = 
+
+Trading Address = 
+
+Website = 
+
+Social Media = 
+
+Phone Number =
+
+Once we’ve confirmed your business details, we’ll respond to this email with your access credentials. Verification is usually completed within one hour.
+
+Best Regards
+Auricle`
+)}`;
+
+
 const sections = [
   {
     title: 'CARE',
     links: [
       { label: 'Contact Us', href: '/contact' },
       { label: 'Sign in', href: '/sign-in' },
-      { label: 'Register', href: '/register' },
+      { label: 'Join Us', href: wholesaleMailto },
     ],
   },
   {
