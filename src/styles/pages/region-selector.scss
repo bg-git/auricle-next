@@ -1,0 +1,171 @@
+/* =========================================
+   REGION SELECTOR PAGE
+   Mobile-first, neutral, AURICLE style
+   ========================================= */
+
+.region-selector {
+  min-height: 100vh;
+  padding: 2.5rem 1.5rem;
+  background: #ffffff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #181818;
+}
+
+.region-selector__panel {
+  width: 100%;
+  max-width: 420px;
+}
+
+/* BRAND / LOGO */
+
+.region-selector__brand {
+  margin-bottom: 2rem;
+}
+
+.region-selector__logo {
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin-bottom: 0.4rem;
+}
+
+.region-selector__welcome {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+/* SECTIONS */
+
+.region-selector__section {
+  margin-bottom: 1.8rem;
+}
+
+.region-selector__label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 0.2rem;
+}
+
+.region-selector__hint-text {
+  font-size: 0.8rem;
+  color: #777;
+  margin-bottom: 0.7rem;
+}
+
+/* FIELDS */
+
+.region-selector__field {
+  position: relative;
+}
+
+.region-selector__select {
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  border-radius: 999px;
+  border: 1px solid #ececec;
+  background: #f9f9f9;
+  padding: 0.65rem 1rem;
+  font-size: 0.9rem;
+  color: #181818;
+
+  outline: none;
+}
+
+.region-selector__select:focus-visible {
+  border-color: #181818;
+}
+
+.region-selector__select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* FOOTER */
+
+.region-selector__footer {
+  font-size: 0.8rem;
+  color: #777;
+}
+
+.region-selector__footer a {
+  color: inherit;
+  text-decoration: underline;
+}
+
+/* DESKTOP */
+
+@media (min-width: 768px) {
+  .region-selector {
+    padding: 3rem;
+  }
+
+  .region-selector__panel {
+    max-width: 460px;
+  }
+
+  .region-selector__welcome {
+    max-width: 360px;
+  }
+}
+/* existing styles... */
+
+/* REMEMBER + CONTINUE ROW */
+
+.region-selector__section--remember {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.region-selector__remember {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: #555;
+}
+
+.region-selector__remember-checkbox {
+  width: 16px;
+  height: 16px;
+  accent-color: #181818; // works in modern browsers
+}
+
+.region-selector__remember-label {
+  line-height: 1.3;
+}
+
+/* Continue button */
+
+.region-selector__continue {
+  align-self: flex-start;
+  border: #181818;
+  border-radius: 999px;
+  padding: 0.7rem 1.4rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  background: #181818;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+/* Optional hover – still minimal */
+
+.region-selector__continue:hover,
+.region-selector__continue:focus-visible {
+  opacity: 0.9;
+}
+
+/* ensure logo has a bit of breathing space */
+
+.region-selector__brand img {
+  display: block;
+  margin-bottom: 0.4rem;
+}

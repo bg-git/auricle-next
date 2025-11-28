@@ -19,9 +19,9 @@ AURICLE designs and produces threadless ends, labrets, and rings in 14k solid go
 
 We prioritise threadless for speed, comfort, and reliability. Threads are supported where appropriate, but our hierarchy is clear:
 
-- **Threadless (pin fit)** — No threads, secure friction fit, fast to install, kind to tissue, easy to downsize, highest manufacturing precision.
-- **Internal thread** — Industry standard, more costly to produce than external, kinder to tissue than external thread, reliable fit, but fine threads can be delicate.
-- **External thread** — Cheaper to produce and mechanically robust, but the exposed threads can abrade tissue during insertion and removal.
+- **Threadless (pin fit)**: No threads, secure friction fit, fast to install, kind to tissue, easy to downsize, highest manufacturing precision.
+- **Internal thread**: Industry standard, more costly to produce than external, kinder to tissue than external thread, reliable fit, but fine threads can be delicate.
+- **External thread**: Cheaper to produce and mechanically robust, but the exposed threads can abrade tissue during insertion and removal.
 
 The result: small, precise jewellery that handles repeat wear use without fuss.
 

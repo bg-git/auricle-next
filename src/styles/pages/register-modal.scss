@@ -1,0 +1,120 @@
+/* ================================
+   REGISTER MODAL (GLOBAL COMPONENT)
+   ================================ */
+
+.join-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.45);
+
+  &__content {
+    position: relative;
+    max-width: 420px;
+    width: 90%;
+    background: #ffffff;
+    padding: 1.75rem 1.5rem 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  }
+
+  &__close {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.75rem;
+    border: none;
+    background: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    line-height: 1;
+  }
+
+  h2 {
+    margin: 0;
+    font-size: 1.2rem;
+  }
+
+  p {
+    margin-top: 0.75rem;
+    font-size: 0.95rem;
+  }
+
+  &__options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+  }
+
+  /* Base styling for all option buttons/links */
+  &__option--whatsapp,
+  &__option--email,
+  &__option--chat {
+    display: block;
+    text-align: center;
+    padding: 0.8rem 1rem;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  /* Individual variants */
+  &__option--whatsapp {
+    background: #181818;
+    color: #ffffff;
+  }
+
+  &__option--email {
+    background: #f5f5f5;
+    border: 1px solid #d0d0d0;
+    color: #222222;
+  }
+
+ &__option--chat {
+  background: linear-gradient(135deg, #4b4bff 0%, #9f4bff 50%, #ff4bd8 100%);
+  color: #ffffff;
+  border: none;
+  position: relative;
+  overflow: hidden;
+
+  /* subtle glow */
+  box-shadow: 0 0 12px rgba(159, 75, 255, 0.6);
+
+  /* smooth animation on hover */
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 0 15px rgba(159, 75, 255, 0.8);
+  }
+
+  &:active {
+    transform: translateY(0px);
+    box-shadow: 0 0 10px rgba(159, 75, 255, 0.5);
+  }
+}
+
+
+  &__note {
+    margin-top: 0.75rem;
+    font-size: 0.8rem;
+    color: #666666;
+  }
+}
+
+/* Mobile-only tweaks */
+@media (max-width: 480px) {
+  .join-modal__content {
+    padding: 1.5rem 1.25rem;
+    border-radius: 6px;
+  }
+
+  .join-modal__close {
+    top: 0.25rem;
+    right: 0.5rem;
+  }
+}

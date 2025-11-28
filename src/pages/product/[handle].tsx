@@ -16,16 +16,22 @@ import { mapStyledByYou } from "@/lib/mapStyledByYou";
 import type { UGCItem } from "@/components/StyledByYou";
 import ProductGallery from "@/components/ProductGallery";
 import dynamic from 'next/dynamic';
+import { useCopy } from '@/hooks/useCopy';
+import { useRegion } from '@/context/RegionContext';
 
-// ✅ Lazy-loaded, non-critical UI
+
 const StyledByYouLazy = dynamic(() => import('@/components/StyledByYou'), {
   ssr: false,
   loading: () => null,
 });
-const FavouriteToggleLazy = dynamic(() => import('@/components/FavouriteToggle'), {
-  ssr: false,
-  loading: () => null,
-});
+
+const FavouriteToggleLazy = dynamic(
+  () => import('@/components/FavouriteToggle'),
+  {
+    ssr: false,
+    loading: () => null,
+  }
+);
 
 // TYPES
 interface Metafield {
@@ -96,10 +102,13 @@ type GalleryImage = {
 };
 
 export default function ProductPage({ product, ugcItems }: ProductPageProps) {
+  const copy = useCopy();
+  const region = useRegion();  // 👈 add this
 
   const { addToCart, openDrawer } = useCart();
   const { showToast } = useToast();
   const router = useRouter();
+
 
   
   const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
@@ -267,25 +276,44 @@ const approved: true | false | null = loading ? null : Boolean(user?.approved);
     width: '60%',
   };
 
-  const fieldLabels = {
-    title: 'Title',
-    name: 'Name',
-    sku: 'SKU',
-    metal: 'Metal',
-    alloy: 'Alloy',
-    metal_colour: 'Metal Colour',
-    thread_type: 'Thread Type',
-    fitting: 'Fitting',
-    gem_type: 'Gem Type',
-    gem_colour: 'Gem Colour',
-    gauge: 'Gauge',
-    base_size: 'Base Size',
-    length: 'Length',
-    width: 'Width',
-    height: 'Height',
-    sold_as: 'Sold As',
-    shipping: 'Shipping'
-  };
+const detailKeys: Array<
+  | 'title'
+  | 'name'
+  | 'sku'
+  | 'metal'
+  | 'alloy'
+  | 'metal_colour'
+  | 'thread_type'
+  | 'fitting'
+  | 'gem_type'
+  | 'gem_colour'
+  | 'gauge'
+  | 'base_size'
+  | 'length'
+  | 'width'
+  | 'height'
+  | 'sold_as'
+  | 'shipping'
+> = [
+  'title',
+  'name',
+  'sku',
+  'metal',
+  'alloy',
+  'metal_colour',
+  'thread_type',
+  'fitting',
+  'gem_type',
+  'gem_colour',
+  'gauge',
+  'base_size',
+  'length',
+  'width',
+  'height',
+  'sold_as',
+  'shipping',
+];
+
 
 
 
@@ -443,7 +471,20 @@ const approved: true | false | null = loading ? null : Boolean(user?.approved);
         </span>
       </div>
     </div>
-
+{region === 'us' && copy.gbpPriceNote && (
+  <p
+    style={{
+      fontSize: '11px',
+      color: '#777',
+      marginTop: '4px',
+      marginBottom: '0',
+      textAlign: 'right',
+      minHeight: 16,
+    }}
+  >
+    {copy.gbpPriceNote}
+  </p>
+)}
   {/* Variant options (unchanged) */}
   {variantOptions.length > 0 && (
     <div style={{ marginTop: '24px' }}>
@@ -654,7 +695,7 @@ const approved: true | false | null = loading ? null : Boolean(user?.approved);
       minHeight: 18,
     }}
   >
-    VAT & shipping calculated at checkout
+    {copy.taxLabel}
   </p>
 
   {/* Details block (unchanged) */}
@@ -669,24 +710,36 @@ const approved: true | false | null = loading ? null : Boolean(user?.approved);
       }}
     >
       <tbody>
-        {Object.entries(fieldLabels).map(([key, label]) => {
-          const value = getFieldValue(key);
-          return value ? (
-            <tr key={key}>
-              <td style={cellLabelStyle}>{label.toUpperCase()}</td>
-              <td style={cellValueStyle}>{value}</td>
-            </tr>
-          ) : null;
-        })}
-      </tbody>
+  {detailKeys.map((key) => {
+    const value =
+      key === 'shipping'
+        ? copy.shippingFromText
+        : getFieldValue(key);
+
+    if (!value) return null;
+
+    const label = copy.detailLabels[key];
+
+    return (
+      <tr key={key}>
+        <td style={cellLabelStyle}>{label.toUpperCase()}</td>
+        <td style={cellValueStyle}>{value}</td>
+      </tr>
+    );
+  })}
+</tbody>
+
+
+
     </table>
 
-    {product.descriptionHtml && (
-      <div
-        style={{ marginTop: '24px', fontSize: '14px', lineHeight: '1.6' }}
-        dangerouslySetInnerHTML={{ __html: product.descriptionHtml }}
-      />
-    )}
+    {region === 'uk' && product.descriptionHtml && (
+  <div
+    style={{ marginTop: '24px', fontSize: '14px', lineHeight: '1.6' }}
+    dangerouslySetInnerHTML={{ __html: product.descriptionHtml }}
+  />
+)}
+
   </div>
 </div>
 </div>
@@ -842,7 +895,7 @@ export const getStaticProps: GetStaticProps<ProductPageProps> = async (
     data.productByHandle.id
   );
 
-  return {
+return {
     props: {
       product: data.productByHandle,
       ugcItems,

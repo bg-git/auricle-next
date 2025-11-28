@@ -18,6 +18,16 @@
     display: none;
   }
 }
+/* Active state when filters are applied (mobile only) */
+.filter-drawer-toggle.active {
+  background: #d60000;      /* red */
+  border-color: #d60000;
+
+  svg {
+    stroke: #ffffff !important;
+    fill: #ffffff !important;
+  }
+}
 
 .filter-drawer-backdrop {
   position: fixed;

@@ -9,6 +9,8 @@ import Image from 'next/image';
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import Seo from '@/components/Seo';
 import FavouriteToggle from '@/components/FavouriteToggle';
+import { useCopy } from '@/hooks/useCopy';
+
 
 
 // Types
@@ -71,9 +73,23 @@ type CollectionPageProps = {
 };
 
 
-export default function CollectionPage({ products, title, seoTitle, seoDescription, collectionDescription, deepLinks, collectionImage, handle }: CollectionPageProps) {
-  const getMetafieldValue = useCallback((product: Product, key: string): string | null => {
-    const validMetafields = (product.metafields || []).filter((f): f is Metafield => f != null);
+export default function CollectionPage({
+  products,
+  title,
+  seoTitle,
+  seoDescription,
+  collectionDescription,
+  deepLinks,
+  collectionImage,
+  handle,
+}: CollectionPageProps) {
+  const copy = useCopy();  // 👈 add this
+
+const getMetafieldValue = useCallback(
+  (product: Product, key: string): string | null => {
+    const validMetafields = (product.metafields || []).filter(
+      (f): f is Metafield => f != null
+    );
     const field = validMetafields.find((f) => f.key === key);
     if (!field?.value) return null;
 
@@ -83,7 +99,10 @@ export default function CollectionPage({ products, title, seoTitle, seoDescripti
     } catch {
       return field.value;
     }
-  }, []);
+  },
+  []
+);
+
   
 
   const extractOptions = useCallback(
@@ -118,6 +137,14 @@ export default function CollectionPage({ products, title, seoTitle, seoDescripti
 
   const [showFilters, setShowFilters] = useState(false);
   const [filtersChanged, setFiltersChanged] = useState(false);
+
+    const hasActiveFilters =
+    selectedMetals.length > 0 ||
+    selectedFinishes.length > 0 ||
+    selectedGemColours.length > 0 ||
+    selectedGemTypes.length > 0 ||
+    selectedFittings.length > 0 ||
+    selectedMetalColours.length > 0;
 
     // Restore saved filters (if any) when the page loads
   useEffect(() => {
@@ -366,14 +393,14 @@ export default function CollectionPage({ products, title, seoTitle, seoDescripti
 
       <main className="collection-page">
         <aside className="filters-desktop">
-          {renderFilterSection('Metal', metalOptions, selectedMetals, setSelectedMetals)}
-          {renderFilterSection('Finish', finishOptions, selectedFinishes, setSelectedFinishes)}
-          {renderFilterSection('Gem Colour', gemColourOptions, selectedGemColours, setSelectedGemColours)}
-          {renderFilterSection('Gem Type', gemTypeOptions, selectedGemTypes, setSelectedGemTypes)}
-          {renderFilterSection('Fitting', fittingOptions, selectedFittings, setSelectedFittings)}
-          {renderFilterSection('Metal Colour', metalColourOptions, selectedMetalColours, setSelectedMetalColours)}
+  {renderFilterSection(copy.metalLabel, metalOptions, selectedMetals, setSelectedMetals)}
+  {renderFilterSection(copy.finishLabel, finishOptions, selectedFinishes, setSelectedFinishes)}
+  {renderFilterSection(copy.gemColourLabel, gemColourOptions, selectedGemColours, setSelectedGemColours)}
+  {renderFilterSection(copy.gemTypeLabel, gemTypeOptions, selectedGemTypes, setSelectedGemTypes)}
+  {renderFilterSection(copy.fittingLabel, fittingOptions, selectedFittings, setSelectedFittings)}
+  {renderFilterSection(copy.metalColourLabel, metalColourOptions, selectedMetalColours, setSelectedMetalColours)}
+</aside>
 
-        </aside>
 
         <section id="product-grid" className="product-grid">
 
@@ -419,10 +446,11 @@ return (
         </section>
 
         <button
-  className="filter-drawer-toggle"
+  className={`filter-drawer-toggle ${hasActiveFilters ? 'active' : ''}`}
   onClick={() => setShowFilters(true)}
   aria-label="Open filters"
 >
+
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#181818" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg">
     <line x1="4" y1="21" x2="4" y2="14"/>
     <line x1="4" y1="10" x2="4" y2="3"/>
@@ -448,12 +476,13 @@ return (
 
       <button className="filter-drawer-close" onClick={closeFilterDrawer}>DONE</button>
 
-      {renderFilterSection('Metal', metalOptions, selectedMetals, setSelectedMetals)}
-      {renderFilterSection('Finish', finishOptions, selectedFinishes, setSelectedFinishes)}
-      {renderFilterSection('Gem Colour', gemColourOptions, selectedGemColours, setSelectedGemColours)}
-      {renderFilterSection('Gem Type', gemTypeOptions, selectedGemTypes, setSelectedGemTypes)}
-      {renderFilterSection('Fitting', fittingOptions, selectedFittings, setSelectedFittings)}
-      {renderFilterSection('Metal Colour', metalColourOptions, selectedMetalColours, setSelectedMetalColours)}
+      {renderFilterSection(copy.metalLabel, metalOptions, selectedMetals, setSelectedMetals)}
+{renderFilterSection(copy.finishLabel, finishOptions, selectedFinishes, setSelectedFinishes)}
+{renderFilterSection(copy.gemColourLabel, gemColourOptions, selectedGemColours, setSelectedGemColours)}
+{renderFilterSection(copy.gemTypeLabel, gemTypeOptions, selectedGemTypes, setSelectedGemTypes)}
+{renderFilterSection(copy.fittingLabel, fittingOptions, selectedFittings, setSelectedFittings)}
+{renderFilterSection(copy.metalColourLabel, metalColourOptions, selectedMetalColours, setSelectedMetalColours)}
+
     </div>
   </div>
 

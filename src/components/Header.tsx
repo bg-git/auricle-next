@@ -1,16 +1,63 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { memo } from 'react';
+import { memo, useState, useEffect } from 'react'; // 👈 add useEffect
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { useFavourites } from '@/context/FavouritesContext';
+import RegisterModal from '@/components/RegisterModal';
 
+// Shared register email text
+const wholesaleMailto = `mailto:info@auricle.co.uk?subject=${encodeURIComponent(
+  'Wholesale Enquiry'
+)}&body=${encodeURIComponent(
+  `Hey,
+    
+Thank you for your interest in becoming an authorised AURICLE stockist.
+
+To ensure access is reserved exclusively for verified piercing studios and jewellery retailers, please complete the details below. This helps us confirm eligibility and activate your wholesale account as quickly as possible.
+
+First Name = 
+
+Last Name = 
+
+Company Name = 
+
+Email Address = 
+
+Trading Address = 
+
+Website = 
+
+Social Media = 
+
+Phone Number =
+
+Once we’ve confirmed your business details, we’ll respond to this email with your access credentials. Verification is usually completed within one hour.
+
+Best Regards
+Auricle`
+)}`;
+
+// WhatsApp details
+const whatsappNumber = '447757690863';
+
+const whatsappLink = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
+  "Create account – I'm in for wholesale access"
+)}`;
 
 function Header() {
   const { openDrawer, cartItems } = useCart();
   const { isAuthenticated, user, signOut, loading } = useAuth();
+  const { favourites } = useFavourites();
   const itemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
-const { favourites } = useFavourites();
+
+  const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
+
+  // 👇 New: ensure auth UI only renders after client mount
+  const [hasMounted, setHasMounted] = useState(false);
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
 
   return (
     <>
@@ -38,24 +85,29 @@ const { favourites } = useFavourites();
             color: '#fff',
           }}
         >
-          {!loading && (
+          {hasMounted && !loading && ( // 👈 only render auth UI after mount
             isAuthenticated ? (
               <>
-                <Link href="/account" style={{ color: '#fff', textDecoration: 'none', marginRight: '12px' }}>
+                <Link
+                  href="/account"
+                  style={{
+                    color: '#fff',
+                    textDecoration: 'none',
+                    marginRight: '12px',
+                  }}
+                >
                   {user?.firstName ? 'My Account' : 'My Account'}
-
-
                 </Link>
                 <span style={{ marginRight: '12px' }}>|</span>
-                <button 
+                <button
                   onClick={signOut}
-                  style={{ 
-                    background: 'none', 
-                    border: 'none', 
-                    color: '#fff', 
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#fff',
                     cursor: 'pointer',
                     fontSize: '12px',
-                    padding: 0
+                    padding: 0,
                   }}
                 >
                   Sign Out
@@ -63,44 +115,27 @@ const { favourites } = useFavourites();
               </>
             ) : (
               <>
-                <Link
-  href={`mailto:info@auricle.co.uk?subject=${encodeURIComponent(
-    'Wholesale Enquiry'
-  )}&body=${encodeURIComponent(
-    `Hey,
-    
-Thank you for your interest in becoming an authorised AURICLE stockist.
-
-To ensure access is reserved exclusively for verified piercing studios and jewellery retailers, please complete the details below. This helps us confirm eligibility and activate your wholesale account as quickly as possible.
-
-First Name = 
-
-Last Name = 
-
-Company Name = 
-
-Email Address = 
-
-Trading Address = 
-
-Website = 
-
-Social Media = 
-
-Phone Number =
-
-Once we’ve confirmed your business details, we’ll respond to this email with your access credentials. Verification is usually completed within one hour.
-
-Best Regards
-Auricle`
-  )}`}
-  style={{ color: '#fff', textDecoration: 'none', marginRight: '12px' }}
->
-  Join Us
-</Link>
+                <button
+                  type="button"
+                  onClick={() => setIsJoinModalOpen(true)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#fff',
+                    textDecoration: 'none',
+                    marginRight: '12px',
+                    cursor: 'pointer',
+                    padding: 0,
+                  }}
+                >
+                  Join Us
+                </button>
 
                 <span style={{ marginRight: '12px' }}>|</span>
-                <Link href="/sign-in" style={{ color: '#fff', textDecoration: 'none' }}>
+                <Link
+                  href="/sign-in"
+                  style={{ color: '#fff', textDecoration: 'none' }}
+                >
                   Sign In
                 </Link>
               </>
@@ -144,47 +179,46 @@ Auricle`
           </Link>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-  <Link
-    href="/favourites"
-    aria-label="My Favourites"
-    style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
-  >
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      fill={favourites.length > 0 ? 'red' : 'none'}
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      strokeWidth="2"
-      width="24"
-      height="24"
-      style={{ display: 'block' }}
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M12 21c-1.1-1.04-5.55-5.08-7.62-7.51C2.64 11.21 2 9.66 2 8.25 2 5.4 4.4 3 7.25 3c1.49 0 2.94.68 3.75 1.75A5.48 5.48 0 0116.75 3C19.6 3 22 5.4 22 8.25c0 1.41-.64 2.96-2.38 5.24C17.55 15.92 13.1 19.96 12 21z"
-      />
-    </svg>
-  </Link>
+            <Link
+              href="/favourites"
+              aria-label="My Favourites"
+              style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill={favourites.length > 0 ? 'red' : 'none'}
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth="2"
+                width="24"
+                height="24"
+                style={{ display: 'block' }}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 21c-1.1-1.04-5.55-5.08-7.62-7.51C2.64 11.21 2 9.66 2 8.25 2 5.4 4.4 3 7.25 3c1.49 0 2.94.68 3.75 1.75A5.48 5.48 0 0116.75 3C19.6 3 22 5.4 22 8.25c0 1.41-.64 2.96-2.38 5.24C17.55 15.92 13.1 19.96 12 21z"
+                />
+              </svg>
+            </Link>
 
-  <button
-    onClick={openDrawer}
-    style={{
-      background: 'none',
-      border: 'none',
-      padding: 0,
-      margin: 0,
-      fontSize: '14px',
-      fontWeight: 500,
-      color: '#181818',
-      cursor: 'pointer',
-      textDecoration: 'none',
-    }}
-  >
-    My Bag{itemCount > 0 ? ` (${itemCount})` : ''}
-  </button>
-</div>
-
+            <button
+              onClick={openDrawer}
+              style={{
+                background: 'none',
+                border: 'none',
+                padding: 0,
+                margin: 0,
+                fontSize: '14px',
+                fontWeight: 500,
+                color: '#181818',
+                cursor: 'pointer',
+                textDecoration: 'none',
+              }}
+            >
+              My Bag{itemCount > 0 ? ` (${itemCount})` : ''}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -207,33 +241,38 @@ Auricle`
           }}
         >
           {[
-  { label: 'ENDS & GEMS', href: '/collection/ends-gems' },
-  { label: 'CHAINS & CHARMS', href: '/collection/chains-charms' },
-  { label: 'RINGS & HOOPS', href: '/collection/rings-hoops' },
-  { label: 'SEARCH', href: '/search' },
-
-].map(({ label, href }) => (
-  <Link
-    key={label}
-    href={href}
-    style={{
-      padding: '16px 12px',
-      fontSize: '16px',
-      color: '#181818',
-      fontWeight: '600',
-      textDecoration: 'none',
-      flexShrink: 0,
-    }}
-  >
-    {label}
-  </Link>
-))}
-
+            { label: 'ENDS & GEMS', href: '/collection/ends-gems' },
+            { label: 'CHAINS & CHARMS', href: '/collection/chains-charms' },
+            { label: 'RINGS & HOOPS', href: '/collection/rings-hoops' },
+            { label: 'SEARCH', href: '/search' },
+          ].map(({ label, href }) => (
+            <Link
+              key={label}
+              href={href}
+              style={{
+                padding: '16px 12px',
+                fontSize: '16px',
+                color: '#181818',
+                fontWeight: '600',
+                textDecoration: 'none',
+                flexShrink: 0,
+              }}
+            >
+              {label}
+            </Link>
+          ))}
         </div>
       </nav>
+
+      {/* Reusable Register Modal */}
+      <RegisterModal
+        isOpen={isJoinModalOpen}
+        onClose={() => setIsJoinModalOpen(false)}
+        whatsappLink={whatsappLink}
+        emailHref={wholesaleMailto}
+      />
     </>
   );
 }
 
 export default memo(Header);
-

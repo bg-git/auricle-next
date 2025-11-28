@@ -1,4 +1,8 @@
-/* Footer – tight spacing, passes Lighthouse tap-targets on touch */
+/* ================================
+   FOOTER (AURICLE)
+   Tight spacing, premium UI,
+   Lighthouse tap-target compliant
+================================ */
 
 .site-footer {
   background: #ececec;
@@ -14,27 +18,32 @@
   .footer-section {
     margin-bottom: 12px;
 
-    /* Heading (accordion on mobile). Larger than links. */
+    /* -------------------------------
+       Section heading / accordion
+    -------------------------------- */
     .footer-toggle {
       background: none;
       border: 0;
       color: #181818;
       width: 100%;
       text-align: left;
-      font-size: 16px;      /* larger than link text */
+      font-size: 16px;
       font-weight: 600;
       line-height: 1.2;
-      padding: 8px 0;       /* compact by default (desktop/fine pointer) */
+      padding: 8px 0;
       min-height: 36px;
       cursor: pointer;
       display: flex;
       justify-content: space-between;
       align-items: center;
 
-      .footer-toggle-icon { font-size: 18px; line-height: 1; }
+      .footer-toggle-icon {
+        font-size: 18px;
+        line-height: 1;
+      }
     }
 
-    /* Collapsed list (mobile) */
+    /* Collapsible links (mobile only) */
     .footer-links {
       list-style: none;
       padding: 0;
@@ -43,24 +52,60 @@
       overflow: hidden;
       transition: max-height 0.3s ease;
     }
-    &[data-open='true'] .footer-links { max-height: 300px; }
 
-    /* Links – compact by default */
-    .footer-links li + li { margin-top: 4px; }
-    .footer-links a {
+    &[data-open='true'] .footer-links {
+      max-height: 300px;
+    }
+
+    /* -------------------------------
+       Footer links = subtle “buttons”
+    -------------------------------- */
+    .footer-links li + li {
+      margin-top: 6px;
+    }
+
+    .footer-links a,
+    .footer-join-link {
       display: block;
-      color: #181818;
-      text-decoration: none;
+      width: 100%;
+      text-align: left;
+
       font-size: 14px;
       line-height: 1.3;
-      padding-block: 8px;
-      min-height: 36px;     /* compact desktop */
+      text-decoration: none;
+      color: #181818;
+
+      /* Always-on button shell */
+      background: #f5f5f5;
+      border: 1px solid #f5f5f5;
+      border-radius: 4px;
+
+      padding: 10px 12px;
+      min-height: 36px;
+
+      cursor: pointer;
+      transition: background-color 0.2s ease, color 0.2s ease;
     }
-    .footer-links a:hover { text-decoration: underline; }
-    .footer-links a:focus-visible { outline: 2px solid #181818; outline-offset: 2px; }
+
+    .footer-links a:focus-visible,
+    .footer-join-link:focus-visible {
+      outline: 2px solid #181818;
+      outline-offset: 2px;
+    }
   }
 
-  /* Optional bottom legal row */
+  /* Hover states – desktop only */
+  @media (hover: hover) and (pointer: fine) {
+    .footer-links a:hover,
+    .footer-join-link:hover {
+      background: #181818;
+      color: #ffffff;
+    }
+  }
+
+  /* --------------------------------
+     Bottom legal row
+  --------------------------------- */
   .footer-legal {
     display: flex;
     flex-wrap: wrap;
@@ -76,25 +121,37 @@
       padding-block: 6px;
       min-height: 32px;
     }
-    a:hover { text-decoration: underline; }
-    a:focus-visible { outline: 2px solid #181818; outline-offset: 2px; }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    a:focus-visible {
+      outline: 2px solid #181818;
+      outline-offset: 2px;
+    }
   }
 
-  /* Desktop layout */
+  /* --------------------------------
+     Desktop layout
+  --------------------------------- */
   @media (min-width: 1024px) {
-    .footer-inner { grid-template-columns: repeat(4, 1fr); }
+    .footer-inner {
+      grid-template-columns: repeat(4, 1fr);
+    }
 
     .footer-section {
       margin-bottom: 0;
 
-      /* Heading not clickable on desktop; keep larger than links */
       .footer-toggle {
         cursor: default;
         pointer-events: none;
         padding: 0;
         min-height: 0;
-        font-size: 18px;     /* larger than 14px links */
-        .footer-toggle-icon { display: none; }
+        font-size: 18px;
+        .footer-toggle-icon {
+          display: none;
+        }
       }
 
       .footer-links {
@@ -103,20 +160,40 @@
         margin-top: 6px;
       }
 
-      .footer-links a {
-        padding-block: 6px;  /* tight desktop spacing */
+      .footer-links a,
+      .footer-join-link {
+        padding: 10px 12px;
         min-height: 36px;
       }
     }
   }
 
-  /* Touch devices: strict minimum tap targets (no extra gaps) */
+  /* --------------------------------
+     Touch devices (coarse pointer)
+     Increase tap area but remain tight
+  --------------------------------- */
   @media (pointer: coarse) {
     .footer-section {
-      .footer-toggle { padding: 12px 0; min-height: 48px; }
-      .footer-links li + li { margin-top: 0; }
-      .footer-links a { padding-block: 12px; min-height: 48px; }
+      .footer-toggle {
+        padding: 12px 0;
+        min-height: 48px;
+      }
+
+      .footer-links li + li {
+        margin-top: 4px;
+      }
+
+      .footer-links a,
+      .footer-join-link {
+        padding-block: 12px;
+        min-height: 48px;
+        border-radius: 6px;
+      }
     }
-    .footer-legal a { padding-block: 12px; min-height: 48px; }
+
+    .footer-legal a {
+      padding-block: 12px;
+      min-height: 48px;
+    }
   }
 }
