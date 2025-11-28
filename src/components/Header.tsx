@@ -42,7 +42,25 @@ Auricle`
 const whatsappNumber = '447757690863';
 
 const whatsappLink = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
-  "Create account – I'm in for wholesale access"
+  `Hey,
+
+Thank you for your interest in becoming an authorised AURICLE stockist.
+
+To ensure access is reserved exclusively for verified piercing studios and jewellery retailers, please complete the details below and send them in this chat:
+
+First Name = 
+Last Name = 
+Company Name = 
+Email Address = 
+Trading Address = 
+Website = 
+Social Media = 
+Phone Number = 
+
+Once we’ve confirmed your business details, we’ll respond via email or WhatsApp with your access credentials. Verification is usually completed within one hour.
+
+Best Regards
+Auricle`
 )}`;
 
 function Header() {
