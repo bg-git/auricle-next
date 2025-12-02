@@ -16,6 +16,7 @@ export interface CartItem {
   variantTitle?: string;
   selectedOptions?: { name: string; value: string }[];
   price?: string;
+  currencyCode?: string;
   image?: string;
   handle?: string;
   metafields?: { key: string; value: string }[];

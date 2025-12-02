@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { COOKIE_NAME } from '@/lib/cookies';
+import { getCustomerCountryCode } from '@/lib/market';
 
 const SHOPIFY_DOMAIN = process.env.SHOPIFY_STORE_DOMAIN!;
 const SHOPIFY_TOKEN = process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN!;
@@ -85,9 +86,35 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     await shopifyFetch(MUTATION, { cartId: checkoutId, lines: toAdd });
   }
 
+  // Get customer's country code if authenticated
+  let countryCode = 'GB'; // Default to UK
+  if (customerAccessToken) {
+    try {
+      const customerQuery = `
+        query customer($customerAccessToken: String!) {
+          customer(customerAccessToken: $customerAccessToken) {
+            defaultAddress {
+              country
+            }
+          }
+        }
+      `;
+
+      const customerData = await shopifyFetch(customerQuery, { customerAccessToken });
+      const customer = customerData?.data?.customer;
+
+      if (customer?.defaultAddress?.country) {
+        countryCode = getCustomerCountryCode(customer);
+      }
+    } catch (error) {
+      console.error('Failed to fetch customer country:', error);
+      // Continue with default country code
+    }
+  }
+
   const IDENTITY_MUTATION = `mutation cartBuyerIdentityUpdate($cartId: ID!, $buyerIdentity: CartBuyerIdentityInput!) { cartBuyerIdentityUpdate(cartId: $cartId, buyerIdentity: $buyerIdentity) { cart { id } userErrors { field message } } }`;
   const buyerIdentity = {
-    countryCode: 'GB',
+    countryCode,
     ...(customerAccessToken ? { customerAccessToken } : {}),
   };
   const identityRes = await shopifyFetch(IDENTITY_MUTATION, {

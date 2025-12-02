@@ -8,6 +8,16 @@ const formatPrice = (price: string | undefined) => {
   return num % 1 === 0 ? num.toFixed(0) : num.toFixed(2);
 };
 
+const getCurrencySymbol = (currencyCode?: string) => {
+  const symbols: Record<string, string> = {
+    GBP: '£',
+    USD: '$',
+    CAD: 'CA$',
+    EUR: '€',
+  };
+  return symbols[currencyCode || 'GBP'] || '£';
+};
+
 const displayTitle = (title?: string, variantTitle?: string) => {
   const t = (s?: string) => (s || '').trim();
   const isDefault = (s?: string) => /^default\s*title$/i.test(s || '');
@@ -154,7 +164,7 @@ export default function CartDrawer() {
                             +
                           </button>
                         </div>
-                        <div className="cart-price">£{formatPrice(item.price)}</div>
+                        <div className="cart-price">{getCurrencySymbol(item.currencyCode)}{formatPrice(item.price)}</div>
 
                       </div>
                     </div>
@@ -166,7 +176,7 @@ export default function CartDrawer() {
 
           {cartItems.length > 0 && (
             <div className="cart-subtotal">
-  Subtotal: £
+  Subtotal: {getCurrencySymbol(cartItems[0]?.currencyCode)}
   {formatPrice(
     cartItems
       .reduce(

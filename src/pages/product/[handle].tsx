@@ -18,6 +18,7 @@ import ProductGallery from "@/components/ProductGallery";
 import dynamic from 'next/dynamic';
 import { useCopy } from '@/hooks/useCopy';
 import { useRegion } from '@/context/RegionContext';
+import { formatPrice } from '@/lib/market';
 
 
 const StyledByYouLazy = dynamic(() => import('@/components/StyledByYou'), {
@@ -44,6 +45,7 @@ interface ProductVariantNode {
   title: string;
   price: {
     amount: string;
+    currencyCode: string;
   };
   availableForSale: boolean;
   quantityAvailable: number;
@@ -68,6 +70,7 @@ interface Product {
   priceRange: {
     minVariantPrice: {
       amount: string;
+      currencyCode: string;
     };
   };
   images: {
@@ -114,6 +117,26 @@ export default function ProductPage({ product, ugcItems }: ProductPageProps) {
   const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
   const [showVariantImage, setShowVariantImage] = useState(false);
   const [qty, setQty] = useState(0);
+  const [marketPrices, setMarketPrices] = useState<{
+    priceRange: { minVariantPrice: { amount: string; currencyCode: string } };
+    variants: { id: string; price: { amount: string; currencyCode: string } }[];
+  } | null>(null);
+
+  // Load cached market prices after mount to prevent hydration mismatch
+  useEffect(() => {
+    try {
+      const cached = localStorage.getItem(`market-price-${product.id}`);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        // Only use cache if it's less than 1 hour old
+        if (parsed.timestamp && Date.now() - parsed.timestamp < 3600000) {
+          setMarketPrices(parsed.data);
+        }
+      }
+    } catch {
+      // Ignore errors
+    }
+  }, [product.id]);
 
   const variantEdges = useMemo(() => product?.variants?.edges || [], [product]);
   const defaultVariant = useMemo<ProductVariantNode | null>(() => {
@@ -145,8 +168,14 @@ export default function ProductPage({ product, ugcItems }: ProductPageProps) {
 
 
   const { user, refreshUser, loading } = useAuth();
-  const hasRefreshed = useRef(false); 
-const approved: true | false | null = loading ? null : Boolean(user?.approved);
+  const hasRefreshed = useRef(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const approved: true | false | null = !mounted ? null : (loading ? null : Boolean(user?.approved));
 
 
   useEffect(() => {
@@ -155,6 +184,49 @@ const approved: true | false | null = loading ? null : Boolean(user?.approved);
       refreshUser();
     }
   }, [user, refreshUser]);
+
+  // Fetch market-specific prices when user is authenticated
+  useEffect(() => {
+    if (!user || !product?.handle) {
+      console.log('Skipping market price fetch:', { hasUser: !!user, hasHandle: !!product?.handle });
+      return;
+    }
+
+    console.log('Fetching market prices for user with address:', user.defaultAddress);
+
+    const fetchMarketPrices = async () => {
+      try {
+        const response = await fetch('/api/shopify/get-product-price', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ handle: product.handle }),
+          credentials: 'include',
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log('Market prices received:', data);
+          setMarketPrices(data);
+
+          // Cache in localStorage with timestamp
+          try {
+            localStorage.setItem(`market-price-${product.id}`, JSON.stringify({
+              data,
+              timestamp: Date.now()
+            }));
+          } catch {
+            // Ignore localStorage errors
+          }
+        } else {
+          console.error('Failed to fetch market prices, status:', response.status);
+        }
+      } catch (error) {
+        console.error('Failed to fetch market prices:', error);
+      }
+    };
+
+    fetchMarketPrices();
+  }, [user, product?.handle]);
 
   useEffect(() => {
     const v = variantEdges.find(e => e.node.id === selectedVariantId)?.node;
@@ -220,10 +292,32 @@ const approved: true | false | null = loading ? null : Boolean(user?.approved);
 
   const maxQty = selectedVariant?.quantityAvailable ?? 9999;
 
-  const rawPrice = selectedVariant
-    ? parseFloat(selectedVariant.price.amount)
-    : parseFloat(product?.priceRange?.minVariantPrice?.amount || '0');
+  // Use market-specific prices if available, otherwise use default prices
+  const currentPrice = useMemo(() => {
+    if (marketPrices && selectedVariant) {
+      const marketVariant = marketPrices.variants.find(v => v.id === selectedVariant.id);
+      return marketVariant?.price || selectedVariant.price;
+    } else if (marketPrices) {
+      return marketPrices.priceRange.minVariantPrice;
+    } else if (selectedVariant) {
+      return selectedVariant.price;
+    } else {
+      return product?.priceRange?.minVariantPrice || { amount: '0', currencyCode: 'GBP' };
+    }
+  }, [marketPrices, selectedVariant, product]);
+
+  const rawPrice = parseFloat(currentPrice.amount);
   const formattedPrice = rawPrice % 1 === 0 ? rawPrice.toFixed(0) : rawPrice.toFixed(2);
+  const currencyCode = currentPrice.currencyCode;
+
+  // Currency symbol mapping
+  const currencySymbols: Record<string, string> = {
+    GBP: '£',
+    USD: '$',
+    CAD: 'CA$',
+    EUR: '€',
+  };
+  const currencySymbol = currencySymbols[currencyCode] || currencyCode;
 
   const metafields = useMemo(
     () => product?.metafields || [],
@@ -390,13 +484,13 @@ const detailKeys: Array<
             "offers": {
               "@type": "Offer",
               "url": `https://www.auricle.co.uk/product/${product.handle}`,
-              "priceCurrency": "GBP",
-              "price": "0.01",
-              "availability": "https://schema.org/InStock",
+              "priceCurrency": currencyCode,
+              "price": formattedPrice,
+              "availability": isSoldOut ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
               "priceSpecification": {
                 "@type": "UnitPriceSpecification",
-                "priceCurrency": "GBP",
-                "price": "0.01"
+                "priceCurrency": currencyCode,
+                "price": formattedPrice
               }
             }
           })
@@ -467,11 +561,11 @@ const detailKeys: Array<
             transition: 'opacity 0.2s ease',
           }}
         >
-          £{formattedPrice}
+          {currencySymbol}{formattedPrice}
         </span>
       </div>
     </div>
-{region === 'us' && copy.gbpPriceNote && (
+{marketPrices && (
   <p
     style={{
       fontSize: '11px',
@@ -482,7 +576,7 @@ const detailKeys: Array<
       minHeight: 16,
     }}
   >
-    {copy.gbpPriceNote}
+    Prices shown in {currencyCode}.
   </p>
 )}
   {/* Variant options (unchanged) */}
@@ -669,7 +763,8 @@ const detailKeys: Array<
             title: product.title,
             variantTitle: selectedVariant.title,
             selectedOptions: selectedVariant.selectedOptions,
-            price: selectedVariant.price.amount,
+            price: currentPrice.amount,
+            currencyCode: currentPrice.currencyCode,
             image: product.images?.edges?.[0]?.node?.url || undefined,
             metafields: product.metafields,
             quantityAvailable: selectedVariant.quantityAvailable,
@@ -797,8 +892,14 @@ export const getStaticProps: GetStaticProps<ProductPageProps> = async (
     productByHandle(handle: $handle) {
       id
       title
+      handle
       descriptionHtml
-      priceRange { minVariantPrice { amount } }
+      priceRange {
+        minVariantPrice {
+          amount
+          currencyCode
+        }
+      }
 
       images(first: 5) {
         edges {
@@ -816,7 +917,10 @@ export const getStaticProps: GetStaticProps<ProductPageProps> = async (
           node {
             id
             title
-            price { amount }
+            price {
+              amount
+              currencyCode
+            }
             availableForSale
             quantityAvailable
             selectedOptions { name value }

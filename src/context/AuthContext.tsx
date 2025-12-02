@@ -40,6 +40,10 @@ export interface ShopifyCustomer {
   firstName?: string;
   lastName?: string;
   tags?: string[];
+  defaultAddress?: {
+    country?: string;
+    [key: string]: unknown;
+  };
   [key: string]: unknown;
 }
 

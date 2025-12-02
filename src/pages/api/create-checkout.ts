@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { COOKIE_NAME } from '@/lib/cookies';
+import { getCustomerCountryCode } from '@/lib/market';
 
 const SHOPIFY_DOMAIN = process.env.SHOPIFY_STORE_DOMAIN;
 const SHOPIFY_TOKEN = process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN;
@@ -33,6 +34,44 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const customerAccessToken = req.cookies?.[COOKIE_NAME];
 
+  // Get customer's country code if authenticated
+  let countryCode = 'GB'; // Default to UK
+  if (customerAccessToken) {
+    try {
+      const customerQuery = `
+        query customer($customerAccessToken: String!) {
+          customer(customerAccessToken: $customerAccessToken) {
+            defaultAddress {
+              country
+            }
+          }
+        }
+      `;
+
+      const customerRes = await fetch(`https://${SHOPIFY_DOMAIN}/api/2024-04/graphql.json`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Shopify-Storefront-Access-Token': SHOPIFY_TOKEN!,
+        },
+        body: JSON.stringify({
+          query: customerQuery,
+          variables: { customerAccessToken },
+        }),
+      });
+
+      const customerData = await customerRes.json();
+      const customer = customerData?.data?.customer;
+
+      if (customer?.defaultAddress?.country) {
+        countryCode = getCustomerCountryCode(customer);
+      }
+    } catch (error) {
+      console.error('Failed to fetch customer country:', error);
+      // Continue with default country code
+    }
+  }
+
   const variables: {
     lines: { merchandiseId: string; quantity: number }[];
     buyerIdentity: {
@@ -42,7 +81,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   } = {
     lines,
     buyerIdentity: {
-      countryCode: "GB", // ✅ You can change this to "US", "IE", etc.
+      countryCode,
       ...(customerAccessToken ? { customerAccessToken } : {}),
     },
   };
