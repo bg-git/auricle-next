@@ -28,6 +28,7 @@
     "resend": "^4.7.0",
     "sass": "^1.89.2",
     "sitemap": "^8.0.0",
+    "stripe": "^20.0.0",
     "swr": "^2.3.4"
   },
   "devDependencies": {
