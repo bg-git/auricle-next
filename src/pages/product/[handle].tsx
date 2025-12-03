@@ -47,6 +47,9 @@ interface ProductVariantNode {
     amount: string;
     currencyCode: string;
   };
+  metafield?: {
+    value: string | null;
+  } | null;
   availableForSale: boolean;
   quantityAvailable: number;
   selectedOptions: {
@@ -61,6 +64,7 @@ interface ProductVariantNode {
   } | null;
   sku: string;
 }
+
 
 interface Product {
   id: string;
@@ -167,15 +171,21 @@ export default function ProductPage({ product, ugcItems }: ProductPageProps) {
   }, [router.asPath, product?.id, defaultVariant]);
 
 
-  const { user, refreshUser, loading } = useAuth();
-  const hasRefreshed = useRef(false);
-  const [mounted, setMounted] = useState(false);
+ const { user, refreshUser, loading } = useAuth();
+const hasRefreshed = useRef(false);
+const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+useEffect(() => {
+  setMounted(true);
+}, []);
 
-  const approved: true | false | null = !mounted ? null : (loading ? null : Boolean(user?.approved));
+const approved: true | false | null = !mounted ? null : (loading ? null : Boolean(user?.approved));
+
+const isVipMember =
+  mounted && Array.isArray(user?.tags)
+    ? user!.tags!.includes('VIP-MEMBER')
+    : false;
+
 
 
   useEffect(() => {
@@ -306,18 +316,49 @@ export default function ProductPage({ product, ugcItems }: ProductPageProps) {
     }
   }, [marketPrices, selectedVariant, product]);
 
-  const rawPrice = parseFloat(currentPrice.amount);
-  const formattedPrice = rawPrice % 1 === 0 ? rawPrice.toFixed(0) : rawPrice.toFixed(2);
-  const currencyCode = currentPrice.currencyCode;
+// Base price from marketPrices / Storefront API
+const baseRawPrice = parseFloat(currentPrice.amount);
+const currencyCode = currentPrice.currencyCode;
 
-  // Currency symbol mapping
-  const currencySymbols: Record<string, string> = {
-    GBP: '£',
-    USD: '$',
-    CAD: 'CA$',
-    EUR: '€',
-  };
-  const currencySymbol = currencySymbols[currencyCode] || currencyCode;
+// Member price from variant metafield (custom.member_price)
+const memberPriceRaw = selectedVariant?.metafield?.value ?? null;
+const memberRaw =
+  memberPriceRaw !== null && memberPriceRaw !== ''
+    ? parseFloat(memberPriceRaw)
+    : null;
+
+// Effective price: VIP uses member price if available; otherwise default
+const effectiveRawPrice =
+  isVipMember && memberRaw !== null ? memberRaw : baseRawPrice;
+
+const formattedPrice =
+  effectiveRawPrice % 1 === 0
+    ? effectiveRawPrice.toFixed(0)
+    : effectiveRawPrice.toFixed(2);
+
+// Currency symbol mapping
+const currencySymbols: Record<string, string> = {
+  GBP: '£',
+  USD: '$',
+  CAD: 'CA$',
+  EUR: '€',
+};
+const currencySymbol = currencySymbols[currencyCode] || currencyCode;
+
+// Labels for UI
+const defaultLabel =
+  baseRawPrice % 1 === 0
+    ? `${currencySymbol}${baseRawPrice.toFixed(0)}`
+    : `${currencySymbol}${baseRawPrice.toFixed(2)}`;
+
+const memberLabel =
+  memberRaw !== null
+    ? memberRaw % 1 === 0
+      ? `${currencySymbol}${memberRaw.toFixed(0)}`
+      : `${currencySymbol}${memberRaw.toFixed(2)}`
+    : null;
+
+
 
   const metafields = useMemo(
     () => product?.metafields || [],
@@ -542,43 +583,93 @@ const detailKeys: Array<
     <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
       <div
         style={{
-          width: '80px',
-          height: '24px',
+          minWidth: '80px',
           position: 'relative',
+          textAlign: 'right',
         }}
       >
-        <span
-          aria-live="polite"
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            fontSize: '14px',
-            fontWeight: 500,
-            lineHeight: '24px',
-            visibility: approved === true ? 'visible' : 'hidden',
-            opacity: approved === true ? 1 : 0,
-            transition: 'opacity 0.2s ease',
-          }}
-        >
-          {currencySymbol}{formattedPrice}
-        </span>
+        {approved === true ? (
+          isVipMember && memberLabel ? (
+            <>
+              {/* VIP: show member price as main */}
+              <div
+                aria-live="polite"
+                style={{
+                  fontSize: '16px',
+                  fontWeight: 600,
+                  lineHeight: '22px',
+                }}
+              >
+                {memberLabel}
+              </div>
+              <div
+                style={{
+                  fontSize: '12px',
+                  textDecoration: 'line-through',
+                  opacity: 0.7,
+                  marginTop: '2px',
+                }}
+              >
+                Non-member: {defaultLabel}
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Non-VIP: show default price as main, member as teaser */}
+              <div
+                aria-live="polite"
+                style={{
+                  fontSize: '16px',
+                  fontWeight: 600,
+                  lineHeight: '22px',
+                }}
+              >
+                {defaultLabel}
+              </div>
+              {memberLabel && (
+                <div
+                  style={{
+                    fontSize: '12px',
+                    opacity: 0.8,
+                    marginTop: '2px',
+                  }}
+                >
+                  Member price with VIP: {memberLabel}
+                </div>
+              )}
+            </>
+          )
+        ) : (
+          // Reserve space but hide price when not approved
+          <div
+            style={{
+              fontSize: '16px',
+              fontWeight: 600,
+              lineHeight: '22px',
+              visibility: 'hidden',
+            }}
+          >
+            {defaultLabel}
+          </div>
+        )}
       </div>
     </div>
-{marketPrices && (
-  <p
-    style={{
-      fontSize: '11px',
-      color: '#777',
-      marginTop: '4px',
-      marginBottom: '0',
-      textAlign: 'right',
-      minHeight: 16,
-    }}
-  >
-    Prices shown in {currencyCode}.
-  </p>
-)}
+
+    {marketPrices && (
+      <p
+        style={{
+          fontSize: '11px',
+          color: '#777',
+          marginTop: '4px',
+          marginBottom: '0',
+          textAlign: 'right',
+          minHeight: 16,
+        }}
+      >
+        Prices shown in {currencyCode}.
+      </p>
+    )}
+
   {/* Variant options (unchanged) */}
   {variantOptions.length > 0 && (
     <div style={{ marginTop: '24px' }}>
@@ -759,16 +850,18 @@ const detailKeys: Array<
           if (!selectedVariantId || !selectedVariant) return;
 
           addToCart(selectedVariantId, qty, {
-            handle: router.query.handle as string,
-            title: product.title,
-            variantTitle: selectedVariant.title,
-            selectedOptions: selectedVariant.selectedOptions,
-            price: currentPrice.amount,
-            currencyCode: currentPrice.currencyCode,
-            image: product.images?.edges?.[0]?.node?.url || undefined,
-            metafields: product.metafields,
-            quantityAvailable: selectedVariant.quantityAvailable,
-          });
+  handle: router.query.handle as string,
+  title: product.title,
+  variantTitle: selectedVariant.title,
+  selectedOptions: selectedVariant.selectedOptions,
+  price: effectiveRawPrice.toString(),
+  currencyCode: currentPrice.currencyCode,
+  image: product.images?.edges?.[0]?.node?.url || undefined,
+  metafields: product.metafields,
+  quantityAvailable: selectedVariant.quantityAvailable,
+});
+
+
           openDrawer();
         }}
         disabled={approved !== true || isSoldOut}
@@ -887,7 +980,7 @@ export const getStaticProps: GetStaticProps<ProductPageProps> = async (
 ) => {
   const handle = context.params?.handle;
 
-  const query = `
+const query = `
   query ProductByHandle($handle: String!) {
     productByHandle(handle: $handle) {
       id
@@ -920,6 +1013,9 @@ export const getStaticProps: GetStaticProps<ProductPageProps> = async (
             price {
               amount
               currencyCode
+            }
+            metafield(namespace: "custom", key: "member_price") {
+              value
             }
             availableForSale
             quantityAvailable
@@ -991,6 +1087,7 @@ export const getStaticProps: GetStaticProps<ProductPageProps> = async (
     }
   }
 `;
+
 
   const data = await shopifyFetch({ query, variables: { handle } });
 
