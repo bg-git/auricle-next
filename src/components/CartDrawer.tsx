@@ -87,11 +87,22 @@ export default function CartDrawer() {
     ? user.tags.includes('VIP-MEMBER')
     : false;
 
-  const getEffectivePrice = (itemPrice: Pick<CartItem, 'basePrice' | 'memberPrice' | 'price'>) => {
-    const base = parseFloat(itemPrice.basePrice || itemPrice.price || '0');
-    const memberValue = itemPrice.memberPrice?.trim();
-    const member = memberValue ? parseFloat(memberValue) : null;
-    return isVipMember && member !== null ? member : base;
+  const parsePrice = (value?: string) => {
+    const trimmed = value?.trim();
+    if (!trimmed) return null;
+    const parsed = parseFloat(trimmed);
+    return Number.isFinite(parsed) ? parsed : null;
+  };
+
+  const getEffectivePrice = (
+    itemPrice: Pick<CartItem, 'basePrice' | 'memberPrice' | 'price'>
+  ) => {
+    const base =
+      parsePrice(itemPrice.basePrice) ?? parsePrice(itemPrice.price) ?? 0;
+    const member = parsePrice(itemPrice.memberPrice);
+
+    if (isVipMember && member !== null) return member;
+    return base;
   };
 
   const [isCheckingOut, setIsCheckingOut] = useState(false);
