@@ -855,6 +855,8 @@ const detailKeys: Array<
   variantTitle: selectedVariant.title,
   selectedOptions: selectedVariant.selectedOptions,
   price: effectiveRawPrice.toString(),
+  basePrice: baseRawPrice.toString(),
+  memberPrice: memberRaw !== null ? memberRaw.toString() : undefined,
   currencyCode: currentPrice.currencyCode,
   image: product.images?.edges?.[0]?.node?.url || undefined,
   metafields: product.metafields,

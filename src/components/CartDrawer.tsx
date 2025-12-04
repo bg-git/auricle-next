@@ -2,6 +2,7 @@ import { useCart } from '@/context/CartContext';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { useFavourites } from '@/context/FavouritesContext';
+import { useAuth } from '@/context/AuthContext';
 
 const formatPrice = (price: string | undefined) => {
   const num = parseFloat(price || '0');
@@ -79,6 +80,11 @@ export default function CartDrawer() {
   } = useCart();
 
   const { addFavourite } = useFavourites();
+
+  const { user } = useAuth();
+  const isVipMember = Array.isArray(user?.tags)
+    ? user.tags.includes('VIP-MEMBER')
+    : false;
 
   const [isCheckingOut, setIsCheckingOut] = useState(false);
 
@@ -198,9 +204,34 @@ export default function CartDrawer() {
               e.preventDefault();
               if (isCheckingOut) return;
               setIsCheckingOut(true);
-              const url = await flushSync();
+              const syncedUrl = await flushSync();
               setIsCheckingOut(false);
-              if (!url) return;
+              if (!syncedUrl) return;
+
+              let urlToUse = syncedUrl;
+
+              if (isVipMember) {
+                try {
+                  const res = await fetch('/api/create-vip-draft-checkout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ items: cartItems }),
+                  });
+
+                  const data = await res.json();
+
+                  if (res.ok && data.invoiceUrl) {
+                    urlToUse = data.invoiceUrl;
+                  } else if (data?.message) {
+                    console.warn('VIP draft checkout failed:', data.message);
+                  }
+                } catch (error) {
+                  console.error('Failed to create VIP draft checkout', error);
+                }
+              }
+
+              if (!urlToUse) return;
 
               cartItems.forEach((item) => {
                 if (item.handle) {
@@ -222,7 +253,7 @@ export default function CartDrawer() {
                   error
                 );
               }
-              window.location.href = url;
+              window.location.href = urlToUse;
             }}
           >
             {isCheckingOut ? 'LOADING…' : 'CHECKOUT'}
