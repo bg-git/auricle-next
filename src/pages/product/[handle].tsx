@@ -31,6 +31,10 @@ const FavouriteToggleLazy = dynamic(
     loading: () => null,
   }
 );
+const vipPricingEnabled =
+  typeof window === 'undefined'
+    ? process.env.NEXT_PUBLIC_VIP_PRICING_ENABLED === 'true'
+    : process.env.NEXT_PUBLIC_VIP_PRICING_ENABLED === 'true';
 
 // TYPES
 interface Metafield {
@@ -330,7 +334,10 @@ const memberRaw =
 
 // Effective price: VIP uses member price if available; otherwise default
 const effectiveRawPrice =
-  isVipMember && memberRaw !== null ? memberRaw : baseRawPrice;
+  vipPricingEnabled && isVipMember && memberRaw !== null
+    ? memberRaw
+    : baseRawPrice;
+
 
 const formattedPrice =
   effectiveRawPrice % 1 === 0
@@ -626,33 +633,34 @@ const detailKeys: Array<
           >
             {defaultLabel}
           </div>
-          {memberLabel && (
-            <>
-              <div
-                style={{
-                  fontSize: '12px',
-                  opacity: 0.9,
-                  marginTop: '4px',
-                }}
-              >
-                VIP MEMBER PRICE{' '}
-                <span style={{ color: '#8520f7', fontWeight: 600 }}>
-                  {memberLabel}
-                </span>
-              </div>
-              <Link
-                href="/vip-membership"
-                style={{
-                  fontSize: '11px',
-                  marginTop: '2px',
-                  display: 'inline-block',
-                  textDecoration: 'underline',
-                }}
-              >
-                Learn more
-              </Link>
-            </>
-          )}
+          {vipPricingEnabled && memberLabel && (
+  <>
+    <div
+      style={{
+        fontSize: '12px',
+        opacity: 0.9,
+        marginTop: '4px',
+      }}
+    >
+      VIP MEMBER PRICE{' '}
+      <span style={{ color: '#8520f7', fontWeight: 600 }}>
+        {memberLabel}
+      </span>
+    </div>
+    <Link
+      href="/vip-membership"
+      style={{
+        fontSize: '11px',
+        marginTop: '2px',
+        display: 'inline-block',
+        textDecoration: 'underline',
+      }}
+    >
+      Learn more
+    </Link>
+  </>
+)}
+
         </>
       )
     ) : (
