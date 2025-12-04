@@ -7,6 +7,18 @@ const SHOPIFY_TOKEN = process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN!;
 const VIP_DISCOUNT_CODE = process.env.VIP_DISCOUNT_CODE;
 const URL = `https://${SHOPIFY_DOMAIN}/api/2024-04/graphql.json`;
 
+const applyVipDiscountParam = (url: string | undefined, isVipMember: boolean) => {
+  if (!url || !VIP_DISCOUNT_CODE || !isVipMember) return url;
+  try {
+    const parsed = new URL(url);
+    parsed.searchParams.set('discount', VIP_DISCOUNT_CODE);
+    return parsed.toString();
+  } catch (error) {
+    console.warn('Unable to append VIP discount param to checkout URL', error);
+    return url;
+  }
+};
+
 async function shopifyFetch(query: string, variables: Record<string, unknown>) {
   const res = await fetch(URL, {
     method: 'POST',
@@ -165,6 +177,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (discountedCart) {
       cart = discountedCart;
     }
+  }
+
+  // Ensure checkout URL carries the VIP discount code for the redirect,
+  // even if Shopify doesn't return a discounted URL in the mutation response.
+  const checkoutWithDiscount = applyVipDiscountParam(
+    cart.checkoutUrl as string,
+    isVipMember
+  );
+  if (checkoutWithDiscount) {
+    cart = { ...cart, checkoutUrl: checkoutWithDiscount };
   }
 
   return res.status(200).json({ cart });
