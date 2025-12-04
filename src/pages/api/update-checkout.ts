@@ -4,6 +4,7 @@ import { getCustomerCountryCode } from '@/lib/market';
 
 const SHOPIFY_DOMAIN = process.env.SHOPIFY_STORE_DOMAIN!;
 const SHOPIFY_TOKEN = process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN!;
+const VIP_DISCOUNT_CODE = process.env.VIP_DISCOUNT_CODE;
 const URL = `https://${SHOPIFY_DOMAIN}/api/2024-04/graphql.json`;
 
 async function shopifyFetch(query: string, variables: Record<string, unknown>) {
@@ -31,6 +32,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const customerAccessToken = req.cookies?.[COOKIE_NAME];
+  let isVipMember = false;
 
   const GET_CART = `${CART_FRAGMENT}\nquery getCart($id: ID!) { cart(id: $id) { ...CartFields } }`;
 
@@ -93,6 +95,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const customerQuery = `
         query customer($customerAccessToken: String!) {
           customer(customerAccessToken: $customerAccessToken) {
+            tags
             defaultAddress {
               country
             }
@@ -105,6 +108,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       if (customer?.defaultAddress?.country) {
         countryCode = getCustomerCountryCode(customer);
+      }
+
+      if (Array.isArray(customer?.tags)) {
+        isVipMember = customer.tags.includes('VIP-MEMBER');
       }
     } catch (error) {
       console.error('Failed to fetch customer country:', error);
@@ -131,6 +138,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (!cart) {
     return res.status(404).json({ message: 'Cart not found after update', debug: json });
+  }
+
+  // Apply VIP discount code if configured and the customer is tagged
+  if (isVipMember && VIP_DISCOUNT_CODE) {
+    const discountMutation = `
+      mutation cartDiscountCodesUpdate($cartId: ID!, $discountCodes: [String!]!) {
+        cartDiscountCodesUpdate(cartId: $cartId, discountCodes: $discountCodes) {
+          userErrors { field message }
+        }
+      }
+    `;
+
+    const discountRes = await shopifyFetch(discountMutation, {
+      cartId: checkoutId,
+      discountCodes: [VIP_DISCOUNT_CODE],
+    });
+
+    const discountErrors = discountRes?.data?.cartDiscountCodesUpdate?.userErrors;
+    if (discountErrors?.length) {
+      console.error('Failed to apply VIP discount code on update:', discountErrors);
+    }
   }
 
   return res.status(200).json({ cart });
