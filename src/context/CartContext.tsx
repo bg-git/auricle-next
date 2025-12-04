@@ -169,7 +169,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
               }
             ) => {
               // Try to find existing item data from localStorage
-              const existingItem = parsedItems.find(item => item.variantId === edge.node.merchandise.id);
+              const existingItem = parsedItems.find(
+                (item) => item.variantId === edge.node.merchandise.id
+              );
               return {
                 variantId: edge.node.merchandise.id,
                 quantity: edge.node.quantity,
@@ -279,7 +281,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
           const existingItemsMap = new Map(
             latestItemsRef.current.map(item => [item.variantId, item])
           );
-          
+
           const updated = (cart.lines.edges || []).map(
             (
               edge: {
@@ -295,6 +297,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
                 variantTitle: existingItem?.variantTitle,
                 selectedOptions: existingItem?.selectedOptions,
                 price: existingItem?.price,
+                basePrice: existingItem?.basePrice,
+                memberPrice: existingItem?.memberPrice,
+                currencyCode: existingItem?.currencyCode,
                 image: existingItem?.image,
                 handle: existingItem?.handle,
                 metafields: existingItem?.metafields,
