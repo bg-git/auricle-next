@@ -23,6 +23,7 @@ import '@/styles/pages/blog.scss';
 import '@/styles/pages/information.scss';
 import '@/styles/pages/register-modal.scss';
 import '@/styles/pages/region-selector.scss';
+import '@/styles/pages/vip-membership.scss';
 
 
 

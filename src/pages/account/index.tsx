@@ -3,6 +3,8 @@ import useSWR from "swr";
 import { useAuth } from "@/context/AuthContext";
 import { useAccountValidationContext } from "@/context/AccountValidationContext";
 import { useRouter } from "next/router";
+import Link from "next/link";
+
 
 const tabs = [
   "Orders",
@@ -246,6 +248,13 @@ export default function AccountPage() {
         <p>Manage your account, orders, and addresses below.</p>
       </div>
 
+{/* VIP Membership button */}
+    <div className="account-vip-cta">
+      <Link href="/vip-membership" className="vip-membership-button">
+        VIP Membership
+      </Link>
+    </div>
+    
       <div className="tab-bar">
         {tabs.map((tab) => (
           <button

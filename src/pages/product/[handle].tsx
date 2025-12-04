@@ -18,8 +18,6 @@ import ProductGallery from "@/components/ProductGallery";
 import dynamic from 'next/dynamic';
 import { useCopy } from '@/hooks/useCopy';
 import { useRegion } from '@/context/RegionContext';
-import { formatPrice } from '@/lib/market';
-
 
 const StyledByYouLazy = dynamic(() => import('@/components/StyledByYou'), {
   ssr: false,
@@ -196,47 +194,50 @@ const isVipMember =
   }, [user, refreshUser]);
 
   // Fetch market-specific prices when user is authenticated
-  useEffect(() => {
-    if (!user || !product?.handle) {
-      console.log('Skipping market price fetch:', { hasUser: !!user, hasHandle: !!product?.handle });
-      return;
-    }
+ useEffect(() => {
+  if (!user || !product?.handle) {
+    console.log('Skipping market price fetch:', {
+      hasUser: !!user,
+      hasHandle: !!product?.handle,
+    });
+    return;
+  }
 
-    console.log('Fetching market prices for user with address:', user.defaultAddress);
+  console.log('Fetching market prices for user with address:', user.defaultAddress);
 
-    const fetchMarketPrices = async () => {
-      try {
-        const response = await fetch('/api/shopify/get-product-price', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ handle: product.handle }),
-          credentials: 'include',
-        });
+  const fetchMarketPrices = async () => {
+    try {
+      const response = await fetch('/api/shopify/get-product-price', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ handle: product.handle }),
+        credentials: 'include',
+      });
 
-        if (response.ok) {
-          const data = await response.json();
-          console.log('Market prices received:', data);
-          setMarketPrices(data);
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Market prices received:', data);
+        setMarketPrices(data);
 
-          // Cache in localStorage with timestamp
-          try {
-            localStorage.setItem(`market-price-${product.id}`, JSON.stringify({
-              data,
-              timestamp: Date.now()
-            }));
-          } catch {
-            // Ignore localStorage errors
-          }
-        } else {
-          console.error('Failed to fetch market prices, status:', response.status);
+        try {
+          localStorage.setItem(`market-price-${product.id}`, JSON.stringify({
+            data,
+            timestamp: Date.now(),
+          }));
+        } catch {
+          // Ignore localStorage errors
         }
-      } catch (error) {
-        console.error('Failed to fetch market prices:', error);
+      } else {
+        console.error('Failed to fetch market prices, status:', response.status);
       }
-    };
+    } catch (error) {
+      console.error('Failed to fetch market prices:', error);
+    }
+  };
 
-    fetchMarketPrices();
-  }, [user, product?.handle]);
+  fetchMarketPrices();
+}, [user, product?.handle, product?.id]);
+
 
   useEffect(() => {
     const v = variantEdges.find(e => e.node.id === selectedVariantId)?.node;
@@ -580,95 +581,98 @@ const detailKeys: Array<
   </p>
 
     {/* Price */}
-    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-      <div
-        style={{
-          minWidth: '80px',
-          position: 'relative',
-          textAlign: 'right',
-        }}
-      >
-        {approved === true ? (
-          isVipMember && memberLabel ? (
-            <>
-              {/* VIP: show member price as main */}
-              <div
-                aria-live="polite"
-                style={{
-                  fontSize: '16px',
-                  fontWeight: 600,
-                  lineHeight: '22px',
-                }}
-              >
-                {memberLabel}
-              </div>
-              <div
-                style={{
-                  fontSize: '12px',
-                  textDecoration: 'line-through',
-                  opacity: 0.7,
-                  marginTop: '2px',
-                }}
-              >
-                Non-member: {defaultLabel}
-              </div>
-            </>
-          ) : (
-            <>
-              {/* Non-VIP: show default price as main, member as teaser */}
-              <div
-                aria-live="polite"
-                style={{
-                  fontSize: '16px',
-                  fontWeight: 600,
-                  lineHeight: '22px',
-                }}
-              >
-                {defaultLabel}
-              </div>
-              {memberLabel && (
-                <div
-                  style={{
-                    fontSize: '12px',
-                    opacity: 0.8,
-                    marginTop: '2px',
-                  }}
-                >
-                  Member price with VIP: {memberLabel}
-                </div>
-              )}
-            </>
-          )
-        ) : (
-          // Reserve space but hide price when not approved
+<div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+  <div
+    style={{
+      minWidth: '80px',
+      position: 'relative',
+      textAlign: 'right',
+    }}
+  >
+    {approved === true ? (
+      isVipMember && memberLabel ? (
+        <>
+          {/* VIP: show member price as main (no label, no purple) */}
           <div
+            aria-live="polite"
             style={{
               fontSize: '16px',
               fontWeight: 600,
               lineHeight: '22px',
-              visibility: 'hidden',
+            }}
+          >
+            {memberLabel}
+          </div>
+          <div
+            style={{
+              fontSize: '12px',
+              opacity: 0.7,
+              marginTop: '2px',
+            }}
+          >
+            Non-member: {defaultLabel}
+          </div>
+        </>
+      ) : (
+        <>
+          {/* Non-VIP: show default price as main, VIP teaser underneath */}
+          <div
+            aria-live="polite"
+            style={{
+              fontSize: '16px',
+              fontWeight: 600,
+              lineHeight: '22px',
             }}
           >
             {defaultLabel}
           </div>
-        )}
-      </div>
-    </div>
-
-    {marketPrices && (
-      <p
+          {memberLabel && (
+            <>
+              <div
+                style={{
+                  fontSize: '12px',
+                  opacity: 0.9,
+                  marginTop: '4px',
+                }}
+              >
+                VIP MEMBER PRICE{' '}
+                <span style={{ color: '#8520f7', fontWeight: 600 }}>
+                  {memberLabel}
+                </span>
+              </div>
+              <Link
+                href="/vip-membership"
+                style={{
+                  fontSize: '11px',
+                  marginTop: '2px',
+                  display: 'inline-block',
+                  textDecoration: 'underline',
+                }}
+              >
+                Learn more
+              </Link>
+            </>
+          )}
+        </>
+      )
+    ) : (
+      // Reserve space but hide price when not approved
+      <div
         style={{
-          fontSize: '11px',
-          color: '#777',
-          marginTop: '4px',
-          marginBottom: '0',
-          textAlign: 'right',
-          minHeight: 16,
+          fontSize: '16px',
+          fontWeight: 600,
+          lineHeight: '22px',
+          visibility: 'hidden',
         }}
       >
-        Prices shown in {currencyCode}.
-      </p>
+        {defaultLabel}
+      </div>
     )}
+  </div>
+</div>
+
+
+    
 
   {/* Variant options (unchanged) */}
   {variantOptions.length > 0 && (
