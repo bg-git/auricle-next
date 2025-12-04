@@ -142,9 +142,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   // Apply VIP discount code if configured and the customer is tagged
   if (isVipMember && VIP_DISCOUNT_CODE) {
-    const discountMutation = `
+    const discountMutation = `${CART_FRAGMENT}
       mutation cartDiscountCodesUpdate($cartId: ID!, $discountCodes: [String!]!) {
         cartDiscountCodesUpdate(cartId: $cartId, discountCodes: $discountCodes) {
+          cart { ...CartFields }
           userErrors { field message }
         }
       }
@@ -158,6 +159,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const discountErrors = discountRes?.data?.cartDiscountCodesUpdate?.userErrors;
     if (discountErrors?.length) {
       console.error('Failed to apply VIP discount code on update:', discountErrors);
+    }
+
+    const discountedCart = discountRes?.data?.cartDiscountCodesUpdate?.cart;
+    if (discountedCart) {
+      cart = discountedCart;
     }
   }
 
