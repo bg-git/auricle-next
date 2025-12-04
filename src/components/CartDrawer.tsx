@@ -16,6 +16,7 @@ const getCurrencySymbol = (currencyCode?: string) => {
     CAD: 'CA$',
     EUR: '€',
   };
+  
   return symbols[currencyCode || 'GBP'] || '£';
 };
 
