@@ -6,6 +6,18 @@ const SHOPIFY_DOMAIN = process.env.SHOPIFY_STORE_DOMAIN;
 const SHOPIFY_TOKEN = process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN;
 const VIP_DISCOUNT_CODE = process.env.VIP_DISCOUNT_CODE;
 
+const applyVipDiscountParam = (url: string | undefined, isVipMember: boolean) => {
+  if (!url || !VIP_DISCOUNT_CODE || !isVipMember) return url;
+  try {
+    const parsed = new URL(url);
+    parsed.searchParams.set('discount', VIP_DISCOUNT_CODE);
+    return parsed.toString();
+  } catch (error) {
+    console.warn('Unable to append VIP discount param to checkout URL', error);
+    return url;
+  }
+};
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Method not allowed' });
@@ -110,7 +122,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(500).json({ message: 'Failed to create cart', debug: json });
   }
 
-  let checkoutUrl = cart.checkoutUrl as string;
+  let checkoutUrl = applyVipDiscountParam(cart.checkoutUrl as string, isVipMember);
   const checkoutId = cart.id as string;
 
   // Apply VIP discount code if configured and the customer is tagged
@@ -138,8 +150,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
 
       const discountJson = await discountRes.json();
-      const updatedCheckoutUrl =
-        discountJson?.data?.cartDiscountCodesUpdate?.cart?.checkoutUrl;
+      const updatedCheckoutUrl = applyVipDiscountParam(
+        discountJson?.data?.cartDiscountCodesUpdate?.cart?.checkoutUrl,
+        isVipMember
+      );
       if (updatedCheckoutUrl) {
         checkoutUrl = updatedCheckoutUrl;
       }
