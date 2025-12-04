@@ -5,7 +5,7 @@ import { getCustomerCountryCode } from '@/lib/market';
 const SHOPIFY_DOMAIN = process.env.SHOPIFY_STORE_DOMAIN!;
 const SHOPIFY_TOKEN = process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN!;
 const VIP_DISCOUNT_CODE = process.env.VIP_DISCOUNT_CODE;
-const URL = `https://${SHOPIFY_DOMAIN}/api/2024-04/graphql.json`;
+const SHOPIFY_API_URL = `https://${SHOPIFY_DOMAIN}/api/2024-04/graphql.json`;
 
 const applyVipDiscountParam = (url: string | undefined, isVipMember: boolean) => {
   if (!url || !VIP_DISCOUNT_CODE || !isVipMember) return url;
@@ -20,7 +20,7 @@ const applyVipDiscountParam = (url: string | undefined, isVipMember: boolean) =>
 };
 
 async function shopifyFetch(query: string, variables: Record<string, unknown>) {
-  const res = await fetch(URL, {
+  const res = await fetch(SHOPIFY_API_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
