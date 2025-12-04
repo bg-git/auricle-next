@@ -110,12 +110,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(500).json({ message: 'Failed to create cart', debug: json });
   }
 
+  let checkoutUrl = cart.checkoutUrl as string;
+  const checkoutId = cart.id as string;
+
   // Apply VIP discount code if configured and the customer is tagged
   if (isVipMember && VIP_DISCOUNT_CODE) {
     try {
       const discountMutation = `
         mutation cartDiscountCodesUpdate($cartId: ID!, $discountCodes: [String!]!) {
           cartDiscountCodesUpdate(cartId: $cartId, discountCodes: $discountCodes) {
+            cart { id checkoutUrl }
             userErrors { field message }
           }
         }
@@ -129,11 +133,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         },
         body: JSON.stringify({
           query: discountMutation,
-          variables: { cartId: cart.id, discountCodes: [VIP_DISCOUNT_CODE] },
+          variables: { cartId: checkoutId, discountCodes: [VIP_DISCOUNT_CODE] },
         }),
       });
 
       const discountJson = await discountRes.json();
+      const updatedCheckoutUrl =
+        discountJson?.data?.cartDiscountCodesUpdate?.cart?.checkoutUrl;
+      if (updatedCheckoutUrl) {
+        checkoutUrl = updatedCheckoutUrl;
+      }
       const userErrors = discountJson?.data?.cartDiscountCodesUpdate?.userErrors;
       if (userErrors?.length) {
         console.error('Failed to apply VIP discount code:', userErrors);
@@ -143,5 +152,5 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
   }
 
-  return res.status(200).json({ checkoutUrl: cart.checkoutUrl, checkoutId: cart.id });
+  return res.status(200).json({ checkoutUrl, checkoutId });
 }
