@@ -1,11 +1,11 @@
-import { useCart } from '@/context/CartContext';
+import { useCart, type CartItem } from '@/context/CartContext';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { useFavourites } from '@/context/FavouritesContext';
 import { useAuth } from '@/context/AuthContext';
 
-const formatPrice = (price: string | undefined) => {
-  const num = parseFloat(price || '0');
+const formatPrice = (price: string | number | undefined) => {
+  const num = typeof price === 'number' ? price : parseFloat(price || '0');
   return num % 1 === 0 ? num.toFixed(0) : num.toFixed(2);
 };
 
@@ -85,6 +85,13 @@ export default function CartDrawer() {
   const isVipMember = Array.isArray(user?.tags)
     ? user.tags.includes('VIP-MEMBER')
     : false;
+
+  const getEffectivePrice = (itemPrice: Pick<CartItem, 'basePrice' | 'memberPrice' | 'price'>) => {
+    const base = parseFloat(itemPrice.basePrice || itemPrice.price || '0');
+    const memberValue = itemPrice.memberPrice?.trim();
+    const member = memberValue ? parseFloat(memberValue) : null;
+    return isVipMember && member !== null ? member : base;
+  };
 
   const [isCheckingOut, setIsCheckingOut] = useState(false);
 
@@ -170,7 +177,7 @@ export default function CartDrawer() {
                             +
                           </button>
                         </div>
-                        <div className="cart-price">{getCurrencySymbol(item.currencyCode)}{formatPrice(item.price)}</div>
+                        <div className="cart-price">{getCurrencySymbol(item.currencyCode)}{formatPrice(getEffectivePrice(item))}</div>
 
                       </div>
                     </div>
@@ -186,10 +193,9 @@ export default function CartDrawer() {
   {formatPrice(
     cartItems
       .reduce(
-        (sum, item) => sum + parseFloat(item.price || '0') * item.quantity,
+        (sum, item) => sum + getEffectivePrice(item) * item.quantity,
         0
       )
-      .toString()
   )}
 </div>
 
