@@ -55,8 +55,8 @@ export default function VipMembershipPage() {
               </p>
 
               <div className="vip-section__actions">
-                <Link href="/collections/all" className="vip-link-button">
-                  Browse current catalogue
+                <Link href="/" className="vip-link-button">
+                  Back to homepage
                 </Link>
               </div>
             </div>
