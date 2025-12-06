@@ -35,7 +35,6 @@ Best Regards
 Auricle`
 )}`;
 
-// General contact email
 const contactMailto = `mailto:info@auricle.co.uk?subject=${encodeURIComponent(
   'Contact AURICLE'
 )}&body=${encodeURIComponent(
@@ -49,10 +48,8 @@ Best,
 `
 )}`;
 
-// WhatsApp details – same as register flow
 const whatsappNumber = '447757690863';
 
-// WhatsApp links
 const whatsappRegisterLink = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
   `Hey,
 
@@ -86,6 +83,8 @@ Best,
 `
 )}`;
 
+import { useAuth } from '@/context/AuthContext';
+
 const sections = [
   {
     title: 'CARE',
@@ -100,7 +99,7 @@ const sections = [
     links: [
       { label: 'About Us', href: '/information/about-us' },
       { label: 'Pricing & Efficiency', href: '/information/pricing-and-efficiency' },
-      { label: 'Blog', href: '/piercing-magazine' },
+      { label: 'VIP Pricing', href: '/vip-membership' },
     ],
   },
   {
@@ -126,13 +125,32 @@ function Footer() {
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
 
+  const { openDrawer: openChatDrawer } = useChatDrawer();
+  const { user } = useAuth();
+
+  // --------------------------------------
+  // 🔥 TAG LOGIC FOR FOOTER VIP BANNER
+  // --------------------------------------
+  const tags = Array.isArray(user?.tags) ? user!.tags.map(t => t.toLowerCase()) : [];
+  const isVipMember = tags.includes('vip-member');
+
+  const showVipFooterBanner = !isVipMember; // Show unless VIP
+
   const toggle = (index: number) =>
     setOpenIndex(openIndex === index ? null : index);
 
-  const { openDrawer: openChatDrawer } = useChatDrawer();
-
   return (
     <>
+      {/* 🔴 VIP Banner - only shows for NON-VIP customers */}
+      {showVipFooterBanner && (
+        <Link href="/vip-membership" className="vip-footer-banner">
+          <div className="vip-footer-banner__inner">
+            <span>Get exclusive VIP pricing</span>
+            <span aria-hidden="true">→</span>
+          </div>
+        </Link>
+      )}
+
       <footer className="site-footer">
         <div className="footer-inner">
           {sections.map((section, index) => (
@@ -146,11 +164,11 @@ function Footer() {
                 onClick={() => toggle(index)}
                 aria-expanded={openIndex === index}
               >
-                {section.title}
                 <span className="footer-toggle-icon">
                   {openIndex === index ? '−' : '+'}
                 </span>
               </button>
+
               <ul className="footer-links">
                 {section.links.map((link) => (
                   <li key={`${section.title}-${link.label}`}>
@@ -189,7 +207,6 @@ function Footer() {
         </div>
       </footer>
 
-      {/* Register modal (Join Us) */}
       <RegisterModal
         isOpen={isJoinModalOpen}
         onClose={() => setIsJoinModalOpen(false)}
@@ -197,7 +214,6 @@ function Footer() {
         emailHref={wholesaleMailto}
       />
 
-      {/* Contact modal (Contact Us) */}
       <ContactModal
         isOpen={isContactModalOpen}
         onClose={() => setIsContactModalOpen(false)}

@@ -197,3 +197,22 @@
     }
   }
 }
+.vip-footer-banner {
+  width: 100%;
+  display: block;
+  background: #b00020;
+  text-decoration: none;
+}
+
+.vip-footer-banner__inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 8px 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+}

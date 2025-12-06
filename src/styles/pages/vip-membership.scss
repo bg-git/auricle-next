@@ -49,7 +49,6 @@
   background: #181818;
   color: #fff;
   font-size: 0.85rem;
-  font-weight: 600;
 }
 
 .vip-note {
@@ -81,14 +80,13 @@
   padding: 0.75rem 1.6rem;
   border-radius: 999px;
   font-size: 0.9rem;
-  font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
   transition: transform 0.08s ease, box-shadow 0.08s ease, opacity 0.1s ease;
 }
 
 .vip-cta--primary {
-  background: #181818;
+  background: #b00020;
   color: #fff;
 }
 
@@ -215,4 +213,52 @@
   .vip-section__image {
     max-width: 460px;
   }
+}
+.vip-link-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1.25rem;
+  border-radius: 999px; // pill
+  background: #181818;
+  color: #fff;
+  font-size: 0.85rem;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+}
+.vip-price-wrapper {
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end; // keeps it aligned with right edge like before
+  gap: 2px;
+}
+
+.vip-price-teaser {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  font-size: 12px;
+  border: 1px solid #b00020;
+  border-radius: 0; // squared border
+  color: inherit;   // label uses default text colour
+}
+
+.vip-price-teaser__label {
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.vip-price-teaser__value {
+  font-weight: 600;
+  color: #b00020; // price in the red tone
+}
+
+.vip-price-link {
+  font-size: 11px;
+  text-decoration: underline;
+  color: inherit; // keeps same text colour as price block area
 }

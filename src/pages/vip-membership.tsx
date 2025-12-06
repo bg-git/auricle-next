@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Seo from '@/components/Seo';
 import { useAuth } from '@/context/AuthContext';
+import RegisterModal from '@/components/RegisterModal';
 
 type ApiResponse = {
   url?: string;
@@ -24,10 +25,67 @@ type VipSection = {
   };
 };
 
+// 🔹 Same mailto as footer “Join Us”
+const wholesaleMailto = `mailto:info@auricle.co.uk?subject=${encodeURIComponent(
+  'Wholesale Enquiry'
+)}&body=${encodeURIComponent(
+  `Hey,
+    
+Thank you for your interest in becoming an authorised AURICLE stockist.
+
+To ensure access is reserved exclusively for verified piercing studios and jewellery retailers, please complete the details below. This helps us confirm eligibility and activate your wholesale account as quickly as possible.
+
+First Name = 
+
+Last Name = 
+
+Company Name = 
+
+Email Address = 
+
+Trading Address = 
+
+Website = 
+
+Social Media = 
+
+Phone Number =
+
+Once we’ve confirmed your business details, we’ll respond to this email with your access credentials. Verification is usually completed within one hour.
+
+Best Regards
+Auricle`
+)}`;
+
+// 🔹 Reuseable WhatsApp VIP registration text
+const vipWhatsappText = `Hey,
+
+Thank you for your interest in becoming an authorised AURICLE stockist.
+
+To ensure access is reserved exclusively for verified piercing studios and jewellery retailers, please complete the details below and send them in this chat:
+
+First Name =
+Last Name = 
+Company Name = 
+Email Address = 
+Trading Address = 
+Website = 
+Social Media = 
+Phone Number =
+
+Once we’ve confirmed your business details, we’ll respond via email or WhatsApp with your access credentials. Verification is usually completed within one hour.
+
+Best Regards
+Auricle`;
+
+const vipWhatsappLink = `https://wa.me/447757690863?text=${encodeURIComponent(
+  vipWhatsappText
+)}`;
+
 const sections: VipSection[] = [
   {
     id: 'earn-more',
-    imageSrc: '/images/vip/VIP-MEMBER.jpg',
+    imageSrc: '/images/vip/AURICLE-VIP-MEMBER1-1.jpg',
     imageAlt: 'Organised drawers of jewellery in studio',
     title: 'Pay less, earn more on every order',
     kicker: 'Membership that pays for itself',
@@ -67,6 +125,7 @@ no emails or support tickets needed.`,
 ];
 
 export default function VipMembershipPage() {
+  const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -76,6 +135,10 @@ export default function VipMembershipPage() {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // ✅ Gate flag – same concept as product page
+  const approved =
+    !mounted || authLoading ? null : Boolean(user?.approved);
 
   const isVipMember =
     mounted && Array.isArray(user?.tags)
@@ -165,7 +228,7 @@ export default function VipMembershipPage() {
 
   // Reusable VIP CTA that auto-switches label / handler
   const renderVipCta = (variant: 'primary' | 'ghost' = 'primary') => {
-    const label = isVipMember ? 'Manage membership' : 'Become a VIP member';
+    const label = isVipMember ? 'Manage membership' : 'Become a VIP member →';
 
     const handleClick = () => {
       if (isVipMember) {
@@ -196,82 +259,113 @@ export default function VipMembershipPage() {
       />
 
       <main className="vip-page">
-        <section className="vip-hero">
-          <p className="vip-hero__tag">AURICLE VIP MEMBERSHIP</p>
-          <h1 className="vip-hero__title">
-            Lower B2B costs.
-            <br />
-            Stronger studio margins.
-          </h1>
-
-          <p className="vip-hero__subtitle">
-            A flat monthly membership that unlocks VIP pricing across the
-            catalogue. Pay less for the jewellery you already buy and keep more
-            of every sale.
-          </p>
-
-          <div className="vip-hero__meta">
-            <span className="vip-pill">£11.99 / month</span>
-            <span className="vip-note">
-              Cancel or manage anytime via Stripe.
-            </span>
-          </div>
-
-          <div className="vip-hero__cta-row">
-            {renderVipCta('primary')}
-
-            <span className="vip-status">
-              {authLoading && !mounted && 'Checking membership status…'}
-              {mounted && !authLoading && isVipMember && 'VIP active on this account.'}
-              {mounted && !authLoading && !isVipMember && 'Available to verified studios only.'}
-            </span>
-          </div>
-
-          {error && (
-            <p className="vip-error">
-              {error}
+        {/* ✅ Gate: only approved users see the full VIP content */}
+        {approved !== true ? (
+          <section className="vip-gate">
+            <h1 className="vip-hero__title">VIP Membership</h1>
+            <p className="vip-hero__subtitle">
+              VIP Membership is reserved for verified wholesale account holders.
             </p>
-          )}
-        </section>
+            <p className="vip-hero__subtitle">
+              You do not have a verified account. Please{' '}
+              <Link href="/sign-in" className="vip-link-button">
+                Sign in
+              </Link>{' '}
+              or{' '}
+              <button
+                type="button"
+                onClick={() => setIsJoinModalOpen(true)}
+                className="vip-link-button"
+              >
+                Join Us
+              </button>
+              .
+            </p>
+          </section>
+        ) : (
+          <>
+            <section className="vip-hero">
+              <p className="vip-hero__tag">AURICLE VIP MEMBERSHIP</p>
+              <h1 className="vip-hero__title">
+                Lower product prices.
+                <br />
+                Bigger profit margins.
+              </h1>
 
-        <section className="vip-sections">
-          {sections.map((section) => {
-            const sectionClass = `vip-section${
-              section.align === 'right' ? ' vip-section--reverse' : ''
-            }`;
+              <p className="vip-hero__subtitle">
+                A flat monthly membership that unlocks VIP pricing across our entire
+                catalogue. Pay less for the jewellery you already buy and keep more profit
+                on every sale. It just makes sense!
+              </p>
 
-            return (
-              <section key={section.id} className={sectionClass}>
-                <div className="vip-section__image">
-                  <div className="vip-section__image-inner">
-                    <img src={section.imageSrc} alt={section.imageAlt} />
-                  </div>
-                </div>
+              <div className="vip-hero__meta">
+                <span className="vip-pill">£11.99 / month</span>
+                <span className="vip-note">
+                  Cancel or manage anytime via Stripe.
+                </span>
+              </div>
 
-                <div className="vip-section__content">
-                  {section.kicker && (
-                    <p className="vip-section__kicker">{section.kicker}</p>
-                  )}
-                  <h2 className="vip-section__title">{section.title}</h2>
-                  <p className="vip-section__body">{section.body}</p>
+              <div className="vip-hero__cta-row">
+                {renderVipCta('primary')}
 
-                  <div className="vip-section__actions">
-                    {section.showVipCta && renderVipCta('ghost')}
+                <span className="vip-status">
+                  {authLoading && !mounted && 'Checking membership status…'}
+                  {mounted && !authLoading && isVipMember && 'I am a VIP member.'}
+                  {mounted && !authLoading && !isVipMember && 'Start saving money today!'}
+                </span>
+              </div>
 
-                    {section.linkButton && (
-                      <Link
-                        href={section.linkButton.href}
-                        className="vip-link-button"
-                      >
-                        {section.linkButton.label}
-                      </Link>
-                    )}
-                  </div>
-                </div>
-              </section>
-            );
-          })}
-        </section>
+              {error && <p className="vip-error">{error}</p>}
+            </section>
+
+            <section className="vip-sections">
+              {sections.map((section) => {
+                const sectionClass = `vip-section${
+                  section.align === 'right' ? ' vip-section--reverse' : ''
+                }`;
+
+                return (
+                  <section key={section.id} className={sectionClass}>
+                    <div className="vip-section__image">
+                      <div className="vip-section__image-inner">
+                        <img src={section.imageSrc} alt={section.imageAlt} />
+                      </div>
+                    </div>
+
+                    <div className="vip-section__content">
+                      {section.kicker && (
+                        <p className="vip-section__kicker">{section.kicker}</p>
+                      )}
+                      <h2 className="vip-section__title">{section.title}</h2>
+                      <p className="vip-section__body">{section.body}</p>
+
+                      <div className="vip-section__actions">
+                        {section.showVipCta && renderVipCta('ghost')}
+
+                        {section.linkButton && (
+                          <Link
+                            href={section.linkButton.href}
+                            className="vip-link-button"
+                          >
+                            {section.linkButton.label}
+                          </Link>
+                        )}
+                      </div>
+                    </div>
+                  </section>
+                );
+              })}
+            </section>
+          </>
+        )}
+
+        {/* 🔹 Always render the modal so the Join Us button can open it */}
+        <RegisterModal
+          isOpen={isJoinModalOpen}
+          onClose={() => setIsJoinModalOpen(false)}
+          whatsappLink={vipWhatsappLink}
+          emailHref={wholesaleMailto}
+        />
       </main>
     </>
   );

@@ -155,22 +155,100 @@ export default function ProductPage({ product, ugcItems }: ProductPageProps) {
   );
   return firstInStock ?? nodes[0];
 }, [variantEdges]);
+// Group variant options (e.g. Gauge, Length) from selectedOptions
+const optionDefinitions = useMemo(() => {
+  const optionMap = new Map<string, Set<string>>();
+
+  variantEdges.forEach(({ node }) => {
+    node.selectedOptions.forEach((opt) => {
+      if (!optionMap.has(opt.name)) {
+        optionMap.set(opt.name, new Set());
+      }
+      optionMap.get(opt.name)!.add(opt.value);
+    });
+  });
+
+  let defs = Array.from(optionMap.entries()).map(([name, values]) => ({
+    name,
+    values: Array.from(values),
+  }));
+
+  // 🔎 Filter out the fake Shopify "Default Title" option
+  // (single option set with only "Default Title" as a value)
+  defs = defs.filter(
+    (opt) =>
+      !(
+        opt.values.length === 1 &&
+        opt.values[0] &&
+        opt.values[0].toLowerCase() === 'default title'
+      )
+  );
+
+  return defs;
+}, [variantEdges]);
+
+const primaryOptionName = optionDefinitions[0]?.name || null;
+// Track current selection per option name
+const [selectedOptionsState, setSelectedOptionsState] = useState<
+  Record<string, string>
+>({});
 
 
-  useEffect(() => {
-    if (!defaultVariant) {
-      setSelectedVariantId(null);
-      setQty(0);
-      return;
-    }
-    setSelectedVariantId(defaultVariant.id);
+useEffect(() => {
+  if (!defaultVariant) {
+    setSelectedVariantId(null);
+    setQty(0);
+    setSelectedOptionsState({}); // 👈 clear options when no default variant
+    return;
+  }
+
+  setSelectedVariantId(defaultVariant.id);
+  setShowVariantImage(false);
+  setQty(
+    defaultVariant.availableForSale &&
+    (defaultVariant.quantityAvailable ?? 0) > 0
+      ? 1
+      : 0
+  );
+
+  // 👇 NEW: initialise selected options from the default variant
+  const initialOptions: Record<string, string> = {};
+  defaultVariant.selectedOptions.forEach((opt) => {
+    initialOptions[opt.name] = opt.value;
+  });
+  setSelectedOptionsState(initialOptions);
+}, [router.asPath, product?.id, defaultVariant]);
+
+
+
+// 🔽 ADD THIS RIGHT HERE 🔽
+useEffect(() => {
+  if (!variantEdges.length) return;
+  if (!Object.keys(selectedOptionsState).length) return;
+
+  const match = variantEdges.find(({ node }) =>
+    node.selectedOptions.every(
+      (opt) => selectedOptionsState[opt.name] === opt.value
+    )
+  );
+
+  if (match) {
+    setSelectedVariantId(match.node.id);
+    setShowVariantImage(true);
+  }
+}, [selectedOptionsState, variantEdges]);
+// 🔼 UP TO HERE 🔼
+
+useEffect(() => {
+  const v = variantEdges.find(e => e.node.id === selectedVariantId)?.node;
+  if (!v) return;
+  setQty((v.quantityAvailable ?? 0) > 0 ? 1 : 0);
+  if (!v.image) {
     setShowVariantImage(false);
-    setQty(
-      defaultVariant.availableForSale && (defaultVariant.quantityAvailable ?? 0) > 0
-        ? 1
-        : 0
-    );
-  }, [router.asPath, product?.id, defaultVariant]);
+  }
+}, [selectedVariantId, variantEdges]);
+
+
 
 
  const { user, refreshUser, loading } = useAuth();
@@ -633,33 +711,20 @@ const detailKeys: Array<
           >
             {defaultLabel}
           </div>
-          {vipPricingEnabled && memberLabel && (
-  <>
-    <div
-      style={{
-        fontSize: '12px',
-        opacity: 0.9,
-        marginTop: '4px',
-      }}
-    >
-      VIP MEMBER PRICE{' '}
-      <span style={{ color: '#8520f7', fontWeight: 600 }}>
-        {memberLabel}
-      </span>
+        {vipPricingEnabled && memberLabel && (
+  <div className="vip-price-wrapper">
+    <div className="vip-price-teaser">
+      <span className="vip-price-teaser__label">VIP MEMBER PRICE</span>
+      <span className="vip-price-teaser__value">{memberLabel}</span>
     </div>
-    <Link
-      href="/vip-membership"
-      style={{
-        fontSize: '11px',
-        marginTop: '2px',
-        display: 'inline-block',
-        textDecoration: 'underline',
-      }}
-    >
-      Learn more
+
+    <Link href="/vip-membership" className="vip-price-link">
+      Become a VIP MEMBER
     </Link>
-  </>
+  </div>
 )}
+
+
 
         </>
       )
@@ -730,34 +795,109 @@ const detailKeys: Array<
     </div>
   )}
 
-  {/* Variant buttons (optional: disable OOS) */}
-  {product.variants?.edges?.length > 1 && (
-    <div className="variant-wrapper">
-      <p className="variant-label">Select an option:</p>
-      <div className="variant-grid">
-        {product.variants.edges.map(({ node }) => {
-          const isSelected = selectedVariantId === node.id;
-          const oos = !node.availableForSale || (node.quantityAvailable ?? 0) <= 0;
+{/* Variant selectors – one per option (e.g. Fitting, Length) */}
+{optionDefinitions.length > 0 && (
+  <div className="variant-wrapper">
+    {optionDefinitions.map((option, optionIndex) => (
+      <div key={option.name} style={{ marginTop: '16px' }}>
+        <p className="variant-label">{option.name}</p>
+
+        <div className="variant-grid">
+          {option.values.map((value) => {
+            const isSelected = selectedOptionsState[option.name] === value;
+
+            let variantsForValue;
+
+            if (optionIndex === 0 || !primaryOptionName) {
+              // FIRST OPTION (e.g. Fitting):
+              // Show all values that exist on ANY variant.
+              variantsForValue = variantEdges
+                .map(({ node }) => node)
+                .filter((node) =>
+                  node.selectedOptions.some(
+                    (opt) => opt.name === option.name && opt.value === value
+                  )
+                );
+            } else {
+              // SECOND+ OPTION (e.g. Length):
+              // Only show values that exist for the currently selected primary option.
+              const primaryValue = selectedOptionsState[primaryOptionName];
+
+              variantsForValue = variantEdges
+                .map(({ node }) => node)
+                .filter((node) => {
+                  const hasThisValue = node.selectedOptions.some(
+                    (opt) => opt.name === option.name && opt.value === value
+                  );
+
+                  if (!hasThisValue) return false;
+
+                  if (!primaryValue) {
+                    // No primary selection yet – shouldn't really happen, but be safe.
+                    return true;
+                  }
+
+                  const matchesPrimary = node.selectedOptions.some(
+                    (opt) =>
+                      opt.name === primaryOptionName &&
+                      opt.value === primaryValue
+                  );
+
+                  return matchesPrimary;
+                });
+            }
+
+            const hasVariant = variantsForValue.length > 0;
+
+            // If there is no variant at all for this value (+ primary), hide it completely.
+            if (!hasVariant) {
+              return null;
+            }
+
+            // If all matching variants are OOS, show but disable.
+            const allOOS = variantsForValue.every(
+              (node) =>
+                !node.availableForSale ||
+                (node.quantityAvailable ?? 0) <= 0
+            );
+
+            const isDisabled = allOOS;
+
             return (
               <button
-                key={node.id}
+                key={value}
+                type="button"
                 onClick={() => {
-                  setSelectedVariantId(node.id);
-                  setShowVariantImage(true);
+                  if (isDisabled) return;
+                  setSelectedOptionsState((prev) => ({
+                    ...prev,
+                    [option.name]: value,
+                  }));
                 }}
-                className={`variant-button${isSelected ? ' selected' : ''}${oos ? ' is-disabled' : ''}`}
-                disabled={oos}
-                aria-disabled={oos}
-                title={oos ? 'Sold out' : undefined}
-                aria-label={oos ? `${node.title} (Sold out)` : undefined}
+                className={`variant-button${
+                  isSelected ? ' selected' : ''
+                }${isDisabled ? ' is-disabled' : ''}`}
+                disabled={isDisabled}
+                aria-disabled={isDisabled}
+                title={allOOS ? 'Sold out' : undefined}
+                aria-label={
+                  allOOS ? `${option.name} ${value} (Sold out)` : undefined
+                }
               >
-                {node.title}
+                {value}
               </button>
             );
           })}
+        </div>
       </div>
-    </div>
-  )}
+    ))}
+  </div>
+)}
+
+
+
+
+
 
   {/* Quantity + Add to Cart (always rendered; masked when not approved) */}
   <div className="desktop-add-to-cart" style={{ marginTop: '24px' }}>

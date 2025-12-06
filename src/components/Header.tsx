@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { memo, useState, useEffect } from 'react'; // 👈 add useEffect
+import { memo, useState, useEffect } from 'react';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { useFavourites } from '@/context/FavouritesContext';
@@ -71,11 +71,22 @@ function Header() {
 
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
 
-  // 👇 New: ensure auth UI only renders after client mount
+  // prevent hydration mismatch
   const [hasMounted, setHasMounted] = useState(false);
-  useEffect(() => {
-    setHasMounted(true);
-  }, []);
+  useEffect(() => setHasMounted(true), []);
+
+  // ------------------------------
+  // TAG LOGIC (ONLY SOURCE OF TRUTH)
+  // ------------------------------
+  const tags = Array.isArray(user?.tags) ? user!.tags.map((t) => t.toLowerCase()) : [];
+
+  const isApproved = tags.includes('approved');
+  const isVipMember = tags.includes('vip-member');
+
+  // ✅ Use hasMounted so SSR/CSR trees match for the banner
+  const showVipMemberBanner = isVipMember;
+  const showVipPricingBanner =
+    hasMounted && !loading && !showVipMemberBanner && isApproved;
 
   return (
     <>
@@ -101,9 +112,25 @@ function Header() {
             alignItems: 'center',
             fontSize: '12px',
             color: '#fff',
+            position: 'relative', // 🔑 allows VIP label overlay
           }}
         >
-          {hasMounted && !loading && ( // 👈 only render auth UI after mount
+          {/* 🔹 VIP MEMBER label on the far left, only when tagged VIP-MEMBER */}
+          {hasMounted && isVipMember && (
+            <span
+              style={{
+                position: 'absolute',
+                left: 16,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                letterSpacing: '0.08em',
+              }}
+            >
+              VIP MEMBER
+            </span>
+          )}
+
+          {hasMounted && !loading && (
             isAuthenticated ? (
               <>
                 <Link
@@ -140,7 +167,6 @@ function Header() {
                     background: 'none',
                     border: 'none',
                     color: '#fff',
-                    textDecoration: 'none',
                     marginRight: '12px',
                     cursor: 'pointer',
                     padding: 0,
@@ -150,6 +176,7 @@ function Header() {
                 </button>
 
                 <span style={{ marginRight: '12px' }}>|</span>
+
                 <Link
                   href="/sign-in"
                   style={{ color: '#fff', textDecoration: 'none' }}
@@ -282,7 +309,44 @@ function Header() {
         </div>
       </nav>
 
-      {/* Reusable Register Modal */}
+      {/* ================================
+          VIP BANNERS
+      ================================ */}
+
+      {/* 1️⃣ VIP MEMBER BANNER — REMOVED as requested */}
+
+      {/* 2️⃣ APPROVED (BUT NOT VIP) — FULL BANNER CLICKABLE */}
+      {showVipPricingBanner && (
+        <Link
+          href="/vip-membership"
+          style={{
+            width: '100%',
+            background: '#b00020',
+            display: 'block',
+            textDecoration: 'none',
+          }}
+        >
+          <div
+            style={{
+              maxWidth: '1400px',
+              margin: '0 auto',
+              padding: '8px 16px',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              color: '#ffffff',
+              fontSize: '14px',
+              fontWeight: 500,
+              gap: '8px',
+            }}
+          >
+            <span>Get exclusive VIP pricing</span>
+            <span aria-hidden="true">→</span>
+          </div>
+        </Link>
+      )}
+
+      {/* MODAL */}
       <RegisterModal
         isOpen={isJoinModalOpen}
         onClose={() => setIsJoinModalOpen(false)}
