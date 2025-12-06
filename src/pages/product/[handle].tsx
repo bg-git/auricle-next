@@ -1218,7 +1218,7 @@ const query = `
         }
       }
 
-      variants(first: 10) {
+      variants(first: 250) {
         edges {
           node {
             id
