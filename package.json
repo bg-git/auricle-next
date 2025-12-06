@@ -3,13 +3,13 @@
   "version": "0.1.0",
   "type": "module",
   "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "npm run sitemap && next build",
-    "start": "next start",
-    "lint": "next lint",
-    "sitemap": "node --loader ts-node/esm scripts/generate-sitemap.ts"
-  },
+ "scripts": {
+  "dev": "next dev --webpack",
+  "build": "npm run sitemap && next build --webpack",
+  "start": "next start --webpack",
+  "lint": "next lint",
+  "sitemap": "node --loader ts-node/esm scripts/generate-sitemap.ts"
+},
   "dependencies": {
     "@react-email/components": "^0.3.3",
     "@supabase/supabase-js": "^2.52.0",
