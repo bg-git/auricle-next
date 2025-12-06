@@ -36,6 +36,15 @@ const vipPricingEnabled =
     ? process.env.NEXT_PUBLIC_VIP_PRICING_ENABLED === 'true'
     : process.env.NEXT_PUBLIC_VIP_PRICING_ENABLED === 'true';
 
+const normalizeOptionText = (value?: string | null) =>
+  (value ?? '').toString().trim().toLowerCase();
+
+const isSameOptionName = (a: string, b: string) =>
+  normalizeOptionText(a) === normalizeOptionText(b);
+
+const isSameOptionValue = (a: string, b: string) =>
+  normalizeOptionText(a) === normalizeOptionText(b);
+
 // TYPES
 interface Metafield {
   key: string;
@@ -193,6 +202,31 @@ const [selectedOptionsState, setSelectedOptionsState] = useState<
   Record<string, string>
 >({});
 
+const getSelectedOptionValue = (
+  state: Record<string, string>,
+  name: string
+) => {
+  const entry = Object.entries(state).find(([key]) =>
+    isSameOptionName(key, name)
+  );
+
+  return entry?.[1];
+};
+
+const setSelectedOption = (name: string, value: string) => {
+  setSelectedOptionsState((prev) => {
+    const next: Record<string, string> = {};
+    Object.entries(prev).forEach(([key, val]) => {
+      if (!isSameOptionName(key, name)) {
+        next[key] = val;
+      }
+    });
+
+    next[name] = value;
+    return next;
+  });
+};
+
 
 useEffect(() => {
   if (!defaultVariant) {
@@ -214,6 +248,14 @@ useEffect(() => {
   // 👇 NEW: initialise selected options from the default variant
   const initialOptions: Record<string, string> = {};
   defaultVariant.selectedOptions.forEach((opt) => {
+    const existingKey = Object.keys(initialOptions).find((key) =>
+      isSameOptionName(key, opt.name)
+    );
+
+    if (existingKey) {
+      delete initialOptions[existingKey];
+    }
+
     initialOptions[opt.name] = opt.value;
   });
   setSelectedOptionsState(initialOptions);
@@ -227,9 +269,17 @@ useEffect(() => {
   if (!Object.keys(selectedOptionsState).length) return;
 
   const match = variantEdges.find(({ node }) =>
-    node.selectedOptions.every(
-      (opt) => selectedOptionsState[opt.name] === opt.value
-    )
+    node.selectedOptions.every((opt) => {
+      const selectedValue = getSelectedOptionValue(
+        selectedOptionsState,
+        opt.name
+      );
+
+      return (
+        selectedValue !== undefined &&
+        isSameOptionValue(selectedValue, opt.value)
+      );
+    })
   );
 
   if (match) {
@@ -804,7 +854,13 @@ const detailKeys: Array<
 
         <div className="variant-grid">
           {option.values.map((value) => {
-            const isSelected = selectedOptionsState[option.name] === value;
+            const currentSelection = getSelectedOptionValue(
+              selectedOptionsState,
+              option.name
+            );
+            const isSelected =
+              currentSelection !== undefined &&
+              isSameOptionValue(currentSelection, value);
 
             let variantsForValue;
 
@@ -815,19 +871,25 @@ const detailKeys: Array<
                 .map(({ node }) => node)
                 .filter((node) =>
                   node.selectedOptions.some(
-                    (opt) => opt.name === option.name && opt.value === value
+                    (opt) =>
+                      isSameOptionName(opt.name, option.name) &&
+                      isSameOptionValue(opt.value, value)
                   )
                 );
             } else {
               // SECOND+ OPTION (e.g. Length):
               // Only show values that exist for the currently selected primary option.
-              const primaryValue = selectedOptionsState[primaryOptionName];
+              const primaryValue = primaryOptionName
+                ? getSelectedOptionValue(selectedOptionsState, primaryOptionName)
+                : undefined;
 
               variantsForValue = variantEdges
                 .map(({ node }) => node)
                 .filter((node) => {
                   const hasThisValue = node.selectedOptions.some(
-                    (opt) => opt.name === option.name && opt.value === value
+                    (opt) =>
+                      isSameOptionName(opt.name, option.name) &&
+                      isSameOptionValue(opt.value, value)
                   );
 
                   if (!hasThisValue) return false;
@@ -839,8 +901,8 @@ const detailKeys: Array<
 
                   const matchesPrimary = node.selectedOptions.some(
                     (opt) =>
-                      opt.name === primaryOptionName &&
-                      opt.value === primaryValue
+                      isSameOptionName(opt.name, primaryOptionName) &&
+                      isSameOptionValue(opt.value, primaryValue)
                   );
 
                   return matchesPrimary;
@@ -869,10 +931,7 @@ const detailKeys: Array<
                 type="button"
                 onClick={() => {
                   if (isDisabled) return;
-                  setSelectedOptionsState((prev) => ({
-                    ...prev,
-                    [option.name]: value,
-                  }));
+                  setSelectedOption(option.name, value);
                 }}
                 className={`variant-button${
                   isSelected ? ' selected' : ''
