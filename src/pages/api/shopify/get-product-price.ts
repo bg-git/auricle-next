@@ -70,7 +70,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             currencyCode
           }
         }
-        variants(first: 10) {
+        variants(first: 250) {
           edges {
             node {
               id
