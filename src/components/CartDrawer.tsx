@@ -110,7 +110,7 @@ export default function CartDrawer() {
 
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const isDraftBuilding = isVipMember && draftStatus === 'building';
-  const checkoutLabel = isVipMember ? 'DRAFT ORDER CHECKOUT' : 'CHECKOUT';
+  const checkoutLabel = isVipMember ? 'CHECKOUT' : 'CHECKOUT';
 
 
   useEffect(() => {
