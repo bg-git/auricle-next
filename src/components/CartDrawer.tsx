@@ -78,6 +78,9 @@ export default function CartDrawer() {
     closeDrawer,
     updateQuantity,
     flushSync,
+    draftCheckoutUrl,
+    draftStatus,
+    ensureVipDraftCheckout,
   } = useCart();
 
   const { addFavourite } = useFavourites();
@@ -106,6 +109,8 @@ export default function CartDrawer() {
   };
 
   const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const isDraftBuilding = isVipMember && draftStatus === 'building';
+  const checkoutLabel = isVipMember ? 'DRAFT ORDER CHECKOUT' : 'CHECKOUT';
 
 
   useEffect(() => {
@@ -201,80 +206,76 @@ export default function CartDrawer() {
 
           {cartItems.length > 0 && (
             <div className="cart-subtotal">
-  Subtotal: {getCurrencySymbol(cartItems[0]?.currencyCode)}
-  {formatPrice(
-    cartItems
-      .reduce(
-        (sum, item) => sum + getEffectivePrice(item) * item.quantity,
-        0
-      )
-  )}
-</div>
-
+              Subtotal: {getCurrencySymbol(cartItems[0]?.currencyCode)}
+              {formatPrice(
+                cartItems.reduce(
+                  (sum, item) => sum + getEffectivePrice(item) * item.quantity,
+                  0
+                )
+              )}
+            </div>
           )}
 
           <a
             className={`checkout-button ${
-              checkoutUrl && !isCheckingOut ? '' : 'disabled'
+              isCheckingOut || isDraftBuilding || (!isVipMember && !checkoutUrl)
+                ? 'disabled'
+                : ''
             }`}
-            href={checkoutUrl || '#'}
+            href={draftCheckoutUrl || checkoutUrl || '#'}
             onClick={async (e) => {
               e.preventDefault();
-              if (isCheckingOut) return;
+              if (isCheckingOut || isDraftBuilding) return;
+
               setIsCheckingOut(true);
-              const syncedUrl = await flushSync();
-              setIsCheckingOut(false);
-              if (!syncedUrl) return;
 
-              let urlToUse = syncedUrl;
-
-              if (isVipMember) {
-                try {
-                  const res = await fetch('/api/create-vip-draft-checkout', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
-                    body: JSON.stringify({ items: cartItems }),
-                  });
-
-                  const data = await res.json();
-
-                  if (res.ok && data.invoiceUrl) {
-                    urlToUse = data.invoiceUrl;
-                  } else if (data?.message) {
-                    console.warn('VIP draft checkout failed:', data.message);
-                  }
-                } catch (error) {
-                  console.error('Failed to create VIP draft checkout', error);
-                }
-              }
-
-              if (!urlToUse) return;
-
-              cartItems.forEach((item) => {
-                if (item.handle) {
-                  addFavourite({
-                    handle: item.handle,
-                    title: item.title || '',
-                    image: item.image,
-                    price: item.price,
-                    metafields: item.metafields,
-                    orderAgain: true, // ✅ This sets the flag
-                  });
-                }
-              });
               try {
-                await unregisterServiceWorkersForCheckout();
-              } catch (error) {
-                console.warn(
-                  'Unexpected error while preparing checkout; continuing to Shopify checkout.',
-                  error
-                );
+                let urlToUse: string | null = null;
+
+                if (isVipMember) {
+                  if (draftCheckoutUrl && draftStatus === 'ready') {
+                    urlToUse = draftCheckoutUrl;
+                  } else {
+                    urlToUse = await ensureVipDraftCheckout();
+                  }
+                }
+
+                if (!urlToUse) {
+                  const syncedUrl = await flushSync();
+                  urlToUse = syncedUrl;
+                }
+
+                if (!urlToUse) return;
+
+                cartItems.forEach((item) => {
+                  if (item.handle) {
+                    addFavourite({
+                      handle: item.handle,
+                      title: item.title || '',
+                      image: item.image,
+                      price: item.price,
+                      metafields: item.metafields,
+                      orderAgain: true, // ✅ This sets the flag
+                    });
+                  }
+                });
+                try {
+                  await unregisterServiceWorkersForCheckout();
+                } catch (error) {
+                  console.warn(
+                    'Unexpected error while preparing checkout; continuing to Shopify checkout.',
+                    error
+                  );
+                }
+                window.location.href = urlToUse;
+              } finally {
+                setIsCheckingOut(false);
               }
-              window.location.href = urlToUse;
             }}
           >
-            {isCheckingOut ? 'LOADING…' : 'CHECKOUT'}
+            {isCheckingOut || isDraftBuilding
+              ? 'LOADING…'
+              : checkoutLabel}
           </a>
 
 

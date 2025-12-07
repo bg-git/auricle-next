@@ -8,6 +8,7 @@ import {
 } from 'react';
 import { useFavourites } from '@/context/FavouritesContext';
 import { useToast } from '@/context/ToastContext';
+import { useAuth } from '@/context/AuthContext';
 
 export interface CartItem {
   variantId: string;
@@ -28,6 +29,9 @@ export interface CartItem {
 interface CartContextType {
   cartItems: CartItem[];
   checkoutUrl: string | null;
+  draftCheckoutUrl: string | null;
+  draftStatus: DraftStatus;
+  draftSignature: string | null;
   addToCart: (
     variantId: string,
     quantity: number,
@@ -39,7 +43,10 @@ interface CartContextType {
   openDrawer: () => void;
   closeDrawer: () => void;
   flushSync: () => Promise<string | null>;
+  ensureVipDraftCheckout: () => Promise<string | null>;
 }
+
+export type DraftStatus = 'idle' | 'building' | 'ready' | 'error';
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
@@ -50,6 +57,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [checkoutId, setCheckoutId] = useState<string | null>(null);
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
+  const [draftCheckoutUrl, setDraftCheckoutUrl] = useState<string | null>(null);
+  const [draftStatus, setDraftStatus] = useState<DraftStatus>('idle');
+  const [draftSignature, setDraftSignature] = useState<string | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const checkoutUrlRef = useRef<string | null>(checkoutUrl);
 
@@ -58,9 +68,15 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const syncVersion = useRef(0);
   const abortController = useRef<AbortController | null>(null);
   const latestItemsRef = useRef<CartItem[]>(cartItems);
+  const draftRequestRef = useRef(0);
 
   const { addFavourite, isFavourite } = useFavourites();
   const { showToast } = useToast();
+  const { user } = useAuth();
+
+  const isVipMember = Array.isArray(user?.tags)
+    ? user.tags.includes('VIP-MEMBER')
+    : false;
 
   const openDrawer = () => setIsDrawerOpen(true);
   const closeDrawer = () => setIsDrawerOpen(false);
@@ -68,6 +84,74 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     checkoutUrlRef.current = checkoutUrl;
   }, [checkoutUrl]);
+
+  const resetDraftState = () => {
+    setDraftCheckoutUrl(null);
+    setDraftSignature(null);
+    setDraftStatus('idle');
+    draftRequestRef.current += 1;
+  };
+
+  const computeDraftSignature = (items: CartItem[], vip: boolean) =>
+    JSON.stringify({
+      vip,
+      items: items.map(({ variantId, quantity }) => ({ variantId, quantity })),
+    });
+
+  const buildVipDraftCheckout = async (
+    signature: string,
+    items: CartItem[],
+    requestId: number
+  ) => {
+    try {
+      setDraftStatus('building');
+      setDraftCheckoutUrl(null);
+      setDraftSignature(signature);
+
+      const res = await fetch('/api/vip/create-draft-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ items }),
+      });
+
+      const data = await res.json();
+      const url = data?.draftCheckoutUrl || data?.invoiceUrl;
+
+      if (requestId !== draftRequestRef.current) return null;
+
+      if (!res.ok || !url) {
+        setDraftCheckoutUrl(null);
+        setDraftStatus('error');
+        return null;
+      }
+
+      setDraftCheckoutUrl(url);
+      setDraftStatus('ready');
+      return url as string;
+    } catch (error) {
+      if (requestId !== draftRequestRef.current) return null;
+      console.error('VIP draft checkout error', error);
+      setDraftCheckoutUrl(null);
+      setDraftStatus('error');
+      return null;
+    }
+  };
+
+  const ensureVipDraftCheckout = async (): Promise<string | null> => {
+    if (!isVipMember || cartItems.length === 0) return null;
+
+    const signature = computeDraftSignature(cartItems, isVipMember);
+
+    if (draftCheckoutUrl && draftStatus === 'ready' && draftSignature === signature) {
+      return draftCheckoutUrl;
+    }
+
+    if (draftStatus === 'building') return null;
+
+    const requestId = ++draftRequestRef.current;
+    return buildVipDraftCheckout(signature, cartItems, requestId);
+  };
 
   const scheduleSync = (items: CartItem[]) => {
     if (syncTimeout.current) {
@@ -112,6 +196,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     return () => {
       if (syncTimeout.current) clearTimeout(syncTimeout.current);
       abortController.current?.abort();
+      resetDraftState();
     };
   }, []);
 
@@ -214,6 +299,40 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     latestItemsRef.current = cartItems;
   }, [cartItems]);
+
+  useEffect(() => {
+    if (!isVipMember) {
+      resetDraftState();
+      return;
+    }
+
+    if (cartItems.length === 0) {
+      resetDraftState();
+      return;
+    }
+
+    const signature = computeDraftSignature(cartItems, isVipMember);
+    if (
+      draftCheckoutUrl &&
+      draftStatus === 'ready' &&
+      draftSignature === signature
+    ) {
+      return;
+    }
+
+    let cancelled = false;
+    const requestId = ++draftRequestRef.current;
+
+    buildVipDraftCheckout(signature, cartItems, requestId).catch((error) => {
+      if (cancelled) return;
+      console.error('Failed to warm VIP draft checkout', error);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cartItems, isVipMember]);
 
   const syncShopifyCheckout = async (
     items: CartItem[],
@@ -395,6 +514,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       value={{
         cartItems,
         checkoutUrl,
+        draftCheckoutUrl,
+        draftStatus,
+        draftSignature,
         addToCart,
         updateQuantity,
         removeFromCart,
@@ -402,6 +524,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         openDrawer,
         closeDrawer,
         flushSync,
+        ensureVipDraftCheckout,
       }}
     >
       {children}
