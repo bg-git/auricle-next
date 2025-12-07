@@ -83,8 +83,6 @@ Best,
 `
 )}`;
 
-import { useAuth } from '@/context/AuthContext';
-
 const sections = [
   {
     title: 'CARE',
@@ -126,31 +124,12 @@ function Footer() {
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
 
   const { openDrawer: openChatDrawer } = useChatDrawer();
-  const { user } = useAuth();
-
-  // --------------------------------------
-  // 🔥 TAG LOGIC FOR FOOTER VIP BANNER
-  // --------------------------------------
-  const tags = Array.isArray(user?.tags) ? user!.tags.map(t => t.toLowerCase()) : [];
-  const isVipMember = tags.includes('vip-member');
-
-  const showVipFooterBanner = !isVipMember; // Show unless VIP
 
   const toggle = (index: number) =>
     setOpenIndex(openIndex === index ? null : index);
 
   return (
     <>
-      {/* 🔴 VIP Banner - only shows for NON-VIP customers */}
-      {showVipFooterBanner && (
-        <Link href="/vip-membership" className="vip-footer-banner">
-          <div className="vip-footer-banner__inner">
-            <span>Get exclusive VIP pricing</span>
-            <span aria-hidden="true">→</span>
-          </div>
-        </Link>
-      )}
-
       <footer className="site-footer">
         <div className="footer-inner">
           {sections.map((section, index) => (
