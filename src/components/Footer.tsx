@@ -119,34 +119,24 @@ const sections = [
 ];
 
 function Footer() {
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
 
   const { openDrawer: openChatDrawer } = useChatDrawer();
 
-  const toggle = (index: number) =>
-    setOpenIndex(openIndex === index ? null : index);
-
   return (
     <>
       <footer className="site-footer">
         <div className="footer-inner">
-          {sections.map((section, index) => (
+          {sections.map((section) => (
             <div
               key={section.title}
               className="footer-section"
-              data-open={openIndex === index}
             >
-              <button
-                className="footer-toggle"
-                onClick={() => toggle(index)}
-                aria-expanded={openIndex === index}
-              >
-                <span className="footer-toggle-icon">
-                  {openIndex === index ? '−' : '+'}
-                </span>
-              </button>
+              {/* Simple heading instead of accordion toggle */}
+              {/* <div className="footer-heading">
+                {section.title}
+              </div> */}
 
               <ul className="footer-links">
                 {section.links.map((link) => (

@@ -1,9 +1,3 @@
-/* ================================
-   FOOTER (AURICLE)
-   Tight spacing, premium UI,
-   Lighthouse tap-target compliant
-================================ */
-
 .site-footer {
   background: #ececec;
   padding: 24px;
@@ -18,43 +12,15 @@
   .footer-section {
     margin-bottom: 12px;
 
-    /* -------------------------------
-       Section heading / accordion
-    -------------------------------- */
-    .footer-toggle {
-      background: none;
-      border: 0;
-      color: #181818;
-      width: 100%;
-      text-align: left;
-      font-size: 16px;
-      font-weight: 600;
-      line-height: 1.2;
-      padding: 8px 0;
-      min-height: 36px;
-      cursor: pointer;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-
-      .footer-toggle-icon {
-        font-size: 18px;
-        line-height: 1;
-      }
-    }
-
-    /* Collapsible links (mobile only) */
+    /* Links now always visible */
     .footer-links {
       list-style: none;
       padding: 0;
       margin: 0;
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.3s ease;
-    }
-
-    &[data-open='true'] .footer-links {
-      max-height: 300px;
+      margin-top: 6px;
+      max-height: none;
+      overflow: visible;
+      transition: none;
     }
 
     /* -------------------------------
@@ -143,20 +109,7 @@
     .footer-section {
       margin-bottom: 0;
 
-      .footer-toggle {
-        cursor: default;
-        pointer-events: none;
-        padding: 0;
-        min-height: 0;
-        font-size: 18px;
-        .footer-toggle-icon {
-          display: none;
-        }
-      }
-
       .footer-links {
-        max-height: none;
-        overflow: visible;
         margin-top: 6px;
       }
 
@@ -174,11 +127,6 @@
   --------------------------------- */
   @media (pointer: coarse) {
     .footer-section {
-      .footer-toggle {
-        padding: 12px 0;
-        min-height: 48px;
-      }
-
       .footer-links li + li {
         margin-top: 4px;
       }
@@ -196,23 +144,4 @@
       min-height: 48px;
     }
   }
-}
-.vip-footer-banner {
-  width: 100%;
-  display: block;
-  background: #b00020;
-  text-decoration: none;
-}
-
-.vip-footer-banner__inner {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 8px 16px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 500;
 }
