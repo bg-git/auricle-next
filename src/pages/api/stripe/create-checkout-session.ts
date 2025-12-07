@@ -25,7 +25,10 @@ if (!stripeSecretKey || !priceIdVip) {
 }
 
 // Let Stripe pick the API version configured on your account
-const stripe = new Stripe(stripeSecretKey);
+const stripe = new Stripe(stripeSecretKey, {
+  apiVersion: '2025-11-17.clover' as Stripe.StripeConfig['apiVersion'],
+});
+
 
 // --- Helper: get Shopify customer from session cookie ---
 async function getShopifyCustomerFromRequest(

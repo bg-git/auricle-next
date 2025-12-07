@@ -17,7 +17,10 @@ if (!shopifyDomain || !shopifyAdminToken) {
   );
 }
 
-const stripe = new Stripe(stripeSecretKey);
+// ✅ Pin Stripe API version
+const stripe = new Stripe(stripeSecretKey, {
+  apiVersion: '2025-11-17.clover' as Stripe.StripeConfig['apiVersion'],
+});
 
 const VIP_TAG = 'VIP-MEMBER';
 
@@ -30,11 +33,33 @@ async function buffer(readable: NextApiRequest): Promise<Buffer> {
   return Buffer.concat(chunks);
 }
 
-// --- Shopify tag helpers ---
+// --- Shopify helpers ---
+
+const SHOPIFY_GRAPHQL_URL = `https://${shopifyDomain}/admin/api/2024-01/graphql.json`;
+
+async function shopifyGraphql<T = unknown>(
+  query: string,
+  variables?: Record<string, unknown>,
+): Promise<T> {
+  const res = await fetch(SHOPIFY_GRAPHQL_URL, {
+    method: 'POST',
+    headers: {
+      'X-Shopify-Access-Token': shopifyAdminToken as string,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ query, variables }),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    console.error('Shopify GraphQL error', res.status, text);
+    throw new Error(`Shopify GraphQL error: ${res.status}`);
+  }
+
+  return res.json() as Promise<T>;
+}
 
 async function addVipTagToShopifyCustomer(shopifyCustomerId: string) {
-  const url = `https://${shopifyDomain}/admin/api/2024-01/graphql.json`;
-
   const mutation = `
     mutation tagsAdd($id: ID!, $tags: [String!]!) {
       tagsAdd(id: $id, tags: $tags) {
@@ -46,35 +71,20 @@ async function addVipTagToShopifyCustomer(shopifyCustomerId: string) {
     }
   `;
 
-  const body = JSON.stringify({
-    query: mutation,
-    variables: {
-      id: shopifyCustomerId,
-      tags: [VIP_TAG],
-    },
+  const data = await shopifyGraphql<{
+    data?: { tagsAdd?: { userErrors: { field: string[]; message: string }[] } };
+  }>(mutation, {
+    id: shopifyCustomerId,
+    tags: [VIP_TAG],
   });
 
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'X-Shopify-Access-Token': shopifyAdminToken as string,
-      'Content-Type': 'application/json',
-    },
-    body,
-  });
-
-  if (!res.ok) {
-    console.error(
-      'Failed to add VIP tag in Shopify',
-      res.status,
-      await res.text(),
-    );
+  const userErrors = data?.data?.tagsAdd?.userErrors ?? [];
+  if (userErrors.length) {
+    console.error('Failed to add VIP tag in Shopify', userErrors);
   }
 }
 
 async function removeVipTagFromShopifyCustomer(shopifyCustomerId: string) {
-  const url = `https://${shopifyDomain}/admin/api/2024-01/graphql.json`;
-
   const mutation = `
     mutation tagsRemove($id: ID!, $tags: [String!]!) {
       tagsRemove(id: $id, tags: $tags) {
@@ -86,54 +96,101 @@ async function removeVipTagFromShopifyCustomer(shopifyCustomerId: string) {
     }
   `;
 
-  const body = JSON.stringify({
-    query: mutation,
-    variables: {
-      id: shopifyCustomerId,
-      tags: [VIP_TAG],
-    },
+  const data = await shopifyGraphql<{
+    data?: { tagsRemove?: { userErrors: { field: string[]; message: string }[] } };
+  }>(mutation, {
+    id: shopifyCustomerId,
+    tags: [VIP_TAG],
   });
 
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'X-Shopify-Access-Token': shopifyAdminToken as string,
-      'Content-Type': 'application/json',
-    },
-    body,
-  });
-
-  if (!res.ok) {
-    console.error(
-      'Failed to remove VIP tag in Shopify',
-      res.status,
-      await res.text(),
-    );
+  const userErrors = data?.data?.tagsRemove?.userErrors ?? [];
+  if (userErrors.length) {
+    console.error('Failed to remove VIP tag in Shopify', userErrors);
   }
+}
+
+// 🔍 Find Shopify customer ID from subscription
+async function getShopifyCustomerIdFromSubscription(
+  subscription: Stripe.Subscription,
+): Promise<string | null> {
+  // 1) Try subscription metadata
+  if (subscription.metadata?.shopify_customer_id) {
+    return subscription.metadata.shopify_customer_id;
+  }
+
+  // 2) Try Stripe customer metadata
+  if (typeof subscription.customer === 'string') {
+    const stripeCustomer = await stripe.customers.retrieve(subscription.customer);
+
+    if (!stripeCustomer.deleted) {
+      if (stripeCustomer.metadata?.shopify_customer_id) {
+        return stripeCustomer.metadata.shopify_customer_id;
+      }
+
+      // 3) Fallback: look up by email in Shopify
+      const email = stripeCustomer.email;
+      if (email) {
+        const query = `
+          query customersByEmail($query: String!) {
+            customers(first: 1, query: $query) {
+              edges {
+                node {
+                  id
+                  email
+                }
+              }
+            }
+          }
+        `;
+
+        const result = await shopifyGraphql<{
+          data?: {
+            customers?: {
+              edges: { node: { id: string; email: string } }[];
+            };
+          };
+        }>(query, {
+          query: `email:${email}`,
+        });
+
+        const edges = result?.data?.customers?.edges ?? [];
+        if (edges.length > 0) {
+          const node = edges[0].node;
+          console.log(
+            `Matched Stripe customer ${email} to Shopify customer ${node.id}`,
+          );
+          return node.id;
+        } else {
+          console.warn(
+            `No Shopify customer found for Stripe email ${email}`,
+          );
+        }
+      } else {
+        console.warn(
+          'Stripe customer has no email, cannot look up Shopify customer by email',
+        );
+      }
+    }
+  }
+
+  console.warn(
+    'No shopify_customer_id found in subscription or Stripe customer metadata, and email lookup failed',
+  );
+  return null;
 }
 
 // Decide what to do based on subscription status
 async function handleSubscriptionEvent(subscription: Stripe.Subscription) {
-  let shopifyCustomerId = subscription.metadata?.shopify_customer_id;
-
-  // If not on subscription metadata, check Stripe customer metadata
-  if (!shopifyCustomerId && typeof subscription.customer === 'string') {
-    const stripeCustomer = await stripe.customers.retrieve(
-      subscription.customer,
-    );
-    if (!stripeCustomer.deleted) {
-      shopifyCustomerId = stripeCustomer.metadata?.shopify_customer_id;
-    }
-  }
+  const shopifyCustomerId = await getShopifyCustomerIdFromSubscription(
+    subscription,
+  );
 
   if (!shopifyCustomerId) {
-    console.warn(
-      'No shopify_customer_id found in subscription/customer metadata',
-    );
     return;
   }
 
   const status = subscription.status;
+  console.log('🔔 Subscription status:', status, 'Shopify ID:', shopifyCustomerId);
 
   if (status === 'active' || status === 'trialing') {
     await addVipTagToShopifyCustomer(shopifyCustomerId);
@@ -203,7 +260,6 @@ export default async function handler(
       }
 
       case 'invoice.payment_failed': {
-        // Extend type so TS knows about `subscription`
         type InvoiceWithSubscription = Stripe.Invoice & {
           subscription?: string | null;
         };
