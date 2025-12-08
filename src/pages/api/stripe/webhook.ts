@@ -1,11 +1,16 @@
 // src/pages/api/stripe/webhook.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Stripe from 'stripe';
+import { Resend } from 'resend';
 
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 const shopifyDomain = process.env.SHOPIFY_STORE_DOMAIN;
 const shopifyAdminToken = process.env.SHOPIFY_ADMIN_ACCESS_TOKEN;
+
+const resendApiKey = process.env.RESEND_API_KEY;
+const alertEmailTo = process.env.ALERT_EMAIL_TO;
+const alertEmailFrom = process.env.ALERT_EMAIL_FROM;
 
 if (!stripeSecretKey) {
   throw new Error('Missing STRIPE_SECRET_KEY in environment variables');
@@ -17,10 +22,20 @@ if (!shopifyDomain || !shopifyAdminToken) {
   );
 }
 
+if (!resendApiKey) {
+  throw new Error('Missing RESEND_API_KEY in environment variables');
+}
+
+if (!alertEmailTo || !alertEmailFrom) {
+  throw new Error('Missing ALERT_EMAIL_TO or ALERT_EMAIL_FROM in environment variables');
+}
+
 // ✅ Pin Stripe API version
 const stripe = new Stripe(stripeSecretKey, {
   apiVersion: '2025-11-17.clover' as Stripe.StripeConfig['apiVersion'],
 });
+
+const resend = new Resend(resendApiKey);
 
 const VIP_TAG = 'VIP-MEMBER';
 
@@ -179,6 +194,49 @@ async function getShopifyCustomerIdFromSubscription(
   return null;
 }
 
+// ✉️ Send Resend email on subscribe / cancel
+async function sendVipNotificationEmail(
+  subscription: Stripe.Subscription,
+  type: 'created' | 'cancelled',
+): Promise<void> {
+  const customerId = subscription.customer;
+  let customerEmail = 'Unknown';
+  let stripeCustomerId = 'Unknown';
+
+  if (typeof customerId === 'string') {
+    stripeCustomerId = customerId;
+    const customer = await stripe.customers.retrieve(customerId);
+    if (!customer.deleted && customer.email) {
+      customerEmail = customer.email;
+    }
+  }
+
+  const subject =
+    type === 'created'
+      ? 'New VIP subscription created'
+      : 'VIP subscription cancelled';
+
+  const lines = [
+    `Type: ${type}`,
+    `Subscription ID: ${subscription.id}`,
+    `Status: ${subscription.status}`,
+    `Stripe Customer ID: ${stripeCustomerId}`,
+    `Customer email: ${customerEmail}`,
+  ];
+
+  try {
+    await resend.emails.send({
+      from: alertEmailFrom as string,
+      to: alertEmailTo as string,
+      subject,
+      text: lines.join('\n'),
+      html: `<pre>${lines.join('\n')}</pre>`,
+    });
+  } catch (error) {
+    console.error('Failed to send VIP notification email', error);
+  }
+}
+
 // Decide what to do based on subscription status
 async function handleSubscriptionEvent(subscription: Stripe.Subscription) {
   const shopifyCustomerId = await getShopifyCustomerIdFromSubscription(
@@ -244,10 +302,19 @@ export default async function handler(
 
   try {
     switch (event.type) {
-      case 'customer.subscription.created':
+      case 'customer.subscription.created': {
+        const subscription = event.data.object as Stripe.Subscription;
+        await handleSubscriptionEvent(subscription);
+
+        // ✉️ New subscription email
+        await sendVipNotificationEmail(subscription, 'created');
+        break;
+      }
+
       case 'customer.subscription.updated': {
         const subscription = event.data.object as Stripe.Subscription;
         await handleSubscriptionEvent(subscription);
+        // No email on generic updates (to avoid noise)
         break;
       }
 
@@ -256,6 +323,9 @@ export default async function handler(
         // Treat deleted as canceled for our purposes
         subscription.status = 'canceled';
         await handleSubscriptionEvent(subscription);
+
+        // ✉️ Cancelled subscription email
+        await sendVipNotificationEmail(subscription, 'cancelled');
         break;
       }
 
