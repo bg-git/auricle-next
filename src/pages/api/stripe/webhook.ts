@@ -6,7 +6,18 @@ import { Resend } from 'resend';
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 const shopifyDomain = process.env.SHOPIFY_STORE_DOMAIN;
-const shopifyAdminToken = process.env.SHOPIFY_ADMIN_ACCESS_TOKEN;
+
+// Support both names just in case
+const shopifyAdminToken =
+  process.env.SHOPIFY_ADMIN_API_ACCESS_TOKEN ??
+  process.env.SHOPIFY_ADMIN_ACCESS_TOKEN;
+
+if (!shopifyDomain || !shopifyAdminToken) {
+  throw new Error(
+    'Missing SHOPIFY_STORE_DOMAIN or SHOPIFY_ADMIN_API_ACCESS_TOKEN in environment variables',
+  );
+}
+
 
 const resendApiKey = process.env.RESEND_API_KEY;
 const alertEmailTo = process.env.ALERT_EMAIL_TO;
