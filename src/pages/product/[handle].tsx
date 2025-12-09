@@ -1191,7 +1191,20 @@ export const getStaticPaths: GetStaticPaths = async () => {
 export const getStaticProps: GetStaticProps<ProductPageProps> = async (
   context: GetStaticPropsContext
 ) => {
-  const handle = context.params?.handle;
+  const handle = context.params?.handle as string;
+
+  // 🚀 301 redirect for the VIP membership product
+  if (handle === 'vip-membership') {
+    return {
+      redirect: {
+        destination: '/vip-membership',   // your VIP info page
+        permanent: true,
+      },
+    };
+  }
+
+  // ⬇️ Continue with your existing product fetch logic
+
 
 const query = `
   query ProductByHandle($handle: String!) {
