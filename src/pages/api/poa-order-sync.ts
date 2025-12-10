@@ -25,28 +25,52 @@ function verifyShopifyWebhook({
   hmacHeader?: string;
   secret: string;
 }) {
+  if (!hmacHeader) {
+    console.error('Missing X-Shopify-Hmac-Sha256 header');
+    return false;
+  }
+
+  // Use the Shopify secret EXACTLY as provided in the admin ("Your webhooks will be signed with ...")
   const generated = crypto
-    .createHmac('sha256', Buffer.from(secret, 'hex')) // IMPORTANT
+    .createHmac('sha256', secret)
     .update(rawBody)
     .digest('base64');
 
-  return crypto.timingSafeEqual(
+  const valid = crypto.timingSafeEqual(
     Buffer.from(generated),
-    Buffer.from(hmacHeader || '')
+    Buffer.from(hmacHeader),
   );
-}
 
+  if (!valid) {
+    console.error('HMAC mismatch', { generated, hmacHeader });
+  }
+
+  return valid;
+}
 
 async function callAuricleGraphQL<T>(
   query: string,
   variables?: Record<string, unknown>,
 ): Promise<T> {
+  const domain = process.env.SHOPIFY_STORE_DOMAIN;
+  const token = process.env.SHOPIFY_ADMIN_API_ACCESS_TOKEN;
+  const apiVersion = process.env.SHOPIFY_ADMIN_API_VERSION;
+
+  if (!domain || !token || !apiVersion) {
+    console.error('Missing Auricle env vars', {
+      domain,
+      hasToken: Boolean(token),
+      apiVersion,
+    });
+    throw new Error('Auricle env vars not configured');
+  }
+
   const res = await fetch(
-    `https://${process.env.SHOPIFY_STORE_DOMAIN}/admin/api/${process.env.SHOPIFY_ADMIN_API_VERSION}/graphql.json`,
+    `https://${domain}/admin/api/${apiVersion}/graphql.json`,
     {
       method: 'POST',
       headers: {
-        'X-Shopify-Access-Token': process.env.SHOPIFY_ADMIN_API_ACCESS_TOKEN || '',
+        'X-Shopify-Access-Token': token,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ query, variables }),
@@ -54,18 +78,30 @@ async function callAuricleGraphQL<T>(
   );
 
   if (!res.ok) {
+    const text = await res.text();
+    console.error('Auricle GraphQL HTTP error', res.status, text);
     throw new Error(`Auricle GraphQL HTTP error ${res.status}`);
   }
 
-  const json = await res.json();
+  const json = (await res.json()) as {
+    data?: T;
+    errors?: unknown;
+  };
+
   if (json.errors) {
-    console.error('Auricle GraphQL errors:', JSON.stringify(json.errors, null, 2));
+    console.error(
+      'Auricle GraphQL errors:',
+      JSON.stringify(json.errors, null, 2),
+    );
     throw new Error('Auricle GraphQL returned errors');
   }
 
-  return json.data as T;
-}
+  if (!json.data) {
+    throw new Error('Auricle GraphQL has no data');
+  }
 
+  return json.data;
+}
 
 const VARIANT_BY_SKU_QUERY = `
   query VariantBySku($query: String!) {
@@ -96,7 +132,24 @@ const DRAFT_ORDER_CREATE_MUTATION = `
   }
 `;
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+type PoaLineItem = {
+  sku?: string;
+  quantity?: number;
+  title?: string;
+  [key: string]: unknown;
+};
+
+type PoaOrderPayload = {
+  id: number | string;
+  name: string;
+  line_items?: PoaLineItem[];
+  [key: string]: unknown;
+};
+
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse,
+) {
   if (req.method !== 'POST') {
     return res.status(405).send('Method not allowed');
   }
@@ -107,18 +160,37 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const shop = req.headers['x-shopify-shop-domain'] as string | undefined;
   const hmacHeader = req.headers['x-shopify-hmac-sha256'] as string | undefined;
 
-  if (!topic || topic !== 'orders/create') {
-    return res.status(400).send('Unsupported topic');
+  console.log('Incoming webhook', { topic, shop });
+
+  if (!topic) {
+    return res.status(400).send('Missing topic');
   }
 
-if (!shop || shop !== process.env.POA_SHOPIFY_STORE_DOMAIN) {
+  if (topic !== 'orders/create') {
+    console.warn('Ignoring unsupported topic', topic);
+    return res.status(200).json({ status: 'ignored-topic', topic });
+  }
+
+  if (!shop) {
+    console.error('Missing shop domain header');
+    return res.status(400).send('Missing shop');
+  }
+
+  const expectedShop = process.env.POA_SHOPIFY_STORE_DOMAIN;
+  if (!expectedShop) {
+    console.error('POA_SHOPIFY_STORE_DOMAIN not set');
+    return res.status(500).send('Config error - shop domain');
+  }
+
+  if (shop !== expectedShop) {
+    console.error('Shop mismatch', { received: shop, expected: expectedShop });
     return res.status(401).send('Unknown shop');
   }
 
   const secret = process.env.POA_WEBHOOK_SECRET;
   if (!secret) {
     console.error('POA_WEBHOOK_SECRET not set');
-    return res.status(500).send('Config error');
+    return res.status(500).send('Config error - webhook secret');
   }
 
   const isValid = verifyShopifyWebhook({ rawBody, hmacHeader, secret });
@@ -126,11 +198,17 @@ if (!shop || shop !== process.env.POA_SHOPIFY_STORE_DOMAIN) {
     return res.status(401).send('Invalid HMAC');
   }
 
-  const order = JSON.parse(rawBody.toString('utf8'));
+  const order = JSON.parse(rawBody.toString('utf8')) as PoaOrderPayload;
+  const lineItems = order.line_items ?? [];
 
-  const lineItems = order.line_items || [];
+  console.log('POA order payload', {
+    id: order.id,
+    name: order.name,
+    lineItemCount: lineItems.length,
+  });
+
   if (!lineItems.length) {
-    // nothing to mirror, just exit ok
+    console.warn('Order has no line_items');
     return res.status(200).json({ status: 'no-line-items' });
   }
 
@@ -138,8 +216,14 @@ if (!shop || shop !== process.env.POA_SHOPIFY_STORE_DOMAIN) {
   const draftLineItems: Array<{ variantId: string; quantity: number }> = [];
 
   for (const item of lineItems) {
-    const sku: string | undefined = item.sku;
-    const quantity: number = item.quantity || 1;
+    const sku = item.sku;
+    const quantity = item.quantity ?? 1;
+
+    console.log('Processing line item', {
+      title: item.title,
+      sku,
+      quantity,
+    });
 
     if (!sku) {
       console.warn('Skipping line without SKU', item);
@@ -165,13 +249,15 @@ if (!shop || shop !== process.env.POA_SHOPIFY_STORE_DOMAIN) {
 
   if (!draftLineItems.length) {
     console.warn('No matching line items found for mirror order');
-    return res.status(200).json({ status: 'no-matching-items' });
+    return res
+      .status(200)
+      .json({ status: 'no-matching-items', orderId: order.id });
   }
 
   const customerId = process.env.AURICLE_POA_CUSTOMER_ID;
   if (!customerId) {
     console.error('AURICLE_POA_CUSTOMER_ID not set');
-    return res.status(500).send('Config error');
+    return res.status(500).send('Config error - customer ID');
   }
 
   const input = {
@@ -185,6 +271,8 @@ if (!shop || shop !== process.env.POA_SHOPIFY_STORE_DOMAIN) {
     })),
   };
 
+  console.log('Creating Auricle draft order with input', input);
+
   const draftResult = await callAuricleGraphQL<{
     draftOrderCreate: {
       draftOrder: { id: string; name: string; invoiceUrl: string } | null;
@@ -195,8 +283,13 @@ if (!shop || shop !== process.env.POA_SHOPIFY_STORE_DOMAIN) {
   const { draftOrderCreate } = draftResult;
 
   if (draftOrderCreate.userErrors?.length) {
-    console.error('Draft order userErrors', draftOrderCreate.userErrors);
-    return res.status(500).json({ status: 'userErrors', errors: draftOrderCreate.userErrors });
+    console.error(
+      'Draft order userErrors',
+      JSON.stringify(draftOrderCreate.userErrors, null, 2),
+    );
+    return res
+      .status(500)
+      .json({ status: 'userErrors', errors: draftOrderCreate.userErrors });
   }
 
   console.log('Created mirror draft order', draftOrderCreate.draftOrder);
