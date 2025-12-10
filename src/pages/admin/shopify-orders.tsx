@@ -1,7 +1,12 @@
 // src/pages/admin/shopify-orders.tsx
 import Head from 'next/head';
-import type { GetServerSideProps, InferGetServerSidePropsType } from 'next';
+import type {
+  GetServerSidePropsContext,
+  GetServerSidePropsResult,
+  InferGetServerSidePropsType,
+} from 'next';
 import Link from 'next/link';
+import { withAdminBasicAuth } from '@/lib/withAdminBasicAuth';
 
 type ShopifyOrder = {
   id: string; // global ID gid://shopify/Order/1234567890
@@ -55,7 +60,10 @@ type ShopifyOrdersResponse = {
   };
 };
 
-export const getServerSideProps: GetServerSideProps<ShopifyOrdersPageProps> = async () => {
+async function shopifyOrdersHandler(
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+  _ctx: GetServerSidePropsContext,
+): Promise<GetServerSidePropsResult<ShopifyOrdersPageProps>> {
   const shopifyDomain = process.env.SHOPIFY_STORE_DOMAIN;
   const shopifyAdminToken = process.env.SHOPIFY_ADMIN_API_ACCESS_TOKEN;
 
@@ -225,7 +233,11 @@ export const getServerSideProps: GetServerSideProps<ShopifyOrdersPageProps> = as
       yearLabel,
     },
   };
-};
+}
+
+export const getServerSideProps = withAdminBasicAuth<ShopifyOrdersPageProps>(
+  shopifyOrdersHandler,
+);
 
 function ShopifyOrdersPage({
   orders,

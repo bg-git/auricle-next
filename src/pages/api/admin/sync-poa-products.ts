@@ -225,6 +225,11 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
+  if (req.method !== 'GET') {
+    res.setHeader('Allow', 'GET');
+    return res.status(405).json({ error: 'Method Not Allowed' });
+  }
+
   console.log('sync-poa-products called with method:', req.method);
 
   // Only run real sync if ?apply=1 or ?apply=true
@@ -424,7 +429,7 @@ export default async function handler(
   } catch (err) {
     const message =
       err instanceof Error ? err.message : 'Unknown sync error';
-    console.error('Error in sync-poa-products', message);
-    return res.status(500).json({ error: 'Failed to sync POA products' });
+    console.error('Error in sync-poa-products', err);
+    return res.status(500).json({ error: message });
   }
 }

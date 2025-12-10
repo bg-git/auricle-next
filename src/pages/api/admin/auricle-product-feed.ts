@@ -81,6 +81,11 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
+  if (req.method !== 'GET') {
+    res.setHeader('Allow', 'GET');
+    return res.status(405).json({ error: 'Method Not Allowed' });
+  }
+
   try {
     const query = `
       query AuriclePoaFeed {
@@ -177,7 +182,7 @@ export default async function handler(
     const message =
       err instanceof Error ? err.message : 'Unknown error building feed';
 
-    console.error('Error building Auricle product feed', message);
-    return res.status(500).json({ error: 'Failed to build product feed' });
+    console.error('Error building Auricle product feed', err);
+    return res.status(500).json({ error: message });
   }
 }

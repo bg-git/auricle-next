@@ -1,8 +1,13 @@
 // src/pages/admin/vip-subscribers.tsx
 import Head from 'next/head';
-import type { GetServerSideProps, InferGetServerSidePropsType } from 'next';
+import type {
+  GetServerSidePropsContext,
+  GetServerSidePropsResult,
+  InferGetServerSidePropsType,
+} from 'next';
 import Stripe from 'stripe';
 import Link from 'next/link';
+import { withAdminBasicAuth } from '@/lib/withAdminBasicAuth';
 
 type VipSubscriber = {
   subscriptionId: string;
@@ -54,7 +59,10 @@ type InvoiceLineWithPrice = Stripe.InvoiceLineItem & {
   price?: Stripe.Price | null;
 };
 
-export const getServerSideProps: GetServerSideProps<VipSubscribersPageProps> = async () => {
+async function vipSubscribersHandler(
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+  _ctx: GetServerSidePropsContext,
+): Promise<GetServerSidePropsResult<VipSubscribersPageProps>> {
   const secretKey = process.env.STRIPE_SECRET_KEY;
   const vipPriceId = process.env.STRIPE_PRICE_ID_VIP;
 
@@ -210,7 +218,11 @@ export const getServerSideProps: GetServerSideProps<VipSubscribersPageProps> = a
       yearLabel,
     },
   };
-};
+}
+
+export const getServerSideProps = withAdminBasicAuth<VipSubscribersPageProps>(
+  vipSubscribersHandler,
+);
 
 function VipSubscribersPage({
   subscribers,
