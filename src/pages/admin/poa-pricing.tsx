@@ -1,5 +1,10 @@
 // src/pages/admin/poa-pricing.tsx
+import type {
+  GetServerSidePropsContext,
+  GetServerSidePropsResult,
+} from 'next';
 import { useEffect, useState } from 'react';
+import { withAdminBasicAuth } from '@/lib/withAdminBasicAuth';
 
 type FeedVariant = {
   id: number;
@@ -46,6 +51,19 @@ type SyncResult = {
   }[];
 };
 
+type PoaPricingPageProps = Record<string, never>;
+
+async function poaPricingHandler(
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+  _ctx: GetServerSidePropsContext,
+): Promise<GetServerSidePropsResult<PoaPricingPageProps>> {
+  return { props: {} };
+}
+
+export const getServerSideProps = withAdminBasicAuth<PoaPricingPageProps>(
+  poaPricingHandler,
+);
+
 export default function PoaPricingPage() {
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState<FeedProduct[]>([]);
@@ -61,7 +79,9 @@ export default function PoaPricingPage() {
       try {
         const res = await fetch('/api/admin/auricle-product-feed');
         if (!res.ok) {
-          throw new Error(`Feed error: ${res.status}`);
+          const body = await res.json().catch(() => ({}));
+          const reason = typeof body.error === 'string' ? body.error : res.status;
+          throw new Error(`Feed error: ${reason}`);
         }
         const data: FeedResponse = await res.json();
         setProducts(data.products);
@@ -120,7 +140,9 @@ export default function PoaPricingPage() {
     try {
       const res = await fetch('/api/admin/sync-poa-products');
       if (!res.ok) {
-        throw new Error(`Sync error: ${res.status}`);
+        const body = await res.json().catch(() => ({}));
+        const reason = typeof body.error === 'string' ? body.error : res.status;
+        throw new Error(`Sync error: ${reason}`);
       }
       const data: SyncResult = await res.json();
       setSyncResult(data);
@@ -144,7 +166,9 @@ export default function PoaPricingPage() {
     try {
       const res = await fetch('/api/admin/sync-poa-products?apply=1');
       if (!res.ok) {
-        throw new Error(`Live sync error: ${res.status}`);
+        const body = await res.json().catch(() => ({}));
+        const reason = typeof body.error === 'string' ? body.error : res.status;
+        throw new Error(`Live sync error: ${reason}`);
       }
       const data: SyncResult = await res.json();
       setSyncResult(data);

@@ -8,13 +8,12 @@ const ADMIN_USERNAME = "Admin";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "change-me-now";
 
 export function withAdminBasicAuth<P extends Record<string, unknown>>(
-
   handler: (
-    ctx: GetServerSidePropsContext
-  ) => Promise<GetServerSidePropsResult<P>>
+    ctx: GetServerSidePropsContext,
+  ) => Promise<GetServerSidePropsResult<P>> | GetServerSidePropsResult<P>,
 ): GetServerSideProps<P> {
-  return async function (
-    ctx: GetServerSidePropsContext
+  return async function withAuth(
+    ctx: GetServerSidePropsContext,
   ): Promise<GetServerSidePropsResult<P>> {
     const { req, res } = ctx;
 
