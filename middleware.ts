@@ -13,7 +13,6 @@ function unauthorizedResponse() {
   return new NextResponse('Authentication required', {
     status: 401,
     headers: {
-      // Triggers browser basic-auth prompt
       'WWW-Authenticate': 'Basic realm="Admin Area"',
     },
   });
@@ -32,7 +31,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // 🔐 Basic auth for /admin routes
+  // 🔐 Basic auth for /admin routes (runs BEFORE customer session stuff)
   if (pathname.startsWith('/admin')) {
     const authHeader = request.headers.get('authorization');
 
@@ -40,7 +39,7 @@ export async function middleware(request: NextRequest) {
       return unauthorizedResponse();
     }
 
-    const base64Credentials = authHeader.split(' ')[1];
+    const base64Credentials = authHeader.split(' ')[1] || '';
     const decoded = Buffer.from(base64Credentials, 'base64').toString('utf8');
     const [username, password] = decoded.split(':');
 
@@ -48,7 +47,7 @@ export async function middleware(request: NextRequest) {
       return unauthorizedResponse();
     }
 
-    // Auth OK → continue to /admin page (no customer session needed here)
+    // Auth OK → continue to /admin page
     return NextResponse.next();
   }
 
@@ -67,10 +66,10 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Place custom middleware logic for dynamic pages here
   return NextResponse.next();
 }
 
+// IMPORTANT: include /admin/:path* here
 export const config = {
   matcher: [
     '/product/:path*',
@@ -84,6 +83,6 @@ export const config = {
     '/register',
     '/reset-password',
     '/search',
-    '/admin/:path*', // 👈 add this so /admin is gated
+    '/admin/:path*',
   ],
 };
