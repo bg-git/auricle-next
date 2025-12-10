@@ -1,12 +1,26 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { COOKIE_NAME } from '@/lib/cookies'
-import { verifyCustomerSession } from '@/lib/verifyCustomerSession'
+import { NextRequest, NextResponse } from 'next/server';
+import { COOKIE_NAME } from '@/lib/cookies';
+import { verifyCustomerSession } from '@/lib/verifyCustomerSession';
 
 // Regex for public static files like .js, .css, images, etc.
-const PUBLIC_FILE = /\.(?:js|css|png|jpg|jpeg|gif|svg|webp|ico)$/i
+const PUBLIC_FILE = /\.(?:js|css|png|jpg|jpeg|gif|svg|webp|ico)$/i;
+
+// Basic auth for /admin
+const ADMIN_USERNAME = 'Admin';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'change-me-now';
+
+function unauthorizedResponse() {
+  return new NextResponse('Authentication required', {
+    status: 401,
+    headers: {
+      // Triggers browser basic-auth prompt
+      'WWW-Authenticate': 'Basic realm="Admin Area"',
+    },
+  });
+}
 
 export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl
+  const { pathname } = request.nextUrl;
 
   // Skip Next.js internals and static assets
   if (
@@ -15,25 +29,46 @@ export async function middleware(request: NextRequest) {
     pathname === '/sw.js' ||
     PUBLIC_FILE.test(pathname)
   ) {
-    return NextResponse.next()
+    return NextResponse.next();
   }
 
-  const sessionCookie = request.cookies.get(COOKIE_NAME)?.value
+  // 🔐 Basic auth for /admin routes
+  if (pathname.startsWith('/admin')) {
+    const authHeader = request.headers.get('authorization');
+
+    if (!authHeader?.startsWith('Basic ')) {
+      return unauthorizedResponse();
+    }
+
+    const base64Credentials = authHeader.split(' ')[1];
+    const decoded = Buffer.from(base64Credentials, 'base64').toString('utf8');
+    const [username, password] = decoded.split(':');
+
+    if (username !== ADMIN_USERNAME || password !== ADMIN_PASSWORD) {
+      return unauthorizedResponse();
+    }
+
+    // Auth OK → continue to /admin page (no customer session needed here)
+    return NextResponse.next();
+  }
+
+  // 🔑 Existing customer session logic for non-admin protected routes
+  const sessionCookie = request.cookies.get(COOKIE_NAME)?.value;
   if (sessionCookie) {
-    const customer = await verifyCustomerSession(sessionCookie)
+    const customer = await verifyCustomerSession(sessionCookie);
     if (customer) {
-      const requestHeaders = new Headers(request.headers)
-      requestHeaders.set('x-customer', JSON.stringify(customer))
+      const requestHeaders = new Headers(request.headers);
+      requestHeaders.set('x-customer', JSON.stringify(customer));
       return NextResponse.next({
         request: {
           headers: requestHeaders,
         },
-      })
+      });
     }
   }
 
   // Place custom middleware logic for dynamic pages here
-  return NextResponse.next()
+  return NextResponse.next();
 }
 
 export const config = {
@@ -49,5 +84,6 @@ export const config = {
     '/register',
     '/reset-password',
     '/search',
+    '/admin/:path*', // 👈 add this so /admin is gated
   ],
-}
+};

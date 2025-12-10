@@ -24,6 +24,7 @@ import '@/styles/pages/information.scss';
 import '@/styles/pages/register-modal.scss';
 import '@/styles/pages/region-selector.scss';
 import '@/styles/pages/vip-membership.scss';
+import '@/styles/pages/admin.scss';
 
 
 
@@ -147,6 +148,12 @@ MyApp.getInitialProps = async (appContext: AppContext) => {
       // ignore parse errors
     }
   }
+
+  const pathname = appContext.router.pathname;
+if (pathname.startsWith('/admin')) {
+  myAppProps.pageProps.noLayout = true;
+}
+
 
   return myAppProps;
 };
