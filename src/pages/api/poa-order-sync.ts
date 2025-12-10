@@ -53,8 +53,15 @@ async function callAuricleGraphQL<T>(
   variables?: Record<string, unknown>,
 ): Promise<T> {
   const domain = process.env.SHOPIFY_STORE_DOMAIN;
-  const token = process.env.SHOPIFY_ADMIN_API_ACCESS_TOKEN;
-  const apiVersion = process.env.SHOPIFY_ADMIN_API_VERSION;
+  // Support either name, just in case
+  const token =
+    process.env.SHOPIFY_ADMIN_API_ACCESS_TOKEN ??
+    process.env.SHOPIFY_ADMIN_ACCESS_TOKEN ??
+    '';
+  const apiVersion =
+    process.env.SHOPIFY_ADMIN_API_VERSION && process.env.SHOPIFY_ADMIN_API_VERSION.trim().length > 0
+      ? process.env.SHOPIFY_ADMIN_API_VERSION
+      : '2025-01';
 
   if (!domain || !token || !apiVersion) {
     console.error('Missing Auricle env vars', {
