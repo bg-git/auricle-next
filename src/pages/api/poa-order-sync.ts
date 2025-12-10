@@ -59,7 +59,8 @@ async function callAuricleGraphQL<T>(
     process.env.SHOPIFY_ADMIN_ACCESS_TOKEN ??
     '';
   const apiVersion =
-    process.env.SHOPIFY_ADMIN_API_VERSION && process.env.SHOPIFY_ADMIN_API_VERSION.trim().length > 0
+    process.env.SHOPIFY_ADMIN_API_VERSION &&
+    process.env.SHOPIFY_ADMIN_API_VERSION.trim().length > 0
       ? process.env.SHOPIFY_ADMIN_API_VERSION
       : '2025-01';
 
@@ -130,6 +131,27 @@ const DRAFT_ORDER_CREATE_MUTATION = `
         id
         name
         invoiceUrl
+      }
+      userErrors {
+        field
+        message
+      }
+    }
+  }
+`;
+
+// New: complete draft → real order, marked as payment pending
+const DRAFT_ORDER_COMPLETE_MUTATION = `
+  mutation CompleteMirrorDraftOrder($id: ID!, $paymentPending: Boolean) {
+    draftOrderComplete(id: $id, paymentPending: $paymentPending) {
+      draftOrder {
+        id
+        name
+        order {
+          id
+          name
+          displayFinancialStatus
+        }
       }
       userErrors {
         field
@@ -299,10 +321,49 @@ export default async function handler(
       .json({ status: 'userErrors', errors: draftOrderCreate.userErrors });
   }
 
+  if (!draftOrderCreate.draftOrder) {
+    console.error('Draft order not returned from draftOrderCreate');
+    return res.status(500).json({ status: 'no-draft-order-returned' });
+  }
+
+  const draftOrderId = draftOrderCreate.draftOrder.id;
   console.log('Created mirror draft order', draftOrderCreate.draftOrder);
+
+  // 🔥 New: complete the draft order as a real order with payment pending
+  const completeResult = await callAuricleGraphQL<{
+    draftOrderComplete: {
+      draftOrder: {
+        id: string;
+        name: string;
+        order: { id: string; name: string; displayFinancialStatus: string } | null;
+      } | null;
+      userErrors: { field: string[] | null; message: string }[];
+    };
+  }>(DRAFT_ORDER_COMPLETE_MUTATION, {
+    id: draftOrderId,
+    paymentPending: true, // this makes the resulting order "Payment due"
+  });
+
+  const { draftOrderComplete } = completeResult;
+
+  if (draftOrderComplete.userErrors?.length) {
+    console.error(
+      'Draft order complete userErrors',
+      JSON.stringify(draftOrderComplete.userErrors, null, 2),
+    );
+    // We already have a draft order; so we don't 500 hard, just report
+    return res.status(500).json({
+      status: 'draft-order-created-but-complete-failed',
+      draftOrder: draftOrderCreate.draftOrder,
+      errors: draftOrderComplete.userErrors,
+    });
+  }
+
+  console.log('Completed draft order into real order', draftOrderComplete);
 
   return res.status(200).json({
     status: 'ok',
-    draftOrder: draftOrderCreate.draftOrder,
+    draftOrder: draftOrderComplete.draftOrder,
+    order: draftOrderComplete.draftOrder?.order ?? null,
   });
 }
