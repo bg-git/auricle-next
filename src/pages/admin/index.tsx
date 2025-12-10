@@ -1,8 +1,13 @@
 // src/pages/admin/index.tsx
 import Head from 'next/head';
-import type { GetServerSideProps, InferGetServerSidePropsType } from 'next';
+import type {
+  InferGetServerSidePropsType,
+  GetServerSidePropsContext,
+  GetServerSidePropsResult,
+} from 'next';
 import Stripe from 'stripe';
 import Link from 'next/link';
+import { withAdminBasicAuth } from '@/lib/withAdminBasicAuth';
 
 type AdminDashboardProps = {
   activeVipCount: number;
@@ -43,7 +48,19 @@ type ShopifyOrdersResponse = {
   };
 };
 
-export const getServerSideProps: GetServerSideProps<AdminDashboardProps> = async () => {
+// ----------------------------------------
+// SINGLE, CORRECT HANDLER
+// ----------------------------------------
+async function adminHandler(
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+  _: GetServerSidePropsContext,
+): Promise<GetServerSidePropsResult<AdminDashboardProps>> {
+
+
+
+
+
+
   const secretKey = process.env.STRIPE_SECRET_KEY;
   const vipPriceId = process.env.STRIPE_PRICE_ID_VIP;
 
@@ -91,12 +108,11 @@ export const getServerSideProps: GetServerSideProps<AdminDashboardProps> = async
       const lines = (invoice.lines?.data ?? []) as InvoiceLineWithPrice[];
 
       const hasVipLine = lines.some((line) => {
-        // New-style invoice shape
-        const pricingPriceId = line.pricing?.price_details?.price ?? undefined;
-        // Backwards compatibility if Stripe ever returns a full Price object
-        const directPriceId = line.price?.id ?? undefined;
+        const priceId =
+          line.pricing?.price_details?.price ??
+          line.price?.id ??
+          undefined;
 
-        const priceId = pricingPriceId ?? directPriceId;
         return priceId === vipPriceId;
       });
 
@@ -107,7 +123,7 @@ export const getServerSideProps: GetServerSideProps<AdminDashboardProps> = async
     }, 0);
   }
 
-  // --- Shopify: Orders this month (from latest 100 orders) ---
+  // --- Shopify: Orders this month ---
   let shopifyOrdersMonthCount = 0;
   let shopifyRevenueMonthMinor = 0;
 
@@ -144,7 +160,7 @@ export const getServerSideProps: GetServerSideProps<AdminDashboardProps> = async
       },
       body: JSON.stringify({
         query,
-        variables: { first: 100 }, // latest 100 orders
+        variables: { first: 100 },
       }),
     });
 
@@ -156,16 +172,17 @@ export const getServerSideProps: GetServerSideProps<AdminDashboardProps> = async
       const edges = json.data?.orders?.edges ?? [];
 
       const monthOrders = edges.filter((edge) => {
-        const createdUnix = Math.floor(new Date(edge.node.createdAt).getTime() / 1000);
+        const createdUnix = Math.floor(
+          new Date(edge.node.createdAt).getTime() / 1000,
+        );
         return createdUnix >= monthStartUnix;
       });
 
       shopifyOrdersMonthCount = monthOrders.length;
 
       shopifyRevenueMonthMinor = monthOrders.reduce((sum, edge) => {
-        const amountStr = edge.node.currentTotalPriceSet.shopMoney.amount;
-        const amount = parseFloat(amountStr || '0'); // major units
-        return sum + Math.round(amount * 100); // to minor units
+        const amount = parseFloat(edge.node.currentTotalPriceSet.shopMoney.amount || '0');
+        return sum + Math.round(amount * 100);
       }, 0);
     }
   }
@@ -178,8 +195,17 @@ export const getServerSideProps: GetServerSideProps<AdminDashboardProps> = async
       shopifyRevenueMonthMinor,
     },
   };
-};
+}
 
+// ----------------------------------------
+// APPLY BASIC AUTH WRAPPER
+// ----------------------------------------
+export const getServerSideProps =
+  withAdminBasicAuth<AdminDashboardProps>(adminHandler);
+
+// ----------------------------------------
+// PAGE COMPONENT (UNCHANGED)
+// ----------------------------------------
 function AdminDashboardPage({
   activeVipCount,
   vipRevenueMonthMinor,
@@ -209,7 +235,6 @@ function AdminDashboardPage({
       </Head>
 
       <div className="admin-layout">
-        {/* Sidebar */}
         <aside className="admin-sidebar">
           <div className="admin-sidebar__brand">
             <span className="admin-sidebar__logo">A</span>
@@ -231,14 +256,12 @@ function AdminDashboardPage({
             </Link>
 
             <p className="admin-sidebar__nav-label">Shopify</p>
-<Link href="/admin/shopify-orders" className="admin-sidebar__nav-item">
-  Orders
-</Link>
-<Link href="/admin/poa-pricing" className="admin-sidebar__nav-item">
-  POA Pricing &amp; Sync
-</Link>
-
-            
+            <Link href="/admin/shopify-orders" className="admin-sidebar__nav-item">
+              Orders
+            </Link>
+            <Link href="/admin/poa-pricing" className="admin-sidebar__nav-item">
+              POA Pricing &amp; Sync
+            </Link>
           </nav>
 
           <div className="admin-sidebar__footer">
@@ -246,7 +269,6 @@ function AdminDashboardPage({
           </div>
         </aside>
 
-        {/* Main area */}
         <main className="admin-main">
           <header className="admin-main__header">
             <div>
@@ -258,7 +280,6 @@ function AdminDashboardPage({
           </header>
 
           <section className="admin-main__grid">
-            {/* VIP Membership card – clickable */}
             <Link href="/admin/vip-subscribers" className="admin-card admin-card--clickable">
               <h2 className="admin-card__title">VIP Membership</h2>
               <p className="admin-card__value">{activeVipCount}</p>
@@ -267,7 +288,6 @@ function AdminDashboardPage({
               </p>
             </Link>
 
-            {/* Subscription revenue (MTD) – clickable */}
             <Link href="/admin/vip-subscribers" className="admin-card admin-card--clickable">
               <h2 className="admin-card__title">Subscription revenue (MTD)</h2>
               <p className="admin-card__value">{vipRevenueMonthFormatted}</p>
@@ -276,7 +296,6 @@ function AdminDashboardPage({
               </p>
             </Link>
 
-            {/* Shopify Orders (MTD) – clickable */}
             <Link href="/admin/shopify-orders" className="admin-card admin-card--clickable">
               <h2 className="admin-card__title">Shopify orders (MTD)</h2>
               <p className="admin-card__value">{shopifyOrdersMonthCount}</p>
@@ -285,7 +304,6 @@ function AdminDashboardPage({
               </p>
             </Link>
 
-            {/* Shopify Revenue (MTD) – clickable */}
             <Link href="/admin/shopify-orders" className="admin-card admin-card--clickable">
               <h2 className="admin-card__title">Shopify revenue (MTD)</h2>
               <p className="admin-card__value">{shopifyRevenueMonthFormatted}</p>
@@ -295,12 +313,12 @@ function AdminDashboardPage({
             </Link>
 
             <Link href="/admin/poa-pricing" className="admin-card admin-card--clickable">
-  <h2 className="admin-card__title">POA Product Sync</h2>
-  <p className="admin-card__value">Manage</p>
-  <p className="admin-card__meta">
-    Enable Auricle products for Pierce of Art and set retail pricing.
-  </p>
-</Link>
+              <h2 className="admin-card__title">POA Product Sync</h2>
+              <p className="admin-card__value">Manage</p>
+              <p className="admin-card__meta">
+                Enable Auricle products for Pierce of Art and set retail pricing.
+              </p>
+            </Link>
           </section>
 
           <section className="admin-main__section">
