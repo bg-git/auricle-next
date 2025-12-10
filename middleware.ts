@@ -18,6 +18,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
+  // 🔒 Customer session logic (unchanged)
   const sessionCookie = request.cookies.get(COOKIE_NAME)?.value
   if (sessionCookie) {
     const customer = await verifyCustomerSession(sessionCookie)
@@ -32,10 +33,10 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Place custom middleware logic for dynamic pages here
   return NextResponse.next()
 }
 
+// ✅ IMPORTANT: DO NOT INCLUDE /admin OR /api HERE
 export const config = {
   matcher: [
     '/product/:path*',
