@@ -145,3 +145,52 @@
     }
   }
 }
+/* --------------------------------
+   Bottom legal row
+--------------------------------- */
+.footer-legal {
+  max-width: 1400px;      // 👈 same as .footer-inner
+  margin: 12px auto 0;    // top gap, centred
+  padding-top: 12px;
+  border-top: 1px solid #d4d4d4;
+
+  display: flex;
+  flex-direction: column; // mobile first: stacked
+  gap: 8px;
+
+  .footer-copy {
+    font-size: 12px;
+    line-height: 1.4;
+    color: #181818;
+  }
+
+  .footer-naj-logo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    margin-left: auto;    // pushes logo to the right on the row
+
+    img {
+      display: block;
+      width: 120px;       // explicit width – no CLS
+      height: auto;
+      max-width: 100%;
+    }
+  }
+}
+
+/* --------------------------------
+   Desktop / larger screens
+--------------------------------- */
+@media (min-width: 768px) {
+  .footer-legal {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+
+    .footer-copy {
+      max-width: 70%;
+    }
+  }
+}

@@ -1,5 +1,6 @@
 import { useState, memo } from 'react';
 import Link from 'next/link';
+import Image from 'next/image'; // 👈 add this
 import { useChatDrawer } from '@/context/ChatDrawerContext';
 import RegisterModal from '@/components/RegisterModal';
 import ContactModal from '@/components/ContactModal';
@@ -133,11 +134,6 @@ function Footer() {
               key={section.title}
               className="footer-section"
             >
-              {/* Simple heading instead of accordion toggle */}
-              {/* <div className="footer-heading">
-                {section.title}
-              </div> */}
-
               <ul className="footer-links">
                 {section.links.map((link) => (
                   <li key={`${section.title}-${link.label}`}>
@@ -174,6 +170,28 @@ function Footer() {
             </div>
           ))}
         </div>
+
+        {/* 🔻 New bottom strip: copyright left, NAJ logo right */}
+        <div className="footer-legal">
+  <p className="footer-copy">
+    © {new Date().getFullYear()} AURICLE. All rights reserved.
+  </p>
+
+  <a
+    href="https://www.naj.co.uk/"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="footer-naj-logo"
+  >
+    <Image
+      src="/images/naj-logo.png"
+      alt="National Association of Jewellers member"
+      width={120}
+      height={58}
+    />
+  </a>
+</div>
+
       </footer>
 
       <RegisterModal

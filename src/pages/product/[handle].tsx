@@ -49,7 +49,12 @@ const isSameOptionValue = (a: string, b: string) =>
 interface Metafield {
   key: string;
   value: string;
+  reference?: {
+    __typename?: string;
+    url?: string | null;
+  } | null;
 }
+
 
 interface ProductVariantNode {
   id: string;
@@ -517,7 +522,22 @@ const memberLabel =
       return value;
     }
   };
+const getFileUrl = (key: string): string | null => {
+  const field = metafields.find((f: Metafield) => f?.key === key);
+  if (!field) return null;
 
+  // Prefer the reference GenericFile URL
+  if (field.reference && typeof field.reference.url === 'string') {
+    return field.reference.url;
+  }
+
+  // Fallback: if value *is* already a https URL, use it
+  if (field.value && field.value.startsWith('http')) {
+    return field.value;
+  }
+
+  return null;
+};
   const selectedSku = selectedVariant?.sku || getFieldValue('sku');
 
   const currentVariantLabel = getFieldValue('variant_label') || 'Select an option';
@@ -585,7 +605,7 @@ const detailKeys: Array<
   'shipping',
 ];
 
-
+const testCertificateUrl = getFileUrl('test_certificate');
 
 
 
@@ -1103,43 +1123,103 @@ const detailKeys: Array<
   <div style={{ marginTop: '32px' }}>
     <h2 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '8px' }}>Details</h2>
     <table
+  style={{
+    width: '100%',
+    borderCollapse: 'collapse',
+    fontSize: '14px',
+    border: '1px solid #e0e0e0',
+  }}
+>
+  <tbody>
+    {detailKeys.map((key) => {
+      const value =
+        key === 'shipping'
+          ? copy.shippingFromText
+          : getFieldValue(key);
+
+      if (!value) return null;
+
+      const label = copy.detailLabels[key];
+
+      return (
+        <tr key={key}>
+          <td style={cellLabelStyle}>{label.toUpperCase()}</td>
+          <td style={cellValueStyle}>{value}</td>
+        </tr>
+      );
+    })}
+  </tbody>
+</table>
+
+{/* ✅ Test Certificate box (only shows when user is approved AND metafield exists) */}
+{approved === true && testCertificateUrl && (
+  <div
+    style={{
+      marginTop: '16px',
+      display: 'flex',
+      justifyContent: 'flex-start',
+      alignItems: 'center',
+    }}
+  >
+    <a
+      href={testCertificateUrl}
+      target="_blank"
+      rel="noopener noreferrer"
       style={{
-        width: '100%',
-        borderCollapse: 'collapse',
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '8px',
+        padding: '10px 14px',
+        borderRadius: '4px',
+        border: '1px solid #181818',
+        background: '#fff',
+        color: '#181818',
         fontSize: '14px',
-        border: '1px solid #e0e0e0',
+        fontWeight: 600,
+        textDecoration: 'none',
+        cursor: 'pointer',
       }}
     >
-      <tbody>
-  {detailKeys.map((key) => {
-    const value =
-      key === 'shipping'
-        ? copy.shippingFromText
-        : getFieldValue(key);
+      <svg
+        width="24"
+        height="24"
+        viewBox="0 0 1024 1024"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
+      >
+        <g strokeWidth="0" />
+        <g strokeLinecap="round" strokeLinejoin="round" />
+        <g>
+          <path
+            d="M719.8 651.8m-10 0a10 10 0 1 0 20 0 10 10 0 1 0-20 0Z"
+            fill="#E73B37"
+          />
+          <path
+            d="M512.1 64H172v896h680V385.6L512.1 64z m278.8 324.3h-280v-265l280 265zM808 916H216V108h278.6l0.2 0.2v296.2h312.9l0.2 0.2V916z"
+            fill="#39393A"
+          />
+          <path d="M280.5 530h325.9v16H280.5z" fill="#39393A" />
+          <path d="M639.5 530h90.2v16h-90.2z" fill="#E73B37" />
+          <path d="M403.5 641.8h277v16h-277z" fill="#39393A" />
+          <path d="M280.6 641.8h91.2v16h-91.2z" fill="#E73B37" />
+          <path d="M279.9 753.7h326.5v16H279.9z" fill="#39393A" />
+          <path d="M655.8 753.7h73.9v16h-73.9z" fill="#E73B37" />
+        </g>
+      </svg>
+      <span>VIEW TEST CERTIFICATE</span>
+    </a>
+  </div>
+)}
 
-    if (!value) return null;
-
-    const label = copy.detailLabels[key];
-
-    return (
-      <tr key={key}>
-        <td style={cellLabelStyle}>{label.toUpperCase()}</td>
-        <td style={cellValueStyle}>{value}</td>
-      </tr>
-    );
-  })}
-</tbody>
 
 
-
-    </table>
-
-    {region === 'uk' && product.descriptionHtml && (
+{region === 'uk' && product.descriptionHtml && (
   <div
     style={{ marginTop: '24px', fontSize: '14px', lineHeight: '1.6' }}
     dangerouslySetInnerHTML={{ __html: product.descriptionHtml }}
   />
 )}
+
 
   </div>
 </div>
@@ -1197,13 +1277,11 @@ export const getStaticProps: GetStaticProps<ProductPageProps> = async (
   if (handle === 'vip-membership') {
     return {
       redirect: {
-        destination: '/vip-membership',   // your VIP info page
+        destination: '/vip-membership',
         permanent: true,
       },
     };
   }
-
-  // ⬇️ Continue with your existing product fetch logic
 
 
 const query = `
@@ -1245,7 +1323,10 @@ const query = `
             }
             availableForSale
             quantityAvailable
-            selectedOptions { name value }
+            selectedOptions {
+              name
+              value
+            }
             sku
             image {
               url
@@ -1276,10 +1357,17 @@ const query = `
         { namespace: "custom", key: "base_size" },
         { namespace: "custom", key: "variants" },
         { namespace: "custom", key: "variant_label" },
-        { namespace: "custom", key: "fitting" }
+        { namespace: "custom", key: "fitting" },
+        { namespace: "custom", key: "test_certificate" }
       ]) {
         key
         value
+        reference {
+          __typename
+          ... on GenericFile {
+            url
+          }
+        }
       }
 
       styledByYou: metafield(namespace: "custom", key: "styled_by_you") {
@@ -1302,7 +1390,9 @@ const query = `
                         altText
                       }
                     }
-                    ... on Product { id }
+                    ... on Product {
+                      id
+                    }
                   }
                 }
               }
@@ -1313,6 +1403,7 @@ const query = `
     }
   }
 `;
+
 
 
   const data = await shopifyFetch({ query, variables: { handle } });
