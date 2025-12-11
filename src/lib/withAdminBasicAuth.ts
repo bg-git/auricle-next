@@ -15,12 +15,16 @@ export function withAdminBasicAuth<P extends Record<string, unknown>>(
   return async function withAuth(
     ctx: GetServerSidePropsContext,
   ): Promise<GetServerSidePropsResult<P>> {
-    const { req, res } = ctx;
+    // 🔓 In development, skip basic auth completely
+    if (process.env.NODE_ENV === "development") {
+      return handler(ctx);
+    }
 
+    const { req, res } = ctx;
     const auth = req.headers.authorization;
 
     if (!auth || !auth.startsWith("Basic ")) {
-      res.setHeader("WWW-Authenticate", "Basic realm=\"Auricle Admin\"");
+      res.setHeader("WWW-Authenticate", 'Basic realm="Auricle Admin"');
       res.statusCode = 401;
       res.end("Authentication required");
       return { props: {} as P };
@@ -32,7 +36,7 @@ export function withAdminBasicAuth<P extends Record<string, unknown>>(
     try {
       decoded = Buffer.from(base64, "base64").toString("utf8");
     } catch {
-      res.setHeader("WWW-Authenticate", "Basic realm=\"Auricle Admin\"");
+      res.setHeader("WWW-Authenticate", 'Basic realm="Auricle Admin"');
       res.statusCode = 401;
       res.end("Authentication required");
       return { props: {} as P };
@@ -41,7 +45,7 @@ export function withAdminBasicAuth<P extends Record<string, unknown>>(
     const [username, password] = decoded.split(":");
 
     if (username !== ADMIN_USERNAME || password !== ADMIN_PASSWORD) {
-      res.setHeader("WWW-Authenticate", "Basic realm=\"Auricle Admin\"");
+      res.setHeader("WWW-Authenticate", 'Basic realm="Auricle Admin"');
       res.statusCode = 401;
       res.end("Authentication required");
       return { props: {} as P };

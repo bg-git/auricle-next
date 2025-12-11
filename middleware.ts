@@ -6,6 +6,11 @@ import { verifyCustomerSession } from '@/lib/verifyCustomerSession'
 const PUBLIC_FILE = /\.(?:js|css|png|jpg|jpeg|gif|svg|webp|ico)$/i
 
 export async function middleware(request: NextRequest) {
+  // ✅ In development, bypass all auth / gating
+  if (process.env.NODE_ENV === 'development') {
+    return NextResponse.next()
+  }
+
   const { pathname } = request.nextUrl
 
   // Skip Next.js internals and static assets

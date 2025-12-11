@@ -5,17 +5,27 @@ type ShopifyAdminConfig = {
   token: string;
 };
 
-// 🔧 Auricle: use ONLY the standard Shopify env vars
+// 🔧 Auricle: support both old + new env names
 const AURICLE_DOMAIN = process.env.SHOPIFY_STORE_DOMAIN;
-const AURICLE_TOKEN = process.env.SHOPIFY_ADMIN_API_ACCESS_TOKEN;
+const AURICLE_TOKEN =
+  process.env.SHOPIFY_ADMIN_API_ACCESS_TOKEN ??
+  process.env.SHOPIFY_ADMIN_ACCESS_TOKEN;
 
 if (!AURICLE_DOMAIN || !AURICLE_TOKEN) {
+  console.error('Shopify Admin env check failed', {
+    hasDomain: !!AURICLE_DOMAIN,
+    hasApiToken: !!process.env.SHOPIFY_ADMIN_API_ACCESS_TOKEN,
+    hasLegacyToken: !!process.env.SHOPIFY_ADMIN_ACCESS_TOKEN,
+    vercelEnv: process.env.VERCEL_ENV,
+    nodeEnv: process.env.NODE_ENV,
+  });
+
   throw new Error(
-    'Missing Shopify Admin env vars. Set SHOPIFY_STORE_DOMAIN and SHOPIFY_ADMIN_API_ACCESS_TOKEN.',
+    'Missing Shopify Admin env vars. Set SHOPIFY_STORE_DOMAIN and SHOPIFY_ADMIN_API_ACCESS_TOKEN (or SHOPIFY_ADMIN_ACCESS_TOKEN).',
   );
 }
 
-// Pierce of Art config stays as-is
+// Pierce of Art config (unchanged)
 const POA_DOMAIN = process.env.POA_SHOPIFY_STORE_DOMAIN;
 const POA_TOKEN = process.env.POA_SHOPIFY_ADMIN_API_ACCESS_TOKEN;
 
@@ -34,6 +44,7 @@ export const poaAdmin: ShopifyAdminConfig = {
   domain: POA_DOMAIN,
   token: POA_TOKEN,
 };
+
 
 
 export async function shopifyAdminGet(
