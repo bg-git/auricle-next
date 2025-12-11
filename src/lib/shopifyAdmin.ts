@@ -5,15 +5,21 @@ type ShopifyAdminConfig = {
   token: string;
 };
 
-// 🔧 Auricle: support both old + new env names
-const AURICLE_DOMAIN = process.env.SHOPIFY_STORE_DOMAIN;
+// 🔧 Auricle: support both legacy + new env names
+const AURICLE_DOMAIN =
+  process.env.AURICLE_SHOPIFY_STORE_DOMAIN ??
+  process.env.SHOPIFY_STORE_DOMAIN;
+
 const AURICLE_TOKEN =
+  process.env.AURICLE_SHOPIFY_ADMIN_API_ACCESS_TOKEN ??
   process.env.SHOPIFY_ADMIN_API_ACCESS_TOKEN ??
   process.env.SHOPIFY_ADMIN_ACCESS_TOKEN;
 
 if (!AURICLE_DOMAIN || !AURICLE_TOKEN) {
   console.error('Shopify Admin env check failed', {
-    hasDomain: !!AURICLE_DOMAIN,
+    hasAuricleDomain: !!process.env.AURICLE_SHOPIFY_STORE_DOMAIN,
+    hasShopifyDomain: !!process.env.SHOPIFY_STORE_DOMAIN,
+    hasAuricleToken: !!process.env.AURICLE_SHOPIFY_ADMIN_API_ACCESS_TOKEN,
     hasApiToken: !!process.env.SHOPIFY_ADMIN_API_ACCESS_TOKEN,
     hasLegacyToken: !!process.env.SHOPIFY_ADMIN_ACCESS_TOKEN,
     vercelEnv: process.env.VERCEL_ENV,
@@ -21,15 +27,22 @@ if (!AURICLE_DOMAIN || !AURICLE_TOKEN) {
   });
 
   throw new Error(
-    'Missing Shopify Admin env vars. Set SHOPIFY_STORE_DOMAIN and SHOPIFY_ADMIN_API_ACCESS_TOKEN (or SHOPIFY_ADMIN_ACCESS_TOKEN).',
+    'Missing Shopify Admin env vars. Set SHOPIFY_STORE_DOMAIN and SHOPIFY_ADMIN_API_ACCESS_TOKEN (or SHOPIFY_ADMIN_ACCESS_TOKEN / AURICLE_* equivalents).',
   );
 }
 
-// Pierce of Art config (unchanged)
+// Pierce of Art config
 const POA_DOMAIN = process.env.POA_SHOPIFY_STORE_DOMAIN;
 const POA_TOKEN = process.env.POA_SHOPIFY_ADMIN_API_ACCESS_TOKEN;
 
 if (!POA_DOMAIN || !POA_TOKEN) {
+  console.error('Pierce of Art Shopify Admin env check failed', {
+    hasPoaDomain: !!process.env.POA_SHOPIFY_STORE_DOMAIN,
+    hasPoaToken: !!process.env.POA_SHOPIFY_ADMIN_API_ACCESS_TOKEN,
+    vercelEnv: process.env.VERCEL_ENV,
+    nodeEnv: process.env.NODE_ENV,
+  });
+
   throw new Error(
     'Missing Pierce of Art Shopify Admin env vars. Set POA_SHOPIFY_STORE_DOMAIN and POA_SHOPIFY_ADMIN_API_ACCESS_TOKEN.',
   );
@@ -44,8 +57,6 @@ export const poaAdmin: ShopifyAdminConfig = {
   domain: POA_DOMAIN,
   token: POA_TOKEN,
 };
-
-
 
 export async function shopifyAdminGet(
   store: ShopifyAdminConfig,
@@ -120,6 +131,7 @@ export async function shopifyAdminGraphql<T = unknown>(
 
   return json.data;
 }
+
 export async function shopifyAdminPost(
   store: ShopifyAdminConfig,
   path: string,
