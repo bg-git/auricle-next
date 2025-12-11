@@ -59,8 +59,14 @@ type ProductEdge = {
   node: ProductNode;
 };
 
+type PageInfo = {
+  hasNextPage: boolean;
+  endCursor: string | null;
+};
+
 type ProductsConnection = {
   edges: ProductEdge[];
+  pageInfo: PageInfo;
 };
 
 type AuricleFeedQueryResult = {
@@ -88,9 +94,10 @@ export default async function handler(
 
   try {
     const query = `
-      query AuriclePoaFeed {
-        products(first: 100) {
+      query AuriclePoaFeed($after: String) {
+        products(first: 100, query: "status:active", after: $after) {
           edges {
+            cursor
             node {
               id
               title
@@ -117,17 +124,33 @@ export default async function handler(
               }
             }
           }
+          pageInfo {
+            hasNextPage
+            endCursor
+          }
         }
       }
     `;
 
-    const data = await shopifyAdminGraphql<AuricleFeedQueryResult>(
-      auricleAdmin,
-      query,
-    );
+    const products: ProductNode[] = [];
 
-    const feed: FeedProduct[] = data.products.edges
-      .map((productEdge) => productEdge.node)
+    let hasNextPage = true;
+    let cursor: string | null = null;
+
+    while (hasNextPage) {
+      const data = await shopifyAdminGraphql<AuricleFeedQueryResult>(
+        auricleAdmin,
+        query,
+        { after: cursor },
+      );
+
+      products.push(...data.products.edges.map((edge) => edge.node));
+
+      hasNextPage = data.products.pageInfo.hasNextPage;
+      cursor = data.products.pageInfo.endCursor;
+    }
+
+    const feed: FeedProduct[] = products
       .filter((p) => p.status === 'ACTIVE') // ✅ only active Auricle products
       .map((p) => {
         const productId = extractNumericId(p.id);
