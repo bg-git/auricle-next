@@ -173,10 +173,6 @@ function Footer() {
 
         {/* 🔻 New bottom strip: copyright left, NAJ logo right */}
         <div className="footer-legal">
-  <p className="footer-copy">
-    © {new Date().getFullYear()} AURICLE. All rights reserved.
-  </p>
-
   <a
     href="https://www.naj.co.uk/"
     target="_blank"
@@ -190,7 +186,12 @@ function Footer() {
       height={58}
     />
   </a>
+
+  <p className="footer-copy">
+    © {new Date().getFullYear()} AURICLE. All rights reserved.
+  </p>
 </div>
+
 
       </footer>
 
