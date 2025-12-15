@@ -153,7 +153,8 @@ export default async function handler(
     return res.status(401).send('Unknown shop');
   }
 
-  const secret = process.env.AURICLE_WEBHOOK_SECRET;
+  const secret =
+    process.env.AURICLE_WEBHOOK_SECRET ?? process.env.SHOPIFY_WEBHOOK_SECRET;
   if (!secret) {
     console.error('AURICLE_WEBHOOK_SECRET not set');
     return res.status(500).send('Config error - webhook secret');
