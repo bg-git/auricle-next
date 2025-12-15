@@ -1,0 +1,183 @@
+.piercing-wholesalers {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1rem;
+
+  h1 {
+    font-size: 1.6rem;
+    margin: 0 0 0.5rem;
+  }
+
+  h2 {
+    font-size: 1.2rem;
+    text-transform: capitalize;
+    margin: 0 0 1.5rem;
+  }
+
+  .intro {
+    margin: 0 0 2rem;
+    max-width: 600px;
+  }
+
+  /* =========================
+     COUNTRY INDEX (HOME)
+     ========================= */
+
+  .country-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .country-card {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 1rem;
+
+    background: #ececec;
+    border: 1px solid #d8d8d8;
+    padding: 1rem;
+
+    text-decoration: none;
+    color: #181818;
+  }
+
+  .country-card:hover {
+    border-color: #181818;
+  }
+
+  .country-card__name {
+    margin: 0;
+    font-size: 1.05rem;
+    line-height: 1.2;
+  }
+
+  .country-card__meta {
+    margin: 0.25rem 0 0;
+    font-size: 0.9rem;
+    opacity: 0.75;
+  }
+
+  .country-card__action {
+    font-size: 1rem;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  @media (min-width: 900px) {
+    .country-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+    }
+
+    .country-card {
+      padding: 1.25rem;
+    }
+  }
+
+  /* =========================
+     WHOLESALER DIRECTORY
+     ========================= */
+
+  .company-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .wh-card {
+    display: grid;
+    grid-template-columns: 72px 1fr auto;
+    gap: 0.9rem;
+    align-items: center;
+
+    background: #ececec;
+    border: 1px solid #d8d8d8;
+    padding: 1rem;
+
+    text-decoration: none;
+    color: #181818;
+  }
+
+  .wh-card:hover {
+    border-color: #181818;
+  }
+
+  .wh-card__logo {
+    width: 72px;
+
+    img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+  }
+
+  .wh-card__name {
+    margin: 0;
+    font-size: 1.05rem;
+    line-height: 1.2;
+  }
+
+  .wh-card__desc {
+    margin: 0.25rem 0 0;
+    font-size: 0.9rem;
+    opacity: 0.75;
+  }
+
+  .wh-card__action span {
+    font-size: 0.9rem;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  @media (min-width: 900px) {
+    .wh-card {
+      padding: 1.25rem;
+      grid-template-columns: 88px 1fr auto;
+    }
+
+    .wh-card__logo {
+      width: 88px;
+    }
+  }
+
+  /* =========================
+     COMPANY DETAIL PAGE
+     ========================= */
+
+  &.company-page {
+    max-width: 800px;
+
+    .company-logo {
+      max-width: 200px;
+      margin: 0 0 1.5rem;
+
+      img {
+        width: 100%;
+        height: auto;
+        display: block;
+        border: 1px solid #d8d8d8;
+      }
+    }
+
+    .external-link {
+      display: inline-block;
+      margin-top: 1.5rem;
+      color: #181818;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .disclaimer {
+      margin-top: 3rem;
+      font-size: 0.8rem;
+      opacity: 0.6;
+    }
+  }
+}
+.about {
+  margin-top: 0.75rem;
+  opacity: 0.85;
+}
