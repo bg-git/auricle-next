@@ -218,7 +218,7 @@ export default async function handler(
   };
 
   const onlineWarehouse = poaLocations.locations?.find(
-    (loc) => loc.name.toLowerCase() === 'online warehouse',
+    (loc) => loc.name.toLowerCase().includes('online warehouse'),
   );
 
   if (!onlineWarehouse) {

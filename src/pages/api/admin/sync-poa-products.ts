@@ -232,6 +232,18 @@ async function loadAuricleFeed(): Promise<FeedProduct[]> {
 
   return feed;
 }
+const POA_INVENTORY_ITEM_TRACK_MUTATION = `
+  mutation TrackInventoryItem($id: ID!, $input: InventoryItemInput!) {
+    inventoryItemUpdate(id: $id, input: $input) {
+      inventoryItem { id tracked }
+      userErrors { field message }
+    }
+  }
+`;
+
+function toInventoryItemGid(inventoryItemId: number): string {
+  return `gid://shopify/InventoryItem/${inventoryItemId}`;
+}
 
 export default async function handler(
   req: NextApiRequest,
@@ -399,7 +411,24 @@ export default async function handler(
         })) as { product: PoaProduct };
 
         const createdProduct = created.product;
-        createdCount += 1;
+createdCount += 1;
+
+// ✅ Force POA to track inventory for all created variants
+for (const cv of createdProduct.variants) {
+  if (!cv.inventory_item_id) continue;
+
+  await shopifyAdminGraphql<{
+    inventoryItemUpdate: {
+      inventoryItem: { id: string; tracked: boolean } | null;
+      userErrors: { field: string[] | null; message: string }[];
+    };
+  }>(poaAdmin, POA_INVENTORY_ITEM_TRACK_MUTATION, {
+    id: toInventoryItemGid(cv.inventory_item_id),
+    input: { tracked: true },
+  });
+}
+
+        
 
         if (createdProduct) {
           existingByHandle.set(p.handle, createdProduct);
