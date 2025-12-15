@@ -14,6 +14,7 @@ type FeedVariant = {
   gid: string;
   sku: string | null;
   price: string;   // Auricle wholesale price
+  inventoryQuantity: number;
   title: string;
   poaEnabled: boolean;
   poaPrice: string; // POA retail price
@@ -35,6 +36,9 @@ type PoaVariant = {
   sku: string | null;
   price: string;
   title: string;
+  inventory_item_id?: number;
+  inventory_management?: string;
+  inventory_quantity?: number;
 };
 
 type PoaProduct = {
@@ -43,6 +47,11 @@ type PoaProduct = {
   handle: string;
   status: string;
   variants: PoaVariant[];
+};
+
+type PoaLocation = {
+  id: number;
+  name: string;
 };
 
 type PoaProductsResponse = {
@@ -71,6 +80,7 @@ type VariantNode = {
   id: string;
   sku: string | null;
   price: string;
+  inventoryQuantity: number;
   title: string;
   metafields: {
     edges: MetafieldEdge[];
@@ -141,6 +151,7 @@ async function loadAuricleFeed(): Promise<FeedProduct[]> {
                   id
                   sku
                   price
+                  inventoryQuantity
                   title
                   metafields(first: 10, namespace: "custom") {
                     edges {
@@ -174,11 +185,11 @@ async function loadAuricleFeed(): Promise<FeedProduct[]> {
       const imageUrls =
         p.images?.edges.map((edge) => edge.node.url) ?? [];
 
-      const variants: FeedVariant[] = p.variants.edges.map((variantEdge) => {
-        const v = variantEdge.node;
-        const variantId = extractNumericId(v.id);
+        const variants: FeedVariant[] = p.variants.edges.map((variantEdge) => {
+          const v = variantEdge.node;
+          const variantId = extractNumericId(v.id);
 
-        let poaEnabled = false;
+          let poaEnabled = false;
         let poaPrice: string | null = null;
 
         for (const mfEdge of v.metafields.edges) {
@@ -195,16 +206,17 @@ async function loadAuricleFeed(): Promise<FeedProduct[]> {
 
         const effectivePoaPrice = poaPrice ?? v.price;
 
-        return {
-          id: variantId,
-          gid: v.id,
-          sku: v.sku,
-          price: v.price,
-          title: v.title,
-          poaEnabled,
-          poaPrice: effectivePoaPrice,
-        };
-      });
+          return {
+            id: variantId,
+            gid: v.id,
+            sku: v.sku,
+            price: v.price,
+            inventoryQuantity: v.inventoryQuantity,
+            title: v.title,
+            poaEnabled,
+            poaPrice: effectivePoaPrice,
+          };
+        });
 
       return {
         id: productId,
@@ -257,6 +269,21 @@ export default async function handler(
       'products.json?limit=250',
     )) as PoaProductsResponse;
 
+    const poaLocations = (await shopifyAdminGet(
+      poaAdmin,
+      'locations.json',
+    )) as { locations: PoaLocation[] };
+
+    const locations = poaLocations.locations ?? [];
+
+    const onlineWarehouse = locations.find(
+      (loc) => loc.name.toLowerCase() === 'online warehouse',
+    );
+
+    if (!onlineWarehouse) {
+      throw new Error('Pierce of Art location ONLINE WAREHOUSE not found');
+    }
+
     const existingPoaProducts = poaData.products ?? [];
 
     const existingByHandle = new Map<string, PoaProduct>();
@@ -305,6 +332,7 @@ export default async function handler(
       poaProductsExisting: number;
       created?: number;
       updated?: number;
+      inventoryUpdated?: number;
       toCreate: typeof toCreate;
       toUpdate: typeof toUpdate;
     } = {
@@ -325,6 +353,7 @@ export default async function handler(
     // 4) Apply changes to POA
     let createdCount = 0;
     let updatedCount = 0;
+    let inventoryUpdatedCount = 0;
 
     // Map existing POA variants by handle + SKU for updates
     const existingVariantsByHandleAndSku = new Map<
@@ -350,12 +379,15 @@ export default async function handler(
       const variantsPayload = p.variants.map((v) => ({
         sku: v.sku ?? undefined,
         price: v.poaPrice,               // use POA price
+        inventory_policy: 'deny',
+        inventory_management: 'shopify',
+        inventory_quantity: v.inventoryQuantity,
         title: v.title || 'Default',
         option1: v.title || 'Default',
       }));
 
       try {
-        await shopifyAdminPost(poaAdmin, 'products.json', {
+        const created = (await shopifyAdminPost(poaAdmin, 'products.json', {
           product: {
             title: p.title,
             handle: p.handle,
@@ -364,8 +396,22 @@ export default async function handler(
             images: p.imageUrls.map((url) => ({ src: url })),       // ✅ images
             variants: variantsPayload,
           },
-        });
+        })) as { product: PoaProduct };
+
+        const createdProduct = created.product;
         createdCount += 1;
+
+        if (createdProduct) {
+          existingByHandle.set(p.handle, createdProduct);
+
+          const bySku = new Map<string, PoaVariant>();
+          for (const v of createdProduct.variants) {
+            if (v.sku) {
+              bySku.set(v.sku, v);
+            }
+          }
+          existingVariantsByHandleAndSku.set(p.handle, bySku);
+        }
       } catch (err) {
         const msg =
           err instanceof Error ? err.message : String(err);
@@ -421,9 +467,37 @@ export default async function handler(
       }
     }
 
+    // 4c) Enforce Auricle inventory on POA Online Warehouse
+    for (const p of auricleForPoa) {
+      const bySku = existingVariantsByHandleAndSku.get(p.handle);
+      if (!bySku) continue;
+
+      for (const v of p.variants) {
+        if (!v.sku) continue;
+
+        const existingVariant = bySku.get(v.sku);
+        if (!existingVariant?.inventory_item_id) continue;
+
+        try {
+          await shopifyAdminPost(poaAdmin, 'inventory_levels/set.json', {
+            location_id: onlineWarehouse.id,
+            inventory_item_id: existingVariant.inventory_item_id,
+            available: v.inventoryQuantity,
+          });
+          inventoryUpdatedCount += 1;
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          console.error(
+            `Failed to set inventory for SKU ${v.sku} on POA: ${msg}`,
+          );
+        }
+      }
+    }
+
     result.applied = true;
     result.created = createdCount;
     result.updated = updatedCount;
+    result.inventoryUpdated = inventoryUpdatedCount;
 
     return res.status(200).json(result);
   } catch (err) {
