@@ -214,7 +214,7 @@ function Header() {
           {/* Logo */}
           <Link href="/" style={{ display: 'flex', alignItems: 'center' }}>
             <Image
-              src="/auricle-logo.png"
+              src="/auricle-logo-xmas1.png"
               alt="AURICLE's Ram skull logo"
               width={60}
               height={40}
