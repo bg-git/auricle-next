@@ -289,6 +289,7 @@ function Header() {
             { label: 'ENDS & GEMS', href: '/collection/ends-gems' },
             { label: 'CHAINS & CHARMS', href: '/collection/chains-charms' },
             { label: 'RINGS & HOOPS', href: '/collection/rings-hoops' },
+            { label: 'DISPLAYS & STANDS', href: '/collection/displays-stands' },
             { label: 'SEARCH', href: '/search' },
           ].map(({ label, href }) => (
             <Link
