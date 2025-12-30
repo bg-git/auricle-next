@@ -12,7 +12,7 @@ robots: index,follow
 
 This Cookie Policy explains how AURICLE Limited (“AURICLE”, “we”, “us”) uses cookies and similar technologies on [www.auricle.co.uk](https://www.auricle.co.uk) and [www.auriclejewelry.com](https://www.auriclejewelry.com) (“Website”). For how we process personal data, see our [Privacy Policy](/information/privacy-policy).
 
-> **Consent model:** To use this Website and our services, you must accept our use of cookies as described below. We do **not** offer per-category cookie settings. You can either **accept** cookies to use the Website or **decline** and not use the Website. You may also block cookies via your browser; however, the Website and checkout services may not function correctly without cookies.
+> **Consent model:** These cookies are essential to enable core website functions such as account access, security, and checkout. Without these cookies, the website cannot operate correctly. We do **not** offer per-category cookie settings. You can either **accept** cookies to use the Website or **decline** and not use the Website. You may also block cookies via your browser; however, the Website and checkout services may not function correctly without cookies.
 
 ---
 

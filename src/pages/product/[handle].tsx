@@ -201,7 +201,7 @@ const optionDefinitions = useMemo(() => {
   return defs;
 }, [variantEdges]);
 
-const primaryOptionName = optionDefinitions[0]?.name || null;
+
 // Track current selection per option name
 const [selectedOptionsState, setSelectedOptionsState] = useState<
   Record<string, string>
@@ -884,7 +884,7 @@ const testCertificateUrl = getFileUrl('test_certificate');
 
             let variantsForValue;
 
-            if (optionIndex === 0 || !primaryOptionName) {
+            if (optionIndex === 0) {
               // FIRST OPTION (e.g. Fitting):
               // Show all values that exist on ANY variant.
               variantsForValue = variantEdges
@@ -897,37 +897,35 @@ const testCertificateUrl = getFileUrl('test_certificate');
                   )
                 );
             } else {
-              // SECOND+ OPTION (e.g. Length):
-              // Only show values that exist for the currently selected primary option.
-              const primaryValue = primaryOptionName
-                ? getSelectedOptionValue(selectedOptionsState, primaryOptionName)
-                : undefined;
+  // SECOND+ OPTION:
+  // Only show values that exist for the CURRENT FULL SELECTION
+  // (i.e. candidate value + all other selected options)
+  variantsForValue = variantEdges
+    .map(({ node }) => node)
+    .filter((node) => {
+      // 1) candidate value must exist on this node for THIS option
+      const hasThisValue = node.selectedOptions.some(
+        (opt) =>
+          isSameOptionName(opt.name, option.name) &&
+          isSameOptionValue(opt.value, value)
+      );
+      if (!hasThisValue) return false;
 
-              variantsForValue = variantEdges
-                .map(({ node }) => node)
-                .filter((node) => {
-                  const hasThisValue = node.selectedOptions.some(
-                    (opt) =>
-                      isSameOptionName(opt.name, option.name) &&
-                      isSameOptionValue(opt.value, value)
-                  );
+      // 2) every OTHER selected option in state must match this node
+      const otherSelections = Object.entries(selectedOptionsState).filter(
+        ([selectedName]) => !isSameOptionName(selectedName, option.name)
+      );
 
-                  if (!hasThisValue) return false;
+      return otherSelections.every(([selectedName, selectedValue]) => {
+        return node.selectedOptions.some(
+          (opt) =>
+            isSameOptionName(opt.name, selectedName) &&
+            isSameOptionValue(opt.value, selectedValue)
+        );
+      });
+    });
+}
 
-                  if (!primaryValue) {
-                    // No primary selection yet – shouldn't really happen, but be safe.
-                    return true;
-                  }
-
-                  const matchesPrimary = node.selectedOptions.some(
-                    (opt) =>
-                      isSameOptionName(opt.name, primaryOptionName) &&
-                      isSameOptionValue(opt.value, primaryValue)
-                  );
-
-                  return matchesPrimary;
-                });
-            }
 
             const hasVariant = variantsForValue.length > 0;
 
