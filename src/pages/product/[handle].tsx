@@ -550,6 +550,25 @@ const getFileUrl = (key: string): string | null => {
       })
     : [];
 
+    type ExtraRow = { label: string; value: string };
+
+const extraRows: ExtraRow[] = useMemo(() => {
+  const field = metafields.find((f) => f?.key === 'extra_table_rows');
+  const raw = field?.value?.trim();
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter((r) => r && typeof r.label === 'string' && typeof r.value === 'string')
+      .map((r) => ({ label: r.label.trim(), value: r.value.trim() }));
+  } catch {
+    return [];
+  }
+}, [metafields]);
+
+
+
   const cellLabelStyle = {
     padding: '8px',
     fontWeight: 500,
@@ -1129,24 +1148,36 @@ const testCertificateUrl = getFileUrl('test_certificate');
   }}
 >
   <tbody>
-    {detailKeys.map((key) => {
-      const value =
-        key === 'shipping'
-          ? copy.shippingFromText
-          : getFieldValue(key);
+  {detailKeys.map((key) => {
+    const value =
+      key === 'shipping'
+        ? copy.shippingFromText
+        : getFieldValue(key);
 
-      if (!value) return null;
+    if (!value && key !== 'shipping') return null;
 
-      const label = copy.detailLabels[key];
+    const label = copy.detailLabels[key];
 
-      return (
-        <tr key={key}>
-          <td style={cellLabelStyle}>{label.toUpperCase()}</td>
-          <td style={cellValueStyle}>{value}</td>
-        </tr>
-      );
-    })}
-  </tbody>
+    return (
+      <>
+        {key === 'shipping' && extraRows.map((row, i) => (
+          <tr key={`extra-${i}`}>
+            <td style={cellLabelStyle}>{row.label.toUpperCase()}</td>
+            <td style={cellValueStyle}>{row.value}</td>
+          </tr>
+        ))}
+
+        {value ? (
+          <tr key={key}>
+            <td style={cellLabelStyle}>{label.toUpperCase()}</td>
+            <td style={cellValueStyle}>{value}</td>
+          </tr>
+        ) : null}
+      </>
+    );
+  })}
+</tbody>
+
 </table>
 
 {/* ✅ Test Certificate box (only shows when user is approved AND metafield exists) */}
@@ -1356,7 +1387,9 @@ const query = `
         { namespace: "custom", key: "variants" },
         { namespace: "custom", key: "variant_label" },
         { namespace: "custom", key: "fitting" },
+        { namespace: "custom", key: "extra_table_rows" },
         { namespace: "custom", key: "test_certificate" }
+
       ]) {
         key
         value
