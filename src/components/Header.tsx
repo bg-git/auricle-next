@@ -286,6 +286,7 @@ function Header() {
           }}
         >
           {[
+            { label: 'ESSENTIALS', href: '/collection/essentials' },
             { label: 'ENDS & GEMS', href: '/collection/ends-gems' },
             { label: 'CHAINS & CHARMS', href: '/collection/chains-charms' },
             { label: 'RINGS & HOOPS', href: '/collection/rings-hoops' },
