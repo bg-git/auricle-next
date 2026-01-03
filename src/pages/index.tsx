@@ -306,6 +306,7 @@ export function HomeContent() {
         alt="Ends & gems"
         fill
         priority
+        fetchPriority="high"
         style={{ objectFit: 'cover' }}
         sizes="(max-width: 800px) 50vw, 600px"
       />
@@ -329,6 +330,7 @@ export function HomeContent() {
         alt="Chains & Charms"
         fill
         priority
+        fetchPriority="high"
         style={{ objectFit: 'cover' }}
         sizes="(max-width: 800px) 50vw, 600px"
       />
