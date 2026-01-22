@@ -96,9 +96,7 @@ const sections = [
   {
     title: 'COMPANY',
     links: [
-      { label: 'About Us', href: '/information/about-us' },
-      { label: 'Pricing & Efficiency', href: '/information/pricing-and-efficiency' },
-      { label: 'VIP Pricing', href: '/vip-membership' },
+      
     ],
   },
   {
