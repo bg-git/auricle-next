@@ -298,7 +298,7 @@ export default function WholesalePiercingJewelleryUKPage() {
     AURICLE supplies{' '}
     <strong>body piercing jewellery wholesale</strong> to professional studios and
     retailers only. Trade registration is required to view
-    pricing, place orders, and access account-level wholesale services. Tap the "Join Us" button in the top right of the page.
+    pricing, place orders, and access account-level wholesale services. Tap the &quot;Join Us&quot; button in the top right of the page.
   </p>
 
   <p>
@@ -307,6 +307,15 @@ export default function WholesalePiercingJewelleryUKPage() {
     quality control, consistent supply, and clear product specifications. AURICLE
     is built around those fundamentals, with a boutique catalogue focused on
     wearable designs intended for professional use.
+  </p>
+
+   <h3>Professional guide</h3>
+
+  <p>
+    A longer breakdown covering materials, verification, MOQs, and wholesale terms is available in our piercing magazine:{' '}
+    <Link href="/piercing-magazine/best-wholesale-piercing-jewellery-uk">
+      Best Wholesale Piercing Jewellery in the UK
+    </Link>.
   </p>
 </section>
 

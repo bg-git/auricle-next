@@ -186,8 +186,15 @@ function Footer() {
   </a>
 
   <p className="footer-copy">
-    © {new Date().getFullYear()} AURICLE. All rights reserved.
-  </p>
+  © {new Date().getFullYear()} AURICLE. All rights reserved.
+  <br />
+  <span className="footer-sitemap">
+    <Link href="/wholesale-piercing-jewellery-uk">Wholesale Piercing Jewellery UK</Link><br />
+    <Link href="/sitemap">Sitemap</Link>
+    
+  </span>
+</p>
+
 </div>
 
 
