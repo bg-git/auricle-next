@@ -139,3 +139,40 @@
     line-height: 1.5;
   }
 }
+
+.wholesale-seo {
+  max-width: 1400px;
+  margin: 4rem auto;
+  padding: 0 1.25rem;
+
+  h2,
+  h3 {
+    margin-top: 2.5rem;
+    margin-bottom: 1rem;
+    line-height: 1.25;
+  }
+
+  p {
+    margin: 0 0 1.25rem;
+    line-height: 1.65;
+  }
+
+  a {
+    text-decoration: underline;
+  }
+}
+.wholesale-hero {
+  padding: 0rem 1.25rem 3rem; // top | sides | bottom
+  max-width: 1400px;
+  margin: 0 auto;
+
+  h1 {
+    margin-bottom: 1rem;
+    line-height: 1.2;
+  }
+
+  p {
+    margin: 0;
+    line-height: 1.6;
+  }
+}
