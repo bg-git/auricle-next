@@ -1,107 +1,98 @@
 ---
 title: ABOUT US
-description: About AURICLE and what we stand for.
+description: About AURICLE and how we work.
 updated: 2025-08-29
 robots: index,follow
 ---
 
-<div className="information-page">
+## Who we are
 
-AURICLE is a trade-only body piercing jewelry brand for professional piercers and jewelry retailers. Built on 20 years of studio experience, the focus is premium materials, precise manufacturing, and clear, reliable pricing for trade accounts.
+AURICLE is a UK-based body piercing jewelry brand supplying professional piercing studios and jewelry retailers across the UK and EU.
 
-Quality without the markup: 14k solid gold and ASTM F-136 titanium, produced to tight tolerances and consistent fit. Pricing is benchmarked against other premium wholesalers to stay among the lowest while standards remain at the top end, so quality becomes the default in every studio—not an upsell.
+After decades of studio and industry experience, we set out to create a high-quality jewelry brand that studios would be proud to stock and clients would feel confident wearing every day.
 
-## What we make
+For many years, some of the most respected and recognized high-quality body piercing jewelry has come from the United States. We created AURICLE to offer a UK-based option at that same level, not as a replacement, but as an alternative for studios closer to home.
 
-AURICLE designs and produces threadless ends, labrets, and rings in 14k solid gold and ASTM F-136 titanium. Every piece is built for daily studio use: tight tolerances, smooth finishes, secure stone settings, and a clean, consistent fit. Proportions are refined and intentionally small, especially ends, so jewelry wears comfortably day-to-day.
+As a UK company, we operate under UK and EU law. Our products are developed for civilian, medical-adjacent jewelry use and are governed by UK consumer and product safety legislation, which defines how materials, testing, and compliance are handled in this market.
 
-## Why threadless first
+---
 
-We prioritize threadless for speed, comfort, and reliability. Threads are supported where appropriate, but our hierarchy is clear:
+## Why we do it
 
-- **Threadless (pin fit)**: No threads, secure friction fit, fast to install, kind to tissue, easy to downsize, highest manufacturing precision.
-- **Internal thread**: Industry standard, more costly to produce than external, kinder to tissue than external thread, reliable fit, but fine threads can be delicate.
-- **External thread**: Cheaper to produce and mechanically robust, but the exposed threads can abrade tissue during insertion and removal.
+In piercing, claims alone don’t mean much. Quality needs to be provable.
 
-The result: small, precise jewelry that handles repeat wear without fuss.
+Too often, decisions are made on reputation or assumption rather than evidence. We believe studios should be able to understand exactly what they are fitting and why it meets the standards required for professional use.
 
-## How it’s made
+That belief is what drives how we build AURICLE and how we verify the jewelry we supply.
 
-Production runs to a tight spec. Dimensions are checked against drawings, settings are inspected for stone security, and edges are finished for a low-snag surface. Titanium is implant-grade; gold is 14k and nickel-safe by design. Each batch is test-fitted across standard threadless systems to confirm consistent pin engagement and hold.
+---
 
-## What we verify
+## How we do it
 
-- **Material control:** Labret posts are produced to ASTM F-136 specification (certificate available on request). Gold alloys are formulated for biocompatibility and cast as 14k solid, no plating on load-bearing parts.
-- **Dimensional accuracy:** Critical features (post diameter, pin length, seat depth) are measured to tight tolerances for repeatable fit.
-- **Setting security:** Stone seats and prongs are checked under magnification for retention and symmetry.
-- **Finish quality:** Contact surfaces are polished, and edges are deburred/chamfered to minimize tissue abrasion during insertion and wear.
-- **System fit:** Threadless pins are gauged for consistent interference fit with common backings; batches are spot-checked across multiple components.
+We use independent, third-party testing throughout the jewelry manufacturing process. From verified ingot certification at the mill through to testing of finished jewelry, our focus is on confirming what the material actually is at every stage, not just what it started as.
 
-## Why the labret matters
+All titanium components are produced to ASTM F-136 specification. Gold pieces are cast as solid 14k and formulated for biocompatibility. Materials are selected specifically for professional piercing, including initial piercings where appropriate.
 
-The labret is the part that passes through tissue, so it gets the highest scrutiny: ASTM F-136 spec, burr-free edges, smooth mirror-polished shaft, and a flat, comfortable backing.
+Because material composition and surface condition can change during manufacture and finishing, we don’t rely solely on raw material certification. Verification continues through to the finished product.
 
-## How we release
+---
 
-AURICLE ships in small, frequent drops. The catalog stays focused; new variants land steadily as retailers request them. Core sellers are kept in rotation. Limited runs test new ideas without bloating inventory.
+### Mill certification and third-party verification
 
-## Operating rules
+Material control begins at the ingot stage.
 
-- **Lean catalog:** only pieces that earn their space.
-- **Variant by request:** add sizes/finishes where studios need them.
-- **Core lines on repeat:** predictable restock for day-to-day use.
-- **Limited runs:** fast feedback, no dead stock.
+We use third-party verified certification from the producing mill to confirm raw material composition before manufacturing begins. This establishes a clear starting point and ensures the material entering production meets the required specification.
 
-Every item is designed to be a bestseller—studio staples that move, not showcase pieces that gather dust.
+Mill certification matters, but on its own it is not the full picture.
 
-## Access and pricing
+---
 
-AURICLE is trade-only. Accounts are approved for professional studios and jewelry retailers. Pricing is transparent and consistent—no coupon cycles, no performative discounts.
+### Finished product testing
 
-The structure is set to protect retailer margins, not ours: keen wholesale, sensible pack sizes, fast re-orders, and straightforward shipping.
+Once jewelry has been manufactured and finished, it is independently tested against ASTM F-136 to confirm compliance at completed-product stage.
 
-## At a glance
+This approach allows us to verify the jewelry as it reaches the customer, not just where it started from. It reflects the reality that manufacturing and finishing processes can affect material condition, surface quality, and performance.
 
-- **Access:** approved B2B accounts only  
-- **Pricing:** clear, stable, no games  
-- **Orders:** quick restock, no MOQs  
-- **Logistics:** simple, reliable shipping  
+Finished-product testing is central to how we demonstrate material compliance.
 
-## Support for studios
+---
 
-Support is operational, not ornamental. No tree-planting add-ons rolled into your unit cost. No prize pots funded by higher prices. Budget goes into product quality and retailer margin.
+### Surface roughness testing (mirror polish)
 
-## Operational support (so you can sell faster)
+“Mirror polish” is a term that is often used loosely. For us, it refers to a measurable surface finish rather than a visual description.
 
-- **Live stock + ETA.** Live availability. Our software will notify you if you try to add more to your bag than we have available.  
-- **Re-order logic.** Sensible pack sizes, predictable core lines, small frequent drops for fast turns.  
-- **Threadless fit control.** Batch-level pin tolerance checks for consistent hold with standard backings.  
-- **Issue handling.** Clear RMA path, rapid replacement on verified QC issues.  
+Surface finish matters in professional piercing because it directly affects how jewelry behaves in real use. A smoother surface reduces friction, limits debris retention, and contributes to a more predictable wear experience.
 
-## Data & integrations
+For that reason, finished titanium components are independently tested for surface roughness to medical implant benchmarks. This allows us to confirm that polishing achieves a consistently low-roughness finish appropriate for medical-adjacent use.
 
-## Support that actually helps
+The result is a surface finish that is measured, repeatable, and verifiable, not assumed.
 
-- **Studio Locator.** Traffic goes to you—your site or socials—no capture, no loopbacks.  
-- **Styled By You.** Real customer wear photos credited to your studio with direct links, free placement.  
-- **Launch comms.** Short, reusable captions and image sets for new drops (no fluff, no “brand speak”).  
+---
 
-## What we don’t do
+## UK & EU frameworks
 
-- No feel-good gimmicks passed onto your invoice.  
-- No discount games. Stable pricing instead of monthly theatrics.  
-- No slow, image-heavy B2B portals. The site works—fast, searchable, reliable. We actually score 100% across the board on Google’s own metrics.  
+We operate within the UK and EU market and work within the regulatory environment that applies here.
 
-**Bottom line:** AURICLE support protects your margin, reduces admin, and keeps product moving. No noise—just tools that help you sell.
+Our products are manufactured for civilian, medical-adjacent jewelry use within the UK and EU and are governed by UK consumer and product safety standards. These standards define how materials, testing, and compliance are handled for professional piercing in this market.
 
-## What AURICLE stands for
+Our focus is on demonstrable material compliance and finished-product verification, providing studios with confidence in what they are fitting. We build our supply chain deliberately and continue refining our processes as guidance and best practice evolve within the UK industry.
 
-AURICLE exists to make quality the default. Premium materials, precise manufacturing, and honest pricing—so studios can stock confidently and clients can wear every day without compromise. We are trade-only for a reason: the focus is retailer outcomes, not theater.
+---
 
-We stand for function over ornament and precision over noise: tight tolerances, clean finishes, secure settings, and a catalog that earns its space. No gimmicks rolled into unit cost, no admin-heavy programs, no bloated inventories. We keep the line lean, the data complete, and the re-orders predictable, because a studio’s time, cash flow, and reputation matter.
+## DFARS and regulatory context
 
-We want every partner to be proud to stock AURICLE: a brand that protects margin, ships what it promises, and supports with practical tools instead of marketing stunts. And we want every client to be proud to wear AURICLE: small, refined pieces—14k gold and ASTM F-136 titanium, priced fairly, built accurately, and made for everyday wear.
+DFARS (Defense Federal Acquisition Regulation Supplement) is a United States defense procurement framework used within military and defense supply chains.
 
-**In short:** extreme quality, fair price, quiet design, and zero fluff. That’s what we want, and that’s what we stand for.
+In the UK and EU, professional body jewelry operates under a different regulatory environment. We produce civilian, medical-adjacent jewelry for professional piercing within the UK and EU market and operate under UK consumer and product safety standards appropriate to this use.
 
-</div>
+For that reason, DFARS does not form part of our manufacturing or verification framework. Instead, material quality is demonstrated through independent testing of finished jewelry against ASTM F-136, ensuring the jewelry supplied to studios meets standards relevant to professional piercing.
+
+This reflects the regulatory context in which we operate and the expectations of UK and EU studios.
+
+## And it looks good too
+
+We can talk about standards, testing, and verification all day, but jewelry still has to make people smile when they see it.
+
+Our pieces are dainty, beautiful, and designed to be worn. They’re made to sit nicely, feel comfortable, and become part of someone’s everyday look.
+
+We’re confident your clients will love how it looks, how it feels, and how easy it is to live with. Because proving quality matters, but so does falling in love with the jewelry.

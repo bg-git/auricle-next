@@ -107,8 +107,9 @@ export default function ProductGallery({
               alt={main.alt || ""}
               width={main.width}
               height={main.height}
-              priority={active === 0}
+              priority={true}
               fetchPriority="high"
+              loading="eager"
               sizes="(min-width:1024px) calc((min(1400px,100vw) - 32px - 24px)/2), 100vw"
               style={{ width: "100%", height: "auto", objectFit: "cover", display: "block" }}
             />
@@ -180,7 +181,7 @@ export default function ProductGallery({
                   height={img.height}
                   priority={mIdx === 0}
                   fetchPriority={mIdx === 0 ? "high" : "low"}
-                  loading={mIdx === 0 ? undefined : "lazy"}
+                  loading={mIdx === 0 ? "eager" : "lazy"}
                   decoding="async"
                   sizes="100vw"
                   style={{ width: "100%", height: "auto", objectFit: "cover", display: "block" }}
