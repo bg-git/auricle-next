@@ -18,6 +18,7 @@ import ProductGallery from "@/components/ProductGallery";
 import dynamic from 'next/dynamic';
 import { useCopy } from '@/hooks/useCopy';
 import { useRegion } from '@/context/RegionContext';
+import QuantityModal from '@/components/QuantityModal';
 
 const StyledByYouLazy = dynamic(() => import('@/components/StyledByYou'), {
   ssr: false,
@@ -137,6 +138,7 @@ export default function ProductPage({ product, ugcItems }: ProductPageProps) {
   const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
   const [showVariantImage, setShowVariantImage] = useState(false);
   const [qty, setQty] = useState(0);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [marketPrices, setMarketPrices] = useState<{
     priceRange: { minVariantPrice: { amount: string; currencyCode: string } };
     variants: { id: string; price: { amount: string; currencyCode: string } }[];
@@ -1044,7 +1046,9 @@ const testCertificateUrl = getFileUrl('test_certificate');
             alignItems: 'center',
             justifyContent: 'center',
             userSelect: 'none',
+            cursor: 'pointer',
           }}
+          onClick={() => setIsModalOpen(true)}
         >
           {qty}
         </span>
@@ -1266,6 +1270,31 @@ const testCertificateUrl = getFileUrl('test_certificate');
         
       </main>
 
+      <QuantityModal
+        isOpen={isModalOpen}
+        currentQty={qty}
+        maxQty={maxQty}
+        onConfirm={setQty}
+        onAdd={(newQty) => {
+          if (isSoldOut) { showToast('SOLD OUT. More coming soon.'); return; }
+          if (!selectedVariantId || !selectedVariant) return;
+          addToCart(selectedVariantId, newQty, {
+            handle: router.query.handle as string,
+            title: product.title,
+            variantTitle: selectedVariant.title,
+            selectedOptions: selectedVariant.selectedOptions,
+            price: effectiveRawPrice.toString(),
+            basePrice: baseRawPrice.toString(),
+            memberPrice: memberRaw !== null ? memberRaw.toString() : undefined,
+            currencyCode: currentPrice.currencyCode,
+            image: product.images?.edges?.[0]?.node?.url || undefined,
+            metafields: product.metafields,
+            quantityAvailable: selectedVariant.quantityAvailable,
+          });
+          openDrawer();
+        }}
+        onClose={() => setIsModalOpen(false)}
+      />
     </>
   );
 }
