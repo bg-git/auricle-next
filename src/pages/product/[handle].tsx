@@ -1274,7 +1274,6 @@ const testCertificateUrl = getFileUrl('test_certificate');
         isOpen={isModalOpen}
         currentQty={qty}
         maxQty={maxQty}
-        onConfirm={setQty}
         onAdd={(newQty) => {
           if (isSoldOut) { showToast('SOLD OUT. More coming soon.'); return; }
           if (!selectedVariantId || !selectedVariant) return;
