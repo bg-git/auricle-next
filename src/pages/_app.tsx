@@ -4,6 +4,7 @@ import Head from 'next/head';
 import dynamic from 'next/dynamic';
 import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
+import { Analytics } from '@vercel/analytics/next';
 
 import { RegionProvider } from '@/context/RegionContext';
 import { getRegionFromHost, type Region } from '@/lib/region';
@@ -123,8 +124,10 @@ export default function MyApp({ Component, pageProps }: MyAppProps) {
   // ------------------------------
 
   return (
-    <ToastProvider>
-      <AuthProvider initialUser={pageProps.customer || null}>
+    <>
+      <Analytics />
+      <ToastProvider>
+        <AuthProvider initialUser={pageProps.customer || null}>
         <AccountValidationProvider>
           <FavouritesProvider>
             <CartProvider>
@@ -175,7 +178,8 @@ export default function MyApp({ Component, pageProps }: MyAppProps) {
           </FavouritesProvider>
         </AccountValidationProvider>
       </AuthProvider>
-    </ToastProvider>
+      </ToastProvider>
+    </>
   );
 }
 
