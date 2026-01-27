@@ -272,7 +272,7 @@ async function createShopifyVipOrder(input: CreateVipOrderInput) {
       fulfillment_status: 'fulfilled',
       send_receipt: false,
       send_fulfillment_receipt: false,
-      tags: 'VIP-MEMBERSHIP,AUTO-CREATED',
+      tags: 'VIP-MEMBERSHIP',
       line_items: [
         {
           variant_id: vipVariantId,
