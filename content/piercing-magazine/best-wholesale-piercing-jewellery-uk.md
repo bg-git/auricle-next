@@ -115,7 +115,7 @@ Finding the best wholesale piercing jewellery supplier in the UK is less about c
 Studios are best served by evaluating wholesale suppliers against their own workflow, client base, and inventory strategy, rather than relying on brand size or marketing alone.
 
 Studios looking to review a UK trade-only catalogue can use the AURICLE wholesale page:
-[AURICLE — Wholesale Piercing Jewellery UK](/wholesale-piercing-jewellery-uk)
+[AURICLE — Wholesale Piercing Jewellery UK](/wholesale-piercing-jewellery-uk) .
 
 
 ---
