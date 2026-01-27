@@ -153,6 +153,11 @@ const webhookSecret = process.env.STRIPE_MEMBERSHIP_WEBHOOK_SECRET as string;
         shopifyCustomerId = shopifyCustomer.id;
       }
 
+      if (!shopifyCustomerId) {
+        console.error('Could not determine Shopify customer ID');
+        return res.status(200).json({ received: true, no_shopify_customer: true });
+      }
+
       const stripeCustomerId = invoice.customer as string | null;
       if (!stripeCustomerId) {
         console.error('No Stripe customer on invoice');
@@ -180,15 +185,21 @@ const webhookSecret = process.env.STRIPE_MEMBERSHIP_WEBHOOK_SECRET as string;
           : subscriptionValue?.id ?? '';
 
       // 3) Create a paid + fulfilled order in Shopify
-      const createdOrder = await createShopifyVipOrder({
-        shopifyCustomerId,
-        email,
-        stripeInvoiceId: invoice.id,
-        stripeSubscriptionId,
-        amountPaidMinor: invoice.amount_paid ?? 0,
-      });
+      try {
+        const createdOrder = await createShopifyVipOrder({
+          shopifyCustomerId,
+          email,
+          stripeInvoiceId: invoice.id,
+          stripeSubscriptionId,
+          amountPaidMinor: invoice.amount_paid ?? 0,
+        });
 
-      console.log('✅ Created VIP membership order', createdOrder.id);
+        console.log('✅ Created VIP membership order', createdOrder.id);
+      } catch (orderErr: unknown) {
+        const errMsg = orderErr instanceof Error ? orderErr.message : String(orderErr);
+        console.error('❌ Failed to create order:', errMsg);
+        return res.status(200).json({ received: true, order_creation_failed: true, error: errMsg });
+      }
     }
 
     return res.status(200).json({ received: true });
