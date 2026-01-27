@@ -81,17 +81,15 @@ const webhookSecret = process.env.STRIPE_MEMBERSHIP_WEBHOOK_SECRET as string;
     if (event.type === 'invoice.payment_succeeded') {
       let invoice = event.data.object as InvoiceWithLinesAndSub;
 
-      // Webhook invoice objects may omit line items unless expanded
-      if (!invoice.lines?.data?.length) {
-        invoice = (await stripe.invoices.retrieve(invoice.id, {
-          expand: ['lines.data.price', 'subscription'],
-        })) as InvoiceWithLinesAndSub;
-      }
+      // Always fetch full invoice with expanded line items to ensure we have price data
+      invoice = (await stripe.invoices.retrieve(invoice.id, {
+        expand: ['lines.data.price', 'subscription'],
+      })) as InvoiceWithLinesAndSub;
 
       const lines = invoice.lines.data as InvoiceLineItemWithPrice[];
 
       // Optional: restrict to a specific Stripe price ID
-      const vipPriceId = process.env.STRIPE_VIP_PRICE_ID;
+      const vipPriceId = process.env.STRIPE_VIP_PRICE_ID || process.env.STRIPE_PRICE_ID_VIP;
 
       const membershipLine = vipPriceId
         ? lines.find((line) => line.price?.id === vipPriceId)
