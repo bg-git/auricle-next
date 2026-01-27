@@ -91,8 +91,13 @@ const webhookSecret = process.env.STRIPE_MEMBERSHIP_WEBHOOK_SECRET as string;
       // Optional: restrict to a specific Stripe price ID
       const vipPriceId = process.env.STRIPE_VIP_PRICE_ID || process.env.STRIPE_PRICE_ID_VIP;
 
+      // Check both line.price?.id (expanded) and line.pricing?.price_details?.price (webhook format)
       const membershipLine = vipPriceId
-        ? lines.find((line) => line.price?.id === vipPriceId)
+        ? lines.find((line) => {
+            const expandedPriceId = line.price?.id;
+            const pricingPriceId = (line as any).pricing?.price_details?.price;
+            return expandedPriceId === vipPriceId || pricingPriceId === vipPriceId;
+          })
         : lines[0]; // if you only have one sub on the invoice
 
       if (!membershipLine) {
