@@ -105,8 +105,55 @@ const webhookSecret = process.env.STRIPE_MEMBERSHIP_WEBHOOK_SECRET as string;
         return res.status(200).json({ received: true, skipped: true });
       }
 
-      const stripeCustomerId = invoice.customer as string | null;
+      // Try to get Shopify customer ID from line item metadata first (most reliable)
+      const lineMetadata = (membershipLine as any).metadata;
+      let shopifyCustomerId: number | null = null;
 
+      if (lineMetadata?.shopify_customer_id) {
+        // Extract numeric ID from GraphQL ID format: gid://shopify/Customer/26822726222149
+        const gqlId = lineMetadata.shopify_customer_id as string;
+        const numericId = Number(gqlId.split('/').pop());
+        if (Number.isFinite(numericId)) {
+          shopifyCustomerId = numericId;
+        }
+      }
+
+      // Fallback: look up by email if we don't have the customer ID
+      if (!shopifyCustomerId) {
+        const stripeCustomerId = invoice.customer as string | null;
+
+        if (!stripeCustomerId) {
+          console.error('No Stripe customer on invoice');
+          return res
+            .status(200)
+            .json({ received: true, no_stripe_customer: true });
+        }
+
+        const stripeCustomer = await stripe.customers.retrieve(stripeCustomerId);
+
+        if (!('email' in stripeCustomer) || !stripeCustomer.email) {
+          console.error('No email on Stripe customer, cannot map to Shopify');
+          return res
+            .status(200)
+            .json({ received: true, no_email: true });
+        }
+
+        const email = stripeCustomer.email;
+
+        // Find Shopify customer by email
+        const shopifyCustomer = await findShopifyCustomerByEmail(email);
+
+        if (!shopifyCustomer) {
+          console.error('No Shopify customer found for email', email);
+          return res
+            .status(200)
+            .json({ received: true, no_shopify_customer: true });
+        }
+
+        shopifyCustomerId = shopifyCustomer.id;
+      }
+
+      const stripeCustomerId = invoice.customer as string | null;
       if (!stripeCustomerId) {
         console.error('No Stripe customer on invoice');
         return res
@@ -125,16 +172,6 @@ const webhookSecret = process.env.STRIPE_MEMBERSHIP_WEBHOOK_SECRET as string;
 
       const email = stripeCustomer.email;
 
-      // 1) Find Shopify customer by email
-      const shopifyCustomer = await findShopifyCustomerByEmail(email);
-
-      if (!shopifyCustomer) {
-        console.error('No Shopify customer found for email', email);
-        return res
-          .status(200)
-          .json({ received: true, no_shopify_customer: true });
-      }
-
       // 2) Get subscription ID safely from the invoice
       const subscriptionValue = invoice.subscription;
       const stripeSubscriptionId =
@@ -144,7 +181,7 @@ const webhookSecret = process.env.STRIPE_MEMBERSHIP_WEBHOOK_SECRET as string;
 
       // 3) Create a paid + fulfilled order in Shopify
       const createdOrder = await createShopifyVipOrder({
-        shopifyCustomerId: shopifyCustomer.id,
+        shopifyCustomerId,
         email,
         stripeInvoiceId: invoice.id,
         stripeSubscriptionId,
