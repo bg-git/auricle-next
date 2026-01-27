@@ -69,11 +69,8 @@ const webhookSecret = process.env.STRIPE_MEMBERSHIP_WEBHOOK_SECRET as string;
     event = stripe.webhooks.constructEvent(buf, sig, webhookSecret);
   } catch (err: unknown) {
     if (err instanceof Error) {
-      console.error('❌ Error verifying Stripe signature', err.message);
       return res.status(400).send(`Webhook Error: ${err.message}`);
     }
-
-    console.error('❌ Error verifying Stripe signature', err);
     return res.status(400).send('Webhook Error');
   }
 
@@ -196,19 +193,12 @@ const webhookSecret = process.env.STRIPE_MEMBERSHIP_WEBHOOK_SECRET as string;
 
         console.log('✅ Created VIP membership order', createdOrder.id);
       } catch (orderErr: unknown) {
-        const errMsg = orderErr instanceof Error ? orderErr.message : String(orderErr);
-        console.error('❌ Failed to create order:', errMsg);
-        return res.status(200).json({ received: true, order_creation_failed: true, error: errMsg });
+        return res.status(200).json({ received: true, order_creation_failed: true });
       }
     }
 
     return res.status(200).json({ received: true });
   } catch (err: unknown) {
-    if (err instanceof Error) {
-      console.error('Error handling Stripe webhook', err.message);
-    } else {
-      console.error('Error handling Stripe webhook', err);
-    }
     return res.status(500).send('Webhook handler error');
   }
 }
