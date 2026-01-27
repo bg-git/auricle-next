@@ -217,7 +217,7 @@ async function findShopifyCustomerByEmail(
   email: string
 ): Promise<ShopifyCustomer | null> {
   const domain = process.env.SHOPIFY_STORE_DOMAIN; // e.g. mystore.myshopify.com
-  const token = process.env.SHOPIFY_ADMIN_API_ACCESS_TOKEN;
+  const token = process.env.SHOPIFY_ADMIN_ACCESS_TOKEN;
 
   if (!domain || !token) {
     console.error('Missing Shopify env vars');
@@ -259,13 +259,13 @@ async function findShopifyCustomerByEmail(
 
 async function createShopifyVipOrder(input: CreateVipOrderInput) {
   const domain = process.env.SHOPIFY_STORE_DOMAIN;
-  const token = process.env.SHOPIFY_ADMIN_API_ACCESS_TOKEN;
+  const token = process.env.SHOPIFY_ADMIN_ACCESS_TOKEN;
   const vipVariantIdRaw = process.env.SHOPIFY_VIP_MEMBERSHIP_VARIANT_ID;
 
   if (!domain || !token || !vipVariantIdRaw) {
     const missing: string[] = [];
     if (!domain) missing.push('SHOPIFY_STORE_DOMAIN');
-    if (!token) missing.push('SHOPIFY_ADMIN_API_ACCESS_TOKEN');
+    if (!token) missing.push('SHOPIFY_ADMIN_ACCESS_TOKEN');
     if (!vipVariantIdRaw) missing.push('SHOPIFY_VIP_MEMBERSHIP_VARIANT_ID');
     throw new Error(`Missing Shopify env vars: ${missing.join(', ')}`);
   }
