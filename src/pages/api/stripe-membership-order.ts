@@ -263,7 +263,7 @@ async function createShopifyVipOrder(input: CreateVipOrderInput) {
   const vipVariantIdRaw = process.env.SHOPIFY_VIP_MEMBERSHIP_VARIANT_ID;
 
   if (!domain || !token || !vipVariantIdRaw) {
-    const missing = [];
+    const missing: string[] = [];
     if (!domain) missing.push('SHOPIFY_STORE_DOMAIN');
     if (!token) missing.push('SHOPIFY_ADMIN_API_ACCESS_TOKEN');
     if (!vipVariantIdRaw) missing.push('SHOPIFY_VIP_MEMBERSHIP_VARIANT_ID');
