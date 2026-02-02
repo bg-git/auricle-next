@@ -292,6 +292,7 @@ function Header() {
             { label: 'RINGS & HOOPS', href: '/collection/rings-hoops' },
             { label: 'DISPLAYS & STANDS', href: '/collection/displays-stands' },
             { label: 'SEARCH', href: '/search' },
+            { label: 'QUALITY ASSURANCE', href: '/quality-assurance' },
           ].map(({ label, href }) => (
             <Link
               key={label}
@@ -303,9 +304,29 @@ function Header() {
                 fontWeight: '600',
                 textDecoration: 'none',
                 flexShrink: 0,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
               }}
             >
               {label}
+              {label === 'SEARCH' && (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  width="18"
+                  height="18"
+                  style={{ display: 'block' }}
+                >
+                  <circle cx="11" cy="11" r="8" />
+                  <path d="m21 21-4.35-4.35" />
+                </svg>
+              )}
             </Link>
           ))}
         </div>

@@ -175,8 +175,6 @@ export default function QuantityModal({
           </button>
         </div>
 
-        {maxQty < 9999 && <p style={{ textAlign: 'center', fontSize: '0.85rem', color: '#666', margin: '0 0 1.5rem 0' }}>{maxQty} available</p>}
-
         <div style={{ display: 'flex', gap: '0.75rem' }}>
           <button
             onClick={onClose}

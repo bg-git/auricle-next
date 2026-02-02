@@ -96,7 +96,9 @@ const sections = [
   {
     title: 'COMPANY',
     links: [
-      
+      { label: 'ASTM F136', href: '/quality-assurance/astm-f136' },
+      { label: 'ASTM F2999', href: '/quality-assurance/astm-f2999' },
+      { label: 'ASTM F2923', href: '/quality-assurance/astm-f2923' },      
     ],
   },
   {

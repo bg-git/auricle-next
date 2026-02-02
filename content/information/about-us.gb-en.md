@@ -15,6 +15,8 @@ For many years, some of the most respected and recognised high-quality body pier
 
 As a UK company, we operate under UK and EU law. Our products are developed for civilian, medical-adjacent jewellery use and are governed by UK consumer and product safety legislation, which defines how materials, testing, and compliance are handled in this market.
 
+<a href="/quality-assurance" class="qa-button">Explore Our Quality Assurance Standards</a>
+
 ---
 
 ## Why we do it
@@ -45,15 +47,19 @@ We use third-party verified certification from the producing mill to confirm raw
 
 Mill certification matters, but on its own it is not the full picture.
 
+<a href="/quality-assurance/mill-certificates" class="qa-button">Learn About Third-Party Mill Certificate Verification</a>
+
 ---
 
 ### Finished product testing
 
-Once jewellery has been manufactured and finished, it is independently tested against ASTM F-136 to confirm compliance at completed-product stage.
+Once jewellery has been manufactured and finished, it is independently tested against [ASTM F-136](/quality-assurance/astm-f136) to confirm compliance at completed-product stage.
 
 This approach allows us to verify the jewellery as it reaches the customer, not just where it started from. It reflects the reality that manufacturing and finishing processes can affect material condition, surface quality, and performance.
 
 Finished-product testing is central to how we demonstrate material compliance.
+
+<a href="/quality-assurance/astm-f136" class="qa-button">View Our ASTM F-136 Finished Product Testing</a>
 
 ---
 
@@ -63,9 +69,11 @@ Finished-product testing is central to how we demonstrate material compliance.
 
 Surface finish matters in professional piercing because it directly affects how jewellery behaves in real use. A smoother surface reduces friction, limits debris retention, and contributes to a more predictable wear experience.
 
-For that reason, finished titanium components are independently tested for surface roughness to medical implant benchmarks. This allows us to confirm that polishing achieves a consistently low-roughness finish appropriate for medical-adjacent use.
+For that reason, finished titanium components are independently tested for surface roughness to medical implant benchmarks. [Learn more about our mirror polish testing](/quality-assurance/mirror-finish). This allows us to confirm that polishing achieves a consistently low-roughness finish appropriate for medical-adjacent use.
 
 The result is a surface finish that is measured, repeatable, and verifiable, not assumed.
+
+<a href="/quality-assurance/mirror-finish" class="qa-button">Discover Our Mirror Polish Surface Finish Standards</a>
 
 ---
 
@@ -85,7 +93,9 @@ DFARS (Defence Federal Acquisition Regulation Supplement) is a United States def
 
 In the UK and EU, professional body jewellery operates under a different regulatory environment. We produce civilian, medical-adjacent jewellery for professional piercing within the UK and EU market and operate under UK consumer and product safety standards appropriate to this use.
 
-For that reason, DFARS does not form part of our manufacturing or verification framework. Instead, material quality is demonstrated through independent testing of finished jewellery against ASTM F-136, ensuring the jewellery supplied to studios meets standards relevant to professional piercing.
+For that reason, DFARS does not form part of our manufacturing or verification framework. Instead, material quality is demonstrated through independent testing of finished jewellery against ASTM F-136, ensuring the jewellery supplied to studios meets standards relevant to professional piercing. [Read more about DFARS and our regulatory context](/quality-assurance/dfars).
+
+<a href="/quality-assurance/dfars" class="qa-button">Understand DFARS Standards and UK Regulatory Requirements</a>
 
 This reflects the regulatory context in which we operate and the expectations of UK and EU studios.
 
