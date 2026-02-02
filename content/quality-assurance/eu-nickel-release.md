@@ -5,6 +5,20 @@ updated: 2025-08-29
 robots: index,follow
 ---
 
+<div style="background-color: #f5f5f5; padding: 24px; border-radius: 8px; margin-bottom: 32px;">
+
+### Did you know?
+
+In the UK and EU, nickel release limits are a legal requirement for jewellery intended for prolonged skin contact, including piercing jewellery.
+
+This requirement applies regardless of material, including ASTM F136 titanium.
+
+Mill certificates and material grades alone do not demonstrate legal compliance. Nickel release compliance is determined by the performance of the finished jewellery, as supplied and worn.
+
+Assuming jewellery is compliant simply because it is described as "implant grade", "titanium", "peer verified", or widely used can unintentionally place piercers at risk of supplying jewellery that has not been legally verified under UK and EU consumer product safety law.
+
+</div>
+
 ## UK & EU Legal Requirement
 
 EU nickel release testing is a legal requirement used to assess whether jewellery intended for prolonged contact with the skin releases nickel above permitted limits in the UK and EU.
