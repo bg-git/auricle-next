@@ -35,6 +35,32 @@ These organisations provide peer-led guidance on studio practice, hygiene, educa
 
 The associations listed below represent the professional contexts within which AURICLE aligns, supported by evidence-based compliance and independent testing.
 
+<div class="association-card">
+
+### 🇬🇧 National Association of Jewellers (NAJ)
+
+**Who they are:**  
+The UK’s leading professional trade association for the jewellery industry.
+
+**What they do:**  
+Represent and support jewellery manufacturers, suppliers, retailers, and wholesalers through professional standards, ethical guidance, industry governance, and advocacy.
+
+**Jurisdiction:**  
+United Kingdom.
+
+**Alignment:** <span class="status-icon status-green">✔</span>
+
+**Rationale:**  
+The National Association of Jewellers operates at the core of the UK jewellery industry, setting expectations around professionalism, transparency, responsible supply, and ethical trading. Its framework aligns with UK consumer law and recognised industry best practice for jewellery placed on the UK market.
+
+Membership reflects a commitment to operating responsibly within the UK jewellery sector.
+
+**Verdict:**  
+AURICLE is a registered wholesale member of the National Association of Jewellers and is proud to align with its professional and ethical standards. This membership reinforces AURICLE’s position as a UK-based supplier operating within established industry frameworks, supported by evidence-based compliance and responsible supply practices.
+
+</div>
+
+
 
 <div class="association-card">
 
@@ -80,7 +106,7 @@ United Kingdom.
 **Rationale:**  
 In addition to statutory UK and EU law governing jewellery safety, UKAPP defines specific requirements for jewellery used in initial piercings. These include the use of implant-grade titanium manufactured to **ASTM F136** (and related standards).
 
-At the time of writing, AURICLE has requested clarification twice with UKAPP regarding its requirements and await a response.
+At the time of writing, AURICLE has been in correspondence with UKAPP regarding its supplier verification requirements, and dialogue is ongoing.
 
 **Verdict:**  
 AURICLE exceeds statutory UK and EU legal requirements for jewellery safety and aligns with UKAPP’s published material criteria through independent third-party material testing and finished-product verification, providing evidence beyond supplier documentation alone. 

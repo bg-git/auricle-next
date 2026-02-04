@@ -26,19 +26,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               name
               orderNumber
               processedAt
-              totalPriceV2 {
-                amount
-                currencyCode
-              }
-              lineItems(first: 10) {
+              totalPriceV2 { amount currencyCode }
+              subtotalPriceV2 { amount currencyCode }
+              totalTaxV2 { amount currencyCode }
+              totalShippingPriceV2 { amount currencyCode }
+              lineItems(first: 50) {
                 edges {
                   node {
                     title
                     quantity
-                    originalTotalPrice {
-                      amount
-                      currencyCode
-                    }
+                    discountedTotalPrice { amount }
                   }
                 }
               }

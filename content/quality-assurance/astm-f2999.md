@@ -4,6 +4,16 @@ description: How AURICLE assesses finished jewellery to ASTM F2999 to confirm sa
 updated: 2025-08-29
 robots: index,follow
 ---
+<div style="background-color: #f5f5f5; padding: 24px; border-radius: 8px; margin-bottom: 32px;">
+
+### Did you know?
+
+While ASTM F136 defines implant-grade titanium, it does not assess whether **finished jewellery is suitable for prolonged adult wear**.
+
+ASTM F2999 evaluates **finished jewellery intended for adult use**, taking into account material safety, surface finish, and real-world wear conditions. It recognises that adult suitability must be demonstrated on the **finished product**, not assumed from material grade or mill certificates alone.
+
+</div>
+
 
 ## Adult Jewellery Safety | Adults Need Protection Too
 

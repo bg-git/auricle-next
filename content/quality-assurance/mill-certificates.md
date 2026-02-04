@@ -27,6 +27,6 @@ This allows studios to state, with confidence, that the AURICLE jewellery they a
 
 ### Explainer
 
-A simple analogy: hydrogen starts as hydrogen and oxygen starts as oxygen. Once you mix them together, you no longer have either, you have water. Assessing the starting elements tells you nothing about the finished result. In the same way, jewellery compliance must be demonstrated on the finished product, not assumed from starting material documentation.
+A simple analogy: hydrogen starts as hydrogen and oxygen starts as oxygen. Once you mix them together, you no longer have either, you have <strong>water</strong>. Assessing the starting elements tells you nothing about the finished result. In the same way, jewellery compliance must be demonstrated on the finished product, not assumed from starting material documentation.
 
 </div>

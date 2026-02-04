@@ -4,6 +4,15 @@ description: How AURICLE assesses jewellery to ASTM F2923 to confirm safety for 
 updated: 2025-08-29
 robots: index,follow
 ---
+<div style="background-color: #f5f5f5; padding: 24px; border-radius: 8px; margin-bottom: 32px;">
+
+### Did you know?
+
+While ASTM F136 defines implant-grade titanium, it does not determine whether finished jewellery is suitable for children, specifically under the age of 12 years.
+
+ASTM F2923 evaluates finished jewellery quality intended for children, including material safety, surface finish, and real-world use, recognising that suitability cannot be assumed from material grade or mill certificates alone.
+
+</div>
 
 ## Children’s Jewellery Safety
 

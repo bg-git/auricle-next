@@ -5,6 +5,16 @@ updated: 2025-08-29
 robots: index,follow
 ---
 
+<div style="background-color: #f5f5f5; padding: 24px; border-radius: 8px; margin-bottom: 32px;">
+
+### Did you know?
+
+ASTM F136 standard titanium is medical implant grade, developed for use inside the human body and widely used in medical applications worldwide.
+
+For this reason, professional piercers choose ASTM F136 standard titanium when applying medical-adjacent standards to piercing jewellery, supported by independent third-party verification to ensure compliance.
+
+</div>
+
 ## The Real Medical Implant Grade Titanium
 
 ASTM F136 is a material specification used to define implant-grade titanium alloy (Ti-6Al-4V ELI), including permitted composition, impurity limits, and material consistency.

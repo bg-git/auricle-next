@@ -292,7 +292,6 @@ function Header() {
             { label: 'RINGS & HOOPS', href: '/collection/rings-hoops' },
             { label: 'DISPLAYS & STANDS', href: '/collection/displays-stands' },
             { label: 'SEARCH', href: '/search' },
-            { label: 'QUALITY ASSURANCE', href: '/quality-assurance' },
           ].map(({ label, href }) => (
             <Link
               key={label}
