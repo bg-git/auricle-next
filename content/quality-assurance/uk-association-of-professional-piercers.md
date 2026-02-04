@@ -13,7 +13,7 @@ UKAPP’s guidance and verification frameworks are designed to support professio
 
 UKAPP operates alongside UK consumer product and market legislation, providing peer-led guidance and professional standards for studios and practitioners, rather than acting as a statutory regulatory body.
 
-AURICLE has contacted UKAPP twice to engage with its jewellery verification scheme and to seek clarification on alignment and requirements. At the time of writing, correspondence has taken place and dialogue is ongoing.
+AURICLE has contacted UKAPP to engage with its jewellery verification scheme and to seek clarification on alignment and requirements. At the time of writing, correspondence has taken place and dialogue is ongoing.
 
 ### Ongoing Compliance
 
