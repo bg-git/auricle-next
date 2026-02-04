@@ -84,8 +84,6 @@ const nextConfig = {
     imageSizes: [48, 60, 64, 75, 96, 128, 256, 300, 350, 400, 500, 600, 750, 900],
     minimumCacheTTL: 60 * 60 * 24 * 30,
   },
-
-  eslint: { ignoreDuringBuilds: true },
 };
 
 export default withBundleAnalyzer(pwaConfig(nextConfig));

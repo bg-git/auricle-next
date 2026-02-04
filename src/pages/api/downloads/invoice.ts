@@ -371,8 +371,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const totals: Array<{ label: string; value: string; strong?: boolean }> = [];
 
     if (subtotal) totals.push({ label: "Subtotal", value: money(subtotal, currency) });
-    if (tax) totals.push({ label: "Tax", value: money(tax, currency) });
     if (shipping) totals.push({ label: "Shipping", value: money(shipping, currency) });
+    if (tax) totals.push({ label: "Tax", value: money(tax, currency) });
 
     totals.push({
       label: "Total",
