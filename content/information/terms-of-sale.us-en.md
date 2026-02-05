@@ -3,6 +3,7 @@ title: TERMS OF SALE
 description: Conditions for wholesale purchases with AURICLE.
 updated: 2025-08-29
 robots: index,follow
+date: 2026-02-03
 ---
 <div class="information-page">
 

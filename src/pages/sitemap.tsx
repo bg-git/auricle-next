@@ -14,6 +14,8 @@ interface PageLink {
 interface Props {
   staticLinks: PageLink[]
   blogLinks: PageLink[]
+  termsLinks: PageLink[]
+  qaLinks: PageLink[]
   collectionLinks: PageLink[]
   productLinks: PageLink[]
   wholesalerLinks: PageLink[]
@@ -22,6 +24,8 @@ interface Props {
 export default function SitemapPage({
   staticLinks,
   blogLinks,
+  termsLinks,
+  qaLinks,
   collectionLinks,
   productLinks,
   wholesalerLinks,
@@ -33,10 +37,12 @@ export default function SitemapPage({
       </h1>
 
       <Section title="Main Pages" links={staticLinks} />
-      <Section title="Piercing Wholesalers" links={wholesalerLinks} />
       <Section title="Collections" links={collectionLinks} />
       <Section title="Products" links={productLinks} />
       <Section title="Blog Posts" links={blogLinks} />
+      <Section title="Terms & Conditions" links={termsLinks} />
+      <Section title="Quality Assurance" links={qaLinks} />
+      <Section title="Piercing Wholesalers" links={wholesalerLinks} />
 
       <p style={{ fontSize: '14px', marginTop: '40px' }}>
         View the <Link href="/sitemap.xml">sitemap.xml</Link> for search engines.
@@ -116,7 +122,48 @@ export const getStaticProps: GetStaticProps<Props> = async () => {
       }
     })
 
-  /* ---------- SHOPIFY ---------- */
+  /* ---------- TERMS & CONDITIONS ---------- */
+
+  const termsDir = path.join(process.cwd(), 'content/information')
+  const termsFiles = fs.existsSync(termsDir) ? fs.readdirSync(termsDir) : []
+
+  // Group by base slug (before language code) to avoid duplicates
+  const uniqueTerms: Record<string, PageLink> = {}
+  termsFiles
+    .filter(file => file.endsWith('.md'))
+    .forEach(file => {
+      // Extract base slug (e.g., "about-us" from "about-us.gb-en.md")
+      const baseSlug = file.replace(/\.[a-z]{2}-[a-z]{2}\.md$/, '').replace(/\.md$/, '')
+      
+      // Only process if we haven't seen this slug yet
+      if (!uniqueTerms[baseSlug]) {
+        const raw = fs.readFileSync(path.join(termsDir, file), 'utf8')
+        const { data } = matter(raw)
+        uniqueTerms[baseSlug] = {
+          href: `/information/${baseSlug}`,
+          label: data.title || baseSlug,
+        }
+      }
+    })
+
+  const termsLinks: PageLink[] = Object.values(uniqueTerms)
+
+  /* ---------- QUALITY ASSURANCE ---------- */
+
+  const qaDir = path.join(process.cwd(), 'content/quality-assurance')
+  const qaFiles = fs.existsSync(qaDir) ? fs.readdirSync(qaDir) : []
+
+  const qaLinks: PageLink[] = qaFiles
+    .filter(file => file.endsWith('.md'))
+    .map(file => {
+      const slug = file.replace(/\.md$/, '')
+      const raw = fs.readFileSync(path.join(qaDir, file), 'utf8')
+      const { data } = matter(raw)
+      return {
+        href: `/quality-assurance/${slug}`,
+        label: data.title || slug,
+      }
+    })
 
   const collectionQuery = `
     {
@@ -167,6 +214,8 @@ export const getStaticProps: GetStaticProps<Props> = async () => {
       staticLinks,
       wholesalerLinks,
       blogLinks,
+      termsLinks,
+      qaLinks,
       collectionLinks,
       productLinks,
     },

@@ -3,6 +3,7 @@ title: COMPLAINTS & NOTICES
 description: How to raise a complaint and how to serve formal legal notices to AURICLE Limited.
 updated: 2025-08-29
 robots: index,follow
+date: 2026-02-03
 ---
 
 <div className="information-page">

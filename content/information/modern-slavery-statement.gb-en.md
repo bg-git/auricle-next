@@ -3,6 +3,7 @@ title: MODERN SLAVERY STATEMENT
 description: Our approach to preventing modern slavery and human trafficking in our business and supply chain.
 updated: 2025-08-29
 robots: index,follow
+date: 2026-02-03
 ---
 
 <div className="information-page">

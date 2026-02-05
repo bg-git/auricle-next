@@ -3,6 +3,7 @@ title: COMPANY INFORMATION / IMPRINT
 description: Legal identity, registered office, and contact details for AURICLE Limited.
 updated: 2025-08-29
 robots: index,follow
+date: 2026-02-03
 ---
 <div className="information-page">
 

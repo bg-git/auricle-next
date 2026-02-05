@@ -3,6 +3,7 @@ title: TAX / VAT POLICY
 description: VAT treatment for UK and export orders, duties, invoices and documentation.
 updated: 2025-08-29
 robots: index,follow
+date: 2026-02-03
 ---
 
 <div class="information-page">

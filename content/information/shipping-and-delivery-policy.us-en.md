@@ -3,6 +3,7 @@ title: SHIPPING & DELIVERY POLICY
 description: DHL shipping, US import rules and prepaid duties for orders delivered within the United States.
 updated: 2025-08-29
 robots: index,follow
+date: 2026-02-03
 ---
 
 <div class="information-page">

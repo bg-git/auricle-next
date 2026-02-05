@@ -3,6 +3,7 @@ title: MATERIALS & HALLMARKING
 description: Material standards for AURICLE jewellery and how hallmarking is applied in the UK.
 updated: 2025-08-29
 robots: index,follow
+date: 2026-02-03
 ---
 
 <div className="information-page">

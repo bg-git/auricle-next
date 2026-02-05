@@ -57,27 +57,6 @@ async function generateSitemap() {
     smStream.write({ url, changefreq: 'weekly', priority: 0.8 })
   })
 
-  // Wholesalers: country pages + company pages
-  const countrySlugs = Array.from(
-    new Set(WHOLESALERS.map((w: Wholesaler) => w.countrySlug))
-  ).sort()
-
-  countrySlugs.forEach(countrySlug => {
-    smStream.write({
-      url: `/piercing-wholesalers/${countrySlug}`,
-      changefreq: 'monthly',
-      priority: 0.7,
-    })
-  })
-
-  WHOLESALERS.forEach((w: Wholesaler) => {
-    smStream.write({
-      url: `/piercing-wholesalers/${w.countrySlug}/${w.slug}`,
-      changefreq: 'monthly',
-      priority: 0.6,
-    })
-  })
-
   // Blog posts
   const blogDir = path.join(process.cwd(), 'content/piercing-magazine')
   const blogFiles = fs.existsSync(blogDir) ? fs.readdirSync(blogDir) : []
@@ -89,6 +68,43 @@ async function generateSitemap() {
         url: `/piercing-magazine/${slug}`,
         changefreq: 'monthly',
         priority: 0.7,
+      })
+    }
+  })
+
+  // Terms & Conditions pages
+  const termsDir = path.join(process.cwd(), 'content/information')
+  const termsFiles = fs.existsSync(termsDir) ? fs.readdirSync(termsDir) : []
+
+  // Group by base slug (before language code) to avoid duplicates
+  const uniqueTermsSlugs = new Set<string>()
+  termsFiles.forEach(file => {
+    if (file.endsWith('.md')) {
+      // Extract base slug (e.g., "about-us" from "about-us.gb-en.md")
+      const baseSlug = file.replace(/\.[a-z]{2}-[a-z]{2}\.md$/, '').replace(/\.md$/, '')
+      uniqueTermsSlugs.add(baseSlug)
+    }
+  })
+
+  uniqueTermsSlugs.forEach(slug => {
+    smStream.write({
+      url: `/information/${slug}`,
+      changefreq: 'monthly',
+      priority: 0.6,
+    })
+  })
+
+  // Quality Assurance pages
+  const qaDir = path.join(process.cwd(), 'content/quality-assurance')
+  const qaFiles = fs.existsSync(qaDir) ? fs.readdirSync(qaDir) : []
+
+  qaFiles.forEach(file => {
+    if (file.endsWith('.md')) {
+      const slug = file.replace(/\.md$/, '')
+      smStream.write({
+        url: `/quality-assurance/${slug}`,
+        changefreq: 'monthly',
+        priority: 0.6,
       })
     }
   })
@@ -110,6 +126,27 @@ async function generateSitemap() {
       url: `/collection/${handle}`,
       changefreq: 'weekly',
       priority: 0.8,
+    })
+  })
+
+  // Wholesalers: country pages + company pages (at the end)
+  const countrySlugs = Array.from(
+    new Set(WHOLESALERS.map((w: Wholesaler) => w.countrySlug))
+  ).sort()
+
+  countrySlugs.forEach(countrySlug => {
+    smStream.write({
+      url: `/piercing-wholesalers/${countrySlug}`,
+      changefreq: 'monthly',
+      priority: 0.7,
+    })
+  })
+
+  WHOLESALERS.forEach((w: Wholesaler) => {
+    smStream.write({
+      url: `/piercing-wholesalers/${w.countrySlug}/${w.slug}`,
+      changefreq: 'monthly',
+      priority: 0.6,
     })
   })
 

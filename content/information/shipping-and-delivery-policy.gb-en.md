@@ -3,6 +3,7 @@ title: SHIPPING & DELIVERY POLICY
 description: Carriers, delivery terms and international shipping for AURICLE orders.
 updated: 2025-08-29
 robots: index,follow
+date: 2026-02-03
 ---
 
 <div class="information-page">

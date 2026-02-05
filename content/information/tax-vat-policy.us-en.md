@@ -3,6 +3,7 @@ title: TAX / IMPORT POLICY
 description: Tax treatment for domestic and international orders, duties, invoices and documentation.
 updated: 2025-08-29
 robots: index,follow
+date: 2026-02-03
 ---
 
 <div class="information-page">

@@ -3,6 +3,7 @@ title: ABOUT US
 description: About AURICLE and how we work.
 updated: 2025-08-29
 robots: index,follow
+date: 2026-02-03
 ---
 
 ## Who we are

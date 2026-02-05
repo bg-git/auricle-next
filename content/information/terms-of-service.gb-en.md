@@ -3,6 +3,7 @@ title: TERMS OF SERVICE
 description: Website terms of use for AURICLE.
 updated: 2025-08-29
 robots: index,follow
+date: 2026-02-03
 ---
 <div class="information-page">
 

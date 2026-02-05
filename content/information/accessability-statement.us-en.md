@@ -3,6 +3,7 @@ title: ACCESSIBILITY STATEMENT
 description: Our commitment to accessible, usable experiences across AURICLE websites and checkout.
 updated: 2025-08-29
 robots: index,follow
+date: 2026-02-03
 ---
 
 <div className="information-page">

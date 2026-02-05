@@ -3,6 +3,7 @@ title: OM OSS
 description: Om AURICLE och hur vi arbetar.
 updated: 2025-08-29
 robots: index,follow
+date: 2026-02-03
 ---
 
 ## Vilka vi är

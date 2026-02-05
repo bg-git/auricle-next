@@ -3,6 +3,7 @@ title: AUTHORISED RESELLER / MAP POLICY
 description: Conditions for authorised resellers and our Minimum Advertised Price (MAP) standard.
 updated: 2025-08-29
 robots: index,follow
+date: 2026-02-03
 ---
 
 <div className="information-page">
