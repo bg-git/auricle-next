@@ -44,10 +44,10 @@ export async function middleware(request: NextRequest) {
 // ✅ IMPORTANT: DO NOT INCLUDE /admin OR /api HERE
 export const config = {
   matcher: [
-    '/product/:path*',
+    '/item/:path*',
     '/account/:path*',
     '/checkout/:path*',
-    '/collection/:path*',
+    '/browse/:path*',
     '/piercing/:path*',
     '/piercing-magazine/:path*',
     '/favourites',

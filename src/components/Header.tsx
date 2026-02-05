@@ -286,11 +286,11 @@ function Header() {
           }}
         >
           {[
-            { label: 'ESSENTIALS', href: '/collection/essentials' },
-            { label: 'ENDS & GEMS', href: '/collection/ends-gems' },
-            { label: 'CHAINS & CHARMS', href: '/collection/chains-charms' },
-            { label: 'RINGS & HOOPS', href: '/collection/rings-hoops' },
-            { label: 'DISPLAYS & STANDS', href: '/collection/displays-stands' },
+            { label: 'ESSENTIALS', href: '/browse/essentials' },
+            { label: 'ENDS & GEMS', href: '/browse/ends-gems' },
+            { label: 'CHAINS & CHARMS', href: '/browse/chains-charms' },
+            { label: 'RINGS & HOOPS', href: '/browse/rings-hoops' },
+            { label: 'DISPLAYS & STANDS', href: '/browse/displays-stands' },
             { label: 'SEARCH', href: '/search' },
           ].map(({ label, href }) => (
             <Link

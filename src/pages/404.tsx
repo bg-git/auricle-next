@@ -41,16 +41,16 @@ export default function NotFoundPage() {
             margin: '0 auto',
           }}
         >
-          <Link href="/collection/ends-gems" style={linkStyle}>
+          <Link href="/browse/ends-gems" style={linkStyle}>
             Shop Ends &amp; Gems &#x27F6;
           </Link>
-          <Link href="/collection/chains-charms" style={linkStyle}>
+          <Link href="/browse/chains-charms" style={linkStyle}>
             Shop Chains &amp; Charms &#x27F6;
           </Link>
-          <Link href="/collection/backs-bars" style={linkStyle}>
+          <Link href="/browse/backs-bars" style={linkStyle}>
             Shop Backs &amp; Bars &#x27F6;
           </Link>
-          <Link href="/collection/rings-hoops" style={linkStyle}>
+          <Link href="/browse/rings-hoops" style={linkStyle}>
             Shop Rings &amp; Hoops &#x27F6;
           </Link>
           <Link href="/" style={secondaryStyle}>

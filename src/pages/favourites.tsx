@@ -174,7 +174,7 @@ export default function FavouritesPage() {
 
         <section id="product-grid" className="product-grid">
           {filteredItems.map((item, index) => (
-            <Link href={`/product/${item.handle}`} key={item.handle} className="product-card">
+            <Link href={`/item/${item.handle}`} key={item.handle} className="product-card">
               <div className="product-card-inner">
                 <div className="product-image-wrapper">
                   <Image

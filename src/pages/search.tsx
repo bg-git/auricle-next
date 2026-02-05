@@ -124,7 +124,7 @@ export default function SearchPage() {
         {results.map((product) => (
           <Link
             key={product.id}
-            href={`/product/${product.handle}`}
+            href={`/item/${product.handle}`}
             prefetch={true}
             style={{ textDecoration: 'none', color: '#181818' }}
           >

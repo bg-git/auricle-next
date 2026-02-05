@@ -182,7 +182,7 @@ export const getStaticProps: GetStaticProps<Props> = async () => {
   const collectionLinks: PageLink[] =
     collectionData.collections.edges.map(
       ({ node }: { node: { handle: string; title: string } }) => ({
-        href: `/collection/${node.handle}`,
+        href: `/browse/${node.handle}`,
         label: node.title,
       })
     )
@@ -204,7 +204,7 @@ export const getStaticProps: GetStaticProps<Props> = async () => {
   const productLinks: PageLink[] =
     productData.products.edges.map(
       ({ node }: { node: { handle: string; title: string } }) => ({
-        href: `/product/${node.handle}`,
+        href: `/item/${node.handle}`,
         label: node.title,
       })
     )

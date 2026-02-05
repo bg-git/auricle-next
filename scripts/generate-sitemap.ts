@@ -113,7 +113,7 @@ async function generateSitemap() {
   const productHandles = await fetchShopifyHandles('products')
   productHandles.forEach(handle => {
     smStream.write({
-      url: `/product/${handle}`,
+      url: `/item/${handle}`,
       changefreq: 'weekly',
       priority: 0.9,
     })
@@ -123,7 +123,7 @@ async function generateSitemap() {
   const collectionHandles = await fetchShopifyHandles('collections')
   collectionHandles.forEach(handle => {
     smStream.write({
-      url: `/collection/${handle}`,
+      url: `/browse/${handle}`,
       changefreq: 'weekly',
       priority: 0.8,
     })

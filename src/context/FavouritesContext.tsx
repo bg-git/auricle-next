@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 
 export interface FavouriteItem {
-  handle: string; // ✅ used for linking to /product/[handle]
+  handle: string; // ✅ used for linking to /item/[handle]
   title: string;
   image?: string;
   price?: string;

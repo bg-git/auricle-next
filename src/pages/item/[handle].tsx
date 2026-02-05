@@ -681,7 +681,7 @@ const testCertificateUrl = getFileUrl('test_certificate');
         description={
           getFieldValue('description') || `Buy ${product.title} in 14k gold or titanium.`
         }
-        canonical={`https://www.auricle.co.uk/product/${product.handle}`}
+        canonical={`https://www.auricle.co.uk/item/${product.handle}`}
       />
 
       <script
@@ -701,7 +701,7 @@ const testCertificateUrl = getFileUrl('test_certificate');
             },
             "offers": {
               "@type": "Offer",
-              "url": `https://www.auricle.co.uk/product/${product.handle}`,
+              "url": `https://www.auricle.co.uk/item/${product.handle}`,
               "priceCurrency": currencyCode,
               "price": formattedPrice,
               "availability": isSoldOut ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
