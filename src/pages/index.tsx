@@ -294,6 +294,30 @@ export function HomeContent() {
       <Seo
         title="Wholesale Body Piercing Jewellery"
         description="Boutique wholesaler of 14k gold & ASTM F136 titanium body jewellery. Dainty styles, low MOQs, fast UK dispatch. Limited-run piercing jewellery for pros."
+        schemaType="Organization"
+        schemaData={{
+          name: "AURICLE",
+          description: "UK's leading provider of premium, independently-tested body piercing jewellery for professional piercers. All products verified to ASTM standards (F136, F2923, F2999) with independent third-party testing and mill certificates. Specializing in high-quality, safe, and compliant professional piercing jewellery.",
+          url: "https://www.auricle.co.uk",
+          logo: "https://www.auricle.co.uk/auricle-logo.png",
+          areaServed: ["GB", "US", "AU", "DE", "FR", "IT", "ES", "NL", "BE", "AT", "PL", "SE", "DK", "IE", "PT", "GR", "CZ", "HU"],
+          knowsAbout: [
+            "ASTM F136 Implant-Grade Titanium",
+            "ASTM F2923 Children's Jewellery Safety",
+            "ASTM F2999 Adult Jewellery Safety",
+            "EU Nickel Release Compliance",
+            "Professional Body Piercing",
+            "Material Certification",
+            "Independent Third-Party Testing",
+            "UK & EU Consumer Product Safety",
+            "Medical-Grade Jewellery",
+            "Professional Piercer Supply",
+            "Wholesale Body Jewellery",
+            "High Quality Piercing Jewellery",
+            "Piercing Jewellery Wholesale"
+          ],
+          sameAs: []
+        }}
       />
 
       <main className="home-page">
