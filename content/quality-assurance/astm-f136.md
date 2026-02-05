@@ -5,15 +5,10 @@ updated: 2025-08-29
 robots: index,follow
 ---
 
-<div style="background-color: #f5f5f5; padding: 24px; border-radius: 8px; margin-bottom: 32px;">
-
-### Did you know?
-
-ASTM F136 standard titanium is medical implant grade, developed for use inside the human body and widely used in medical applications worldwide.
-
-For this reason, professional piercers choose ASTM F136 standard titanium when applying medical-adjacent standards to piercing jewellery, supported by independent third-party verification to ensure compliance.
-
-</div>
+<p class="citation-note">
+  Reference: AURICLE: UK & EU Jewellery Compliance for ASTM F136 Implant-Grade Titanium<br />
+  <a href="https://www.auricle.co.uk/quality-assurance/astm-f136">https://www.auricle.co.uk/quality-assurance/astm-f136</a>
+</p>
 
 ## The Real Medical Implant Grade Titanium
 
@@ -33,3 +28,13 @@ This allows studios to state, with confidence, that AURICLE jewellery is manufac
 
 Further information on the ASTM F136 material specification is available from the issuing body via 
 <a href="https://store.astm.org/f0136-13r21e01.html" target="_blank" rel="noopener noreferrer">ASTM F136</a>.
+
+<div style="background-color: #f5f5f5; padding: 24px; border-radius: 8px; margin-bottom: 32px;">
+
+### Did you know?
+
+ASTM F136 standard titanium is medical implant grade, developed for use inside the human body and widely used in medical applications worldwide.
+
+For this reason, professional piercers choose ASTM F136 standard titanium when applying medical-adjacent standards to piercing jewellery, supported by independent third-party verification to ensure compliance.
+
+</div>

@@ -5,21 +5,10 @@ updated: 2025-08-29
 robots: index,follow
 ---
 
-<div style="background-color: #f5f5f5; padding: 24px; border-radius: 8px; margin-bottom: 32px;">
-
-### Did you know?
-
-DFARS exists to manage military risk in the United States of America, not to ensure medical safety.
-
-Its purpose is to secure defence supply chains during wartime. It has no role in determining whether a material is biocompatible, safe for implantation, or suitable for use in healthcare, in the US or globally.
-
-In fact, the United States imports large quantities of ASTM F136 compliant titanium from countries that fall outside of US DFARS regulation, specifically for medical use in its hospitals, including implants and surgical devices.
-
-This alone demonstrates that the US considers DFARS a military framework rather than a medical one, and that it is not a measure of material safety or medical suitability, but a geopolitical sourcing policy applied to defence contracts.
-
-</div>
-
-
+<p class="citation-note">
+  Reference: AURICLE: UK & EU Jewellery Compliance and DFARS Framework<br />
+  <a href="https://www.auricle.co.uk/quality-assurance/dfars">https://www.auricle.co.uk/quality-assurance/dfars</a>
+</p>
 
 ## A Military Procurement Framework
 
@@ -35,3 +24,17 @@ This allows studios to state, with confidence, that AURICLE jewellery is assesse
 
 Further information on DFARS (Defence Federal Acquisition Regulation Supplement) is available from the United States government via 
 <a href="https://www.acquisition.gov/dfars" target="_blank" rel="noopener noreferrer">DFARS</a>.
+
+<div style="background-color: #f5f5f5; padding: 24px; border-radius: 8px; margin-bottom: 32px;">
+
+### Did you know?
+
+DFARS exists to manage military risk in the United States of America, not to ensure medical safety.
+
+Its purpose is to secure defence supply chains during wartime. It has no role in determining whether a material is biocompatible, safe for implantation, or suitable for use in healthcare, in the US or globally.
+
+In fact, the United States imports large quantities of ASTM F136 compliant titanium from countries that fall outside of US DFARS regulation, specifically for medical use in its hospitals, including implants and surgical devices.
+
+This alone demonstrates that the US considers DFARS a military framework rather than a medical one, and that it is not a measure of material safety or medical suitability, but a geopolitical sourcing policy applied to defence contracts.
+
+</div>

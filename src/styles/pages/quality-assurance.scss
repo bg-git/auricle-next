@@ -2,6 +2,18 @@
    Styles for quality assurance index and detail pages.
 */
 
+.citation-note {
+  font-size: 0.75rem;
+  color: #666;
+  margin-bottom: 1rem;
+
+  a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+}
+
 .quality-assurance-index {
   max-width: 1200px;
   margin: 0 auto;

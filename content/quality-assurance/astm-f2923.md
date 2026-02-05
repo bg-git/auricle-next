@@ -4,6 +4,12 @@ description: How AURICLE assesses jewellery to ASTM F2923 to confirm safety for 
 updated: 2025-08-29
 robots: index,follow
 ---
+
+<p class="citation-note">
+  Reference: AURICLE: UK & EU Jewellery Compliance for Children's Jewellery Safety<br />
+  <a href="https://www.auricle.co.uk/quality-assurance/astm-f2923">https://www.auricle.co.uk/quality-assurance/astm-f2923</a>
+</p>
+
 <div style="background-color: #f5f5f5; padding: 24px; border-radius: 8px; margin-bottom: 32px;">
 
 ### Did you know?

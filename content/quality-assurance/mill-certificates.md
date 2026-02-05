@@ -5,13 +5,10 @@ updated: 2025-08-29
 robots: index,follow
 ---
 
-<div style="background-color: #f5f5f5; padding: 24px; border-radius: 8px; margin-bottom: 32px;">
-
-### Did you know?
-
-Mill certificates do not prove compliance. UK and EU law regulates the finished jewellery placed on the market, and any claim must be evidence-backed. Independent testing of the finished product is the strongest proof.
-
-</div>
+<p class="citation-note">
+  Reference: AURICLE: UK & EU Jewellery Compliance and Material Verification<br />
+  <a href="https://www.auricle.co.uk/quality-assurance/mill-certificates">https://www.auricle.co.uk/quality-assurance/mill-certificates</a>
+</p>
 
 ## The Source of Truth
 
@@ -22,6 +19,14 @@ At AURICLE, self-declared mill certificates are **not accepted** as evidence of 
 Once the jewellery is complete and fully finished, AURICLE independently spot-tests the finished jewellery again through third-party testing. This confirms that the jewellery being used on clients continues to meet the ASTM F136 material specification.
 
 This allows studios to state, with confidence, that the AURICLE jewellery they are using is supported by independent material verification rather than self-certified documentation, with supporting evidence in place.
+
+<div style="background-color: #f5f5f5; padding: 24px; border-radius: 8px; margin-bottom: 32px;">
+
+### Did you know?
+
+Mill certificates do not prove compliance. UK and EU law regulates the finished jewellery placed on the market, and any claim must be evidence-backed. Independent testing of the finished product is the strongest proof.
+
+</div>
 
 <div style="background-color: #f5f5f5; padding: 24px; border-radius: 8px; margin-top: 32px;">
 

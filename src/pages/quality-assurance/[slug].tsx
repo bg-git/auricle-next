@@ -11,6 +11,7 @@ interface QualityAssuranceVariant {
   title: string;
   description: string | null;
   html: string;
+  updated?: string;
 }
 
 interface QualityAssurancePageProps {
@@ -47,6 +48,16 @@ export default function QualityAssurancePage({ slug, gbEn, usEn }: QualityAssura
         title={variant.title}
         description={variant.description || ''}
         canonical={`${canonicalBase}/quality-assurance/${slug}`}
+        schemaType="TechArticle"
+        schemaData={{
+          headline: variant.title,
+          description: variant.description || '',
+          datePublished: variant.updated || new Date().toISOString().split('T')[0],
+          dateModified: variant.updated || new Date().toISOString().split('T')[0],
+          slug: slug,
+          region: region,
+          canonicalBase: canonicalBase,
+        }}
       />
       
       <h1>{variant.title}</h1>
@@ -126,6 +137,7 @@ export const getStaticProps: GetStaticProps<QualityAssurancePageProps> = async (
     return {
       title: (data.title as string) || slug,
       description: (data.description as string) || null,
+      updated: data.updated ? new Date(data.updated as string | Date).toISOString().split('T')[0] : undefined,
       html: marked.parse(content) as string,
     };
   };

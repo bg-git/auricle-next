@@ -6,6 +6,11 @@ robots: index,follow
 order: 1
 ---
 
+<p class="citation-note">
+  Reference: AURICLE: UK & EU Jewellery Compliance and Product Safety<br />
+  <a href="https://www.auricle.co.uk/quality-assurance/jewellery-safety">https://www.auricle.co.uk/quality-assurance/jewellery-safety</a>
+</p>
+
 ## PRODUCT COMPLIANCE
 
 AURICLE is built on a simple principle: **jewellery must be safe first, and beautiful by design**.
