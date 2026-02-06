@@ -88,6 +88,7 @@ interface Product {
   title: string;
   handle: string;
   descriptionHtml: string;
+  tags?: string[];
   priceRange: {
     minVariantPrice: {
       amount: string;
@@ -435,6 +436,8 @@ const isVipMember =
       return true;
     });
   }, [product.images, product.title, ugcItems, selectedVariant?.image, showVariantImage]);
+
+  const isComingSoon = Array.isArray(product.tags) && product.tags.some(tag => tag.toLowerCase() === 'coming soon');
 
   const isSoldOut =
     !selectedVariant?.availableForSale ||
@@ -1121,7 +1124,7 @@ const testCertificateUrl = getFileUrl('test_certificate');
         disabled={approved !== true || isSoldOut}
         aria-disabled={approved !== true || isSoldOut}
       >
-        {approved !== true ? 'SIGN IN' : (isSoldOut ? 'SOLD OUT' : 'ADD TO BAG')}
+        {approved !== true ? 'SIGN IN' : (isSoldOut ? (isComingSoon ? 'COMING SOON' : 'SOLD OUT') : 'ADD TO BAG')}
       </button>
     </div>
   </div>
@@ -1348,6 +1351,7 @@ const query = `
       title
       handle
       descriptionHtml
+      tags
       priceRange {
         minVariantPrice {
           amount

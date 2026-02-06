@@ -212,7 +212,7 @@ function Header() {
           }}
         >
           {/* Logo */}
-          <Link href="/" style={{ display: 'flex', alignItems: 'center' }}>
+          <Link href="/" style={{ display: 'flex', alignItems: 'center' }} prefetch={true}>
             <Image
               src="/auricle-logo.png"
               alt="AURICLE's Ram skull logo"
