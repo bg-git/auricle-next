@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Seo from '@/components/Seo';
 import { useAuth } from '@/context/AuthContext';
 import RegisterModal from '@/components/RegisterModal';
+import VipStats from '@/components/VipStats';
 
 type ApiResponse = {
   url?: string;
@@ -380,6 +381,8 @@ export default function VipMembershipPage() {
                 );
               })}
             </section>
+
+            {/* <VipStats /> */}
           </>
         )}
 

@@ -81,6 +81,7 @@ export default function CartDrawer() {
     draftCheckoutUrl,
     draftStatus,
     ensureVipDraftCheckout,
+    clearCart,
   } = useCart();
 
   const { addFavourite } = useFavourites();
@@ -147,7 +148,35 @@ export default function CartDrawer() {
         <div className="cart-drawer-inner">
           <div className="cart-header">
             <h2 id="cart-drawer-title">MY BAG</h2>
-            <button onClick={closeDrawer}>&times;</button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {cartItems.length > 0 && (
+                <button
+                  onClick={() => {
+                    if (confirm('Clear your entire cart?')) {
+                      clearCart();
+                    }
+                  }}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    padding: '4px 8px',
+                    color: '#999',
+                    cursor: 'pointer',
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                    transition: 'color 0.2s ease',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = '#666')}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = '#999')}
+                  title="Empty cart"
+                >
+                  EMPTY
+                </button>
+              )}
+              <button onClick={closeDrawer}>&times;</button>
+            </div>
           </div>
 
           {cartItems.length === 0 ? (

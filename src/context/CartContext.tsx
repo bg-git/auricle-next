@@ -37,8 +37,16 @@ interface CartContextType {
     quantity: number,
     meta?: Omit<CartItem, 'variantId' | 'quantity'>
   ) => void;
+  addMultipleToCart: (
+    items: Array<{
+      variantId: string;
+      quantity: number;
+      meta?: Omit<CartItem, 'variantId' | 'quantity'>;
+    }>
+  ) => void;
   updateQuantity: (variantId: string, newQty: number) => void;
   removeFromCart: (variantId: string) => void;
+  clearCart: () => void;
   isDrawerOpen: boolean;
   openDrawer: () => void;
   closeDrawer: () => void;
@@ -481,6 +489,56 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     scheduleSync(updatedItems);
   };
 
+  const addMultipleToCart = (
+    items: Array<{
+      variantId: string;
+      quantity: number;
+      meta?: Omit<CartItem, 'variantId' | 'quantity'>;
+    }>
+  ) => {
+    let updatedItems = [...cartItems];
+
+    items.forEach(({ variantId, quantity, meta = {} }) => {
+      const existing = updatedItems.find((item) => item.variantId === variantId);
+      const maxQty = meta.quantityAvailable ?? existing?.quantityAvailable ?? Infinity;
+
+      if (maxQty <= 0) {
+        return;
+      }
+
+      const desiredQty = existing ? existing.quantity + quantity : quantity;
+      const finalQty = Math.min(desiredQty, maxQty);
+
+      if (existing) {
+        updatedItems = updatedItems.map((item) =>
+          item.variantId === variantId
+            ? { ...item, quantity: finalQty, quantityAvailable: maxQty }
+            : item
+        );
+      } else {
+        updatedItems = [{ variantId, quantity: finalQty, ...meta }, ...updatedItems];
+      }
+
+      // ✅ Add to favourites silently
+      if (meta.handle && !isFavourite(meta.handle)) {
+        addFavourite({
+          handle: meta.handle,
+          title: meta.title || '',
+          image: meta.image,
+          price: meta.price,
+          metafields: meta.metafields,
+        });
+      }
+    });
+
+    setCartItems(updatedItems);
+    
+    // Open drawer immediately for better UX
+    openDrawer();
+
+    scheduleSync(updatedItems);
+  };
+
   const updateQuantity = (variantId: string, newQty: number) => {
     const item = cartItems.find((i) => i.variantId === variantId);
     if (!item) return;
@@ -509,6 +567,11 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     scheduleSync(updated);
   };
 
+  const clearCart = () => {
+    setCartItems([]);
+    scheduleSync([]);
+  };
+
   return (
     <CartContext.Provider
       value={{
@@ -518,8 +581,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         draftStatus,
         draftSignature,
         addToCart,
+        addMultipleToCart,
         updateQuantity,
         removeFromCart,
+        clearCart,
         isDrawerOpen,
         openDrawer,
         closeDrawer,

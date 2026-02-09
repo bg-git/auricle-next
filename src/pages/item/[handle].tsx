@@ -437,8 +437,6 @@ const isVipMember =
     });
   }, [product.images, product.title, ugcItems, selectedVariant?.image, showVariantImage]);
 
-  const isComingSoon = Array.isArray(product.tags) && product.tags.some(tag => tag.toLowerCase() === 'coming soon');
-
   const isSoldOut =
     !selectedVariant?.availableForSale ||
     selectedVariant?.quantityAvailable <= 0;
@@ -725,6 +723,23 @@ const testCertificateUrl = getFileUrl('test_certificate');
               images={galleryImages}
               defaultActive={showVariantImage ? 1 : 0}
             />
+            
+            {/* Image disclaimer */}
+            <div style={{
+              position: 'absolute',
+              top: '12px',
+              right: '12px',
+              fontSize: '11px',
+              color: '#999',
+              fontWeight: 500,
+              pointerEvents: 'none',
+              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+              padding: '4px 8px',
+              borderRadius: '3px',
+              zIndex: 10,
+            }}>
+              Jewellery image not to scale
+            </div>
 
             <div className="fav-wrapper">
               {showFav ? (
@@ -1124,7 +1139,7 @@ const testCertificateUrl = getFileUrl('test_certificate');
         disabled={approved !== true || isSoldOut}
         aria-disabled={approved !== true || isSoldOut}
       >
-        {approved !== true ? 'SIGN IN' : (isSoldOut ? (isComingSoon ? 'COMING SOON' : 'SOLD OUT') : 'ADD TO BAG')}
+        {approved !== true ? 'SIGN IN' : (isSoldOut ? 'SOLD OUT' : 'ADD TO BAG')}
       </button>
     </div>
   </div>
@@ -1142,6 +1157,39 @@ const testCertificateUrl = getFileUrl('test_certificate');
   >
     {copy.taxLabel}
   </p>
+
+  {/* View Starter Kits Button */}
+  <div style={{ marginBottom: '32px' }}>
+    <Link href="/starter-kits" legacyBehavior>
+      <a
+        style={{
+          display: 'block',
+          padding: '12px 24px',
+          backgroundColor: '#f9f9f9',
+          color: '#181818',
+          fontSize: '13px',
+          fontWeight: 600,
+          textDecoration: 'none',
+          borderRadius: '4px',
+          border: '1px solid #e0e0e0',
+          transition: 'all 0.2s ease',
+          textAlign: 'center',
+          width: '100%',
+          boxSizing: 'border-box',
+        }}
+        onMouseEnter={(e) => {
+          (e.target as HTMLElement).style.backgroundColor = '#ececec';
+          (e.target as HTMLElement).style.borderColor = '#ccc';
+        }}
+        onMouseLeave={(e) => {
+          (e.target as HTMLElement).style.backgroundColor = '#f9f9f9';
+          (e.target as HTMLElement).style.borderColor = '#e0e0e0';
+        }}
+      >
+        VIEW STARTER KITS →
+      </a>
+    </Link>
+  </div>
 
   {/* Details block (unchanged) */}
   <div style={{ marginTop: '32px' }}>
