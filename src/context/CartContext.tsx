@@ -326,7 +326,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
           setCheckoutId(null);
           setCheckoutUrl(null);
           checkoutUrlRef.current = null;
-          resetDraftState();
+          setDraftCheckoutUrl(null);
+          setDraftSignature(null);
+          setDraftStatus('idle');
           localStorage.removeItem(ITEMS_KEY);
           localStorage.removeItem(CHECKOUT_ID_KEY);
         }
@@ -353,7 +355,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     latestItemsRef.current = cartItems;
   }, [cartItems]);
 
-  useEffect(() {
+  useEffect(() => {
     if (!isVipMember) {
       resetDraftState();
       return;
