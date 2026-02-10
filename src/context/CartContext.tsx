@@ -304,11 +304,56 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [cartItems, checkoutId]);
 
+  // Check if cart/checkout was completed (e.g., user returned from Shopify checkout)
+  useEffect(() => {
+    if (!checkoutId || cartItems.length === 0) return;
+
+    const checkIfCompleted = async () => {
+      try {
+        const res = await fetch('/api/get-checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: checkoutId }),
+          credentials: 'include',
+        });
+        const data = await res.json();
+        const cart = data.cart;
+
+        // If cart has completedAt, checkout was successful
+        if (cart?.completedAt) {
+          console.log('Checkout completed, clearing cart');
+          setCartItems([]);
+          setCheckoutId(null);
+          setCheckoutUrl(null);
+          checkoutUrlRef.current = null;
+          resetDraftState();
+          localStorage.removeItem(ITEMS_KEY);
+          localStorage.removeItem(CHECKOUT_ID_KEY);
+        }
+      } catch (error) {
+        console.warn('Failed to check checkout status:', error);
+      }
+    };
+
+    // Check when tab/window becomes visible (user returns from checkout)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        checkIfCompleted();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [checkoutId, cartItems.length]);
+
   useEffect(() => {
     latestItemsRef.current = cartItems;
   }, [cartItems]);
 
-  useEffect(() => {
+  useEffect(() {
     if (!isVipMember) {
       resetDraftState();
       return;
@@ -400,6 +445,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
           setCheckoutId(null);
           setCheckoutUrl(null);
           checkoutUrlRef.current = null;
+          // Clear localStorage
+          localStorage.removeItem(ITEMS_KEY);
+          localStorage.removeItem(CHECKOUT_ID_KEY);
           return;
         }
         const cart = data.cart;

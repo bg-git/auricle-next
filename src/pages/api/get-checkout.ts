@@ -20,6 +20,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         id
         status
         checkoutUrl
+        completedAt
         lines(first: 250) {
           edges {
             node {

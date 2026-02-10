@@ -3,8 +3,10 @@ import path from 'path';
 import matter from 'gray-matter';
 import { marked } from 'marked';
 import Seo from '@/components/Seo';
+import MarkdownContent from '@/components/MarkdownContent';
 import type { GetStaticPaths, GetStaticProps } from 'next';
 import { useRegion } from '@/context/RegionContext';
+import '@/lib/markedRenderer';
 
 interface InfoVariant {
   title: string;
@@ -48,7 +50,7 @@ export default function InformationPage({ slug, gbEn, usEn }: InfoPageProps) {
         canonical={`${canonicalBase}/information/${slug}`}
       />
       <h1>{variant.title}</h1>
-      <div dangerouslySetInnerHTML={{ __html: variant.html }} />
+      <MarkdownContent html={variant.html} />
 
       {/* Global translations / localisation notice */}
       <section className="info-page__translation-note">

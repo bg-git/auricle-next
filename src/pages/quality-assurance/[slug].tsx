@@ -4,8 +4,10 @@ import matter from 'gray-matter';
 import { marked } from 'marked';
 import Link from 'next/link';
 import Seo from '@/components/Seo';
+import MarkdownContent from '@/components/MarkdownContent';
 import type { GetStaticPaths, GetStaticProps } from 'next';
 import { useRegion } from '@/context/RegionContext';
+import '@/lib/markedRenderer';
 
 interface QualityAssuranceVariant {
   title: string;
@@ -61,7 +63,7 @@ export default function QualityAssurancePage({ slug, gbEn, usEn }: QualityAssura
       />
       
       <h1>{variant.title}</h1>
-      <div dangerouslySetInnerHTML={{ __html: variant.html }} />
+      <MarkdownContent html={variant.html} />
 
       <div className="quality-assurance-page__footer">
         <Link href="/quality-assurance" className="qa-back-button">

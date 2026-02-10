@@ -6,7 +6,9 @@ import Image from 'next/image';
 import Link from 'next/link';
 import Head from 'next/head';
 import Seo from '@/components/Seo';
+import MarkdownContent from '@/components/MarkdownContent';
 import type { GetStaticProps, GetStaticPaths } from 'next';
+import '@/lib/markedRenderer';
 
 interface BlogPostProps {
   title: string;
@@ -93,10 +95,9 @@ export default function BlogPost({ title, description, content, image, slug, pre
               </div>
             )}
 
-            <div
-              className="blog-content"
-              dangerouslySetInnerHTML={{ __html: content }}
-            />
+            <div className="blog-content">
+              <MarkdownContent html={content} />
+            </div>
           </div>
 
           <div className="blog-nav">
