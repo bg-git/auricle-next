@@ -337,7 +337,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       }
     };
 
-    // Check when tab/window becomes visible (user returns from checkout)
+    // Check on page load/mount
+    checkIfCompleted();
+
+    // Also check when tab/window becomes visible (user manually switches back to tab)
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         checkIfCompleted();
