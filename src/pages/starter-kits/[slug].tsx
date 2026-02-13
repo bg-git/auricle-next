@@ -31,6 +31,7 @@ type ProductVariant = {
   price: {
     amount: string;
   };
+  quantityAvailable: number;
   metafield?: {
     value: string | null;
   } | null;
