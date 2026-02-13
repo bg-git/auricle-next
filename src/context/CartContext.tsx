@@ -217,6 +217,22 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     if (storedItems) {
       try {
         parsedItems = JSON.parse(storedItems);
+        
+        // Validate items have the new metadata format (basePrice/memberPrice)
+        // Old cached items won't have these fields
+        const hasValidMetadata = parsedItems.every((item) => 
+          item.basePrice !== undefined || item.memberPrice !== undefined
+        );
+        
+        // If any items lack the new metadata format, clear entire cache (one-time migration)
+        if (!hasValidMetadata && parsedItems.length > 0) {
+          console.log('Clearing old cart format - customers must re-add items for VIP pricing to work');
+          localStorage.removeItem(ITEMS_KEY);
+          localStorage.removeItem(CHECKOUT_ID_KEY);
+          setCartItems([]);
+          return;
+        }
+        
         setCartItems(parsedItems);
       } catch {
         setCartItems([]);
@@ -357,6 +373,13 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     latestItemsRef.current = cartItems;
   }, [cartItems]);
+
+  // Re-sync cart when VIP membership status changes to apply/remove discounts
+  useEffect(() => {
+    if (cartItems.length > 0 && checkoutId) {
+      scheduleSync(cartItems);
+    }
+  }, [isVipMember]);
 
   useEffect(() => {
     if (!isVipMember) {
