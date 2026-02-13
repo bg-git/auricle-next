@@ -374,6 +374,12 @@
     color: #181818;
   }
 
+  &--danger {
+    background: #e74c3c;
+    color: #fff;
+    border-color: #e74c3c;
+  }
+
   &--small {
     padding: 0.3rem 0.7rem;
     font-size: 0.8rem;
@@ -393,6 +399,11 @@
   &--ghost:not(:disabled):hover {
     background: #181818;
     color: #fff;
+  }
+
+  &--danger:not(:disabled):hover {
+    background: #c0392b;
+    border-color: #c0392b;
   }
 }
 

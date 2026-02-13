@@ -9,6 +9,12 @@ import {
   shopifyAdminPut,
 } from '@/lib/shopifyAdmin';
 
+type Metafield = {
+  key: string;
+  value: string;
+  type: string;
+};
+
 type FeedVariant = {
   id: number;
   gid: string;
@@ -18,6 +24,7 @@ type FeedVariant = {
   title: string;
   poaEnabled: boolean;
   poaPrice: string; // POA retail price
+  metafields: Metafield[];
 };
 
 type FeedProduct = {
@@ -28,6 +35,7 @@ type FeedProduct = {
   status: string;
   descriptionHtml: string;
   imageUrls: string[];
+  metafields: Metafield[];
   variants: FeedVariant[];
 };
 
@@ -62,6 +70,7 @@ type MetafieldNode = {
   key: string;
   value: string;
   type: string;
+  namespace?: string;
 };
 
 type MetafieldEdge = {
@@ -100,6 +109,9 @@ type ProductNode = {
   images: {
     edges: ImageEdge[];
   };
+  metafields: {
+    edges: MetafieldEdge[];
+  };
   variants: {
     edges: VariantEdge[];
   };
@@ -128,37 +140,59 @@ function extractNumericId(gid: string): number {
 }
 
 async function loadAuricleFeed(): Promise<FeedProduct[]> {
-  const query = `
-    query AuriclePoaFeed {
-      products(first: 100) {
-        edges {
-          node {
-            id
-            title
-            handle
-            status
-            descriptionHtml
-            images(first: 10) {
-              edges {
-                node {
-                  url
+  const allProducts: FeedProduct[] = [];
+  let hasNextPage = true;
+  let endCursor: string | null = null;
+
+  while (hasNextPage) {
+    const afterParam = endCursor ? `, after: "${endCursor}"` : '';
+    const query = `
+      query AuriclePoaFeed {
+        products(first: 100${afterParam}) {
+          pageInfo {
+            hasNextPage
+            endCursor
+          }
+          edges {
+            node {
+              id
+              title
+              handle
+              status
+              descriptionHtml
+              images(first: 10) {
+                edges {
+                  node {
+                    url
+                  }
                 }
               }
-            }
-            variants(first: 100) {
-              edges {
-                node {
-                  id
-                  sku
-                  price
-                  inventoryQuantity
-                  title
-                  metafields(first: 10, namespace: "custom") {
-                    edges {
-                      node {
-                        key
-                        value
-                        type
+              metafields(first: 100) {
+                edges {
+                  node {
+                    key
+                    value
+                    type
+                    namespace
+                  }
+                }
+              }
+              variants(first: 100) {
+                edges {
+                  node {
+                    id
+                    sku
+                    price
+                    inventoryQuantity
+                    title
+                    metafields(first: 100) {
+                      edges {
+                        node {
+                          key
+                          value
+                          type
+                          namespace
+                        }
                       }
                     }
                   }
@@ -168,43 +202,57 @@ async function loadAuricleFeed(): Promise<FeedProduct[]> {
           }
         }
       }
-    }
-  `;
+    `;
 
-  const data = await shopifyAdminGraphql<AuricleFeedQueryResult>(
-    auricleAdmin,
-    query,
-  );
+    const data = await shopifyAdminGraphql<{
+      products: {
+        pageInfo: { hasNextPage: boolean; endCursor: string | null };
+        edges: ProductEdge[];
+      };
+    }>(auricleAdmin, query);
 
-  const feed: FeedProduct[] = data.products.edges
-    .map((productEdge) => productEdge.node)
-    .filter((p) => p.status === 'ACTIVE') // only active Auricle products
-    .map((p) => {
-      const productId = extractNumericId(p.id);
+    // Process this page's products
+    const pageProducts = data.products.edges
+      .map((productEdge) => productEdge.node)
+      .filter((p) => p.status === 'ACTIVE') // only active Auricle products
+      .map((p) => {
+        const productId = extractNumericId(p.id);
 
-      const imageUrls =
-        p.images?.edges.map((edge) => edge.node.url) ?? [];
+        const imageUrls =
+          p.images?.edges.map((edge) => edge.node.url) ?? [];
+
+        // Extract all product metafields
+        const productMetafields: Metafield[] = p.metafields.edges.map((edge) => ({
+          key: edge.node.key,
+          value: edge.node.value,
+          type: edge.node.type,
+        }));
 
         const variants: FeedVariant[] = p.variants.edges.map((variantEdge) => {
           const v = variantEdge.node;
           const variantId = extractNumericId(v.id);
 
           let poaEnabled = false;
-        let poaPrice: string | null = null;
+          let poaPrice: string | null = null;
 
-        for (const mfEdge of v.metafields.edges) {
-          const mf = mfEdge.node;
+          // Extract all variant metafields
+          const variantMetafields: Metafield[] = v.metafields.edges.map((edge) => ({
+            key: edge.node.key,
+            value: edge.node.value,
+            type: edge.node.type,
+          }));
 
-          if (mf.key === 'poa_enabled') {
-            poaEnabled = mf.value === 'true';
+          for (const mf of variantMetafields) {
+            if (mf.key === 'poa_enabled') {
+              poaEnabled = mf.value === 'true';
+            }
+
+            if (mf.key === 'poa_price') {
+              poaPrice = mf.value;
+            }
           }
 
-          if (mf.key === 'poa_price') {
-            poaPrice = mf.value;
-          }
-        }
-
-        const effectivePoaPrice = poaPrice ?? v.price;
+          const effectivePoaPrice = poaPrice ?? v.price;
 
           return {
             id: variantId,
@@ -215,22 +263,31 @@ async function loadAuricleFeed(): Promise<FeedProduct[]> {
             title: v.title,
             poaEnabled,
             poaPrice: effectivePoaPrice,
+            metafields: variantMetafields,
           };
         });
 
-      return {
-        id: productId,
-        gid: p.id,
-        title: p.title,
-        handle: p.handle,
-        status: p.status,
-        descriptionHtml: p.descriptionHtml ?? '',
-        imageUrls,
-        variants,
-      };
-    });
+        return {
+          id: productId,
+          gid: p.id,
+          title: p.title,
+          handle: p.handle,
+          status: p.status,
+          descriptionHtml: p.descriptionHtml ?? '',
+          imageUrls,
+          metafields: productMetafields,
+          variants,
+        };
+      });
 
-  return feed;
+    allProducts.push(...pageProducts);
+
+    // Update pagination
+    hasNextPage = data.products.pageInfo.hasNextPage;
+    endCursor = data.products.pageInfo.endCursor;
+  }
+
+  return allProducts;
 }
 const POA_INVENTORY_ITEM_TRACK_MUTATION = `
   mutation TrackInventoryItem($id: ID!, $input: InventoryItemInput!) {
@@ -241,8 +298,89 @@ const POA_INVENTORY_ITEM_TRACK_MUTATION = `
   }
 `;
 
+const POA_PRODUCT_METAFIELDS_MUTATION = `
+  mutation UpdateProductMetafields($input: ProductInput!) {
+    productUpdate(input: $input) {
+      product { id }
+      userErrors { field message }
+    }
+  }
+`;
+
+const POA_VARIANT_METAFIELDS_MUTATION = `
+  mutation UpdateVariantMetafields($input: ProductVariantInput!) {
+    productVariantUpdate(input: $input) {
+      productVariant { id }
+      userErrors { field message }
+    }
+  }
+`;
+
 function toInventoryItemGid(inventoryItemId: number): string {
   return `gid://shopify/InventoryItem/${inventoryItemId}`;
+}
+
+async function syncProductMetafields(
+  poaProductGid: string,
+  metafields: Metafield[],
+): Promise<void> {
+  if (metafields.length === 0) return;
+
+  const metafieldsPayload = metafields.map((mf) => ({
+    namespace: mf.type === 'json' ? 'custom' : 'custom',
+    key: mf.key,
+    value: mf.value,
+    type: mf.type,
+  }));
+
+  try {
+    await shopifyAdminGraphql<{
+      productUpdate: { product: { id: string } | null; userErrors: unknown[] };
+    }>(poaAdmin, POA_PRODUCT_METAFIELDS_MUTATION, {
+      input: {
+        id: poaProductGid,
+        metafields: metafieldsPayload,
+      },
+    });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error(
+      `Failed to sync metafields for product ${poaProductGid}: ${msg}`,
+    );
+  }
+}
+
+async function syncVariantMetafields(
+  poaVariantGid: string,
+  metafields: Metafield[],
+): Promise<void> {
+  if (metafields.length === 0) return;
+
+  const metafieldsPayload = metafields.map((mf) => ({
+    namespace: mf.type === 'json' ? 'custom' : 'custom',
+    key: mf.key,
+    value: mf.value,
+    type: mf.type,
+  }));
+
+  try {
+    await shopifyAdminGraphql<{
+      productVariantUpdate: {
+        productVariant: { id: string } | null;
+        userErrors: unknown[];
+      };
+    }>(poaAdmin, POA_VARIANT_METAFIELDS_MUTATION, {
+      input: {
+        id: poaVariantGid,
+        metafields: metafieldsPayload,
+      },
+    });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error(
+      `Failed to sync metafields for variant ${poaVariantGid}: ${msg}`,
+    );
+  }
 }
 
 export default async function handler(
@@ -428,6 +566,26 @@ for (const cv of createdProduct.variants) {
   });
 }
 
+// ✅ Sync product metafields
+const productGid = `gid://shopify/Product/${createdProduct.id}`;
+await syncProductMetafields(productGid, p.metafields);
+
+// ✅ Sync variant metafields
+const createdVariantsBySkuMap = new Map<string, PoaVariant>();
+for (const cv of createdProduct.variants) {
+  if (cv.sku) {
+    createdVariantsBySkuMap.set(cv.sku, cv);
+  }
+}
+for (const v of p.variants) {
+  if (!v.sku) continue;
+  const createdVariant = createdVariantsBySkuMap.get(v.sku);
+  if (createdVariant) {
+    const variantGid = `gid://shopify/ProductVariant/${createdVariant.id}`;
+    await syncVariantMetafields(variantGid, v.metafields);
+  }
+}
+
         
 
         if (createdProduct) {
@@ -487,6 +645,20 @@ for (const cv of createdProduct.variants) {
           },
         );
         updatedCount += 1;
+
+        // ✅ Sync product metafields
+        const productGid = `gid://shopify/Product/${existing.id}`;
+        await syncProductMetafields(productGid, p.metafields);
+
+        // ✅ Sync variant metafields
+        for (const v of p.variants) {
+          if (!v.sku) continue;
+          const existingVariant = bySku.get(v.sku);
+          if (existingVariant) {
+            const variantGid = `gid://shopify/ProductVariant/${existingVariant.id}`;
+            await syncVariantMetafields(variantGid, v.metafields);
+          }
+        }
       } catch (err) {
         const msg =
           err instanceof Error ? err.message : String(err);

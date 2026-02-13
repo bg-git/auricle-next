@@ -226,6 +226,49 @@ export default function PoaPricingPage() {
     }
   };
 
+  const handleDisableAll = async () => {
+    if (!window.confirm('Disable POA for ALL variants? This will save immediately.')) {
+      return;
+    }
+
+    setSavingVariantId(-1); // Use -1 to indicate bulk operation
+    setError(null);
+
+    try {
+      // Disable all variants
+      const allVariants = products.flatMap((p) => p.variants);
+      const disabledVariants = allVariants.map((v) => ({ ...v, poaEnabled: false }));
+
+      // Update local state
+      setProducts((prev) =>
+        prev.map((p) => ({
+          ...p,
+          variants: p.variants.map((v) => ({ ...v, poaEnabled: false })),
+        })),
+      );
+
+      // Save all variants to Auricle
+      for (const variant of allVariants.filter((v) => v.poaEnabled)) {
+        await fetch('/api/admin/update-poa-variant', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            variantGid: variant.gid,
+            enabled: false,
+            poaPrice: variant.poaPrice,
+          }),
+        });
+      }
+
+      setError('✓ All variants disabled');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setError(msg);
+    } finally {
+      setSavingVariantId(null);
+    }
+  };
+
   if (loading) {
     return (
       <>
@@ -312,6 +355,14 @@ export default function PoaPricingPage() {
               </p>
             </div>
             <div className="admin-main__actions">
+              <button
+                type="button"
+                className="admin-button admin-button--danger"
+                onClick={handleDisableAll}
+                disabled={syncLoading}
+              >
+                Disable All
+              </button>
               <button
                 type="button"
                 className="admin-button admin-button--ghost"

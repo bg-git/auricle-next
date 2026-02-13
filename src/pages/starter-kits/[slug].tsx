@@ -105,15 +105,27 @@ export default function StarterKitPage({ kit, products, totalPrice, isSoldOut }:
           const variant = product.variants?.edges?.[0]?.node;
           if (!variant) return null;
 
+          const basePrice = parseFloat(variant.price.amount);
+          const memberPriceRaw = variant.metafield?.value ?? null;
+          const memberPrice =
+            memberPriceRaw !== null && memberPriceRaw !== ''
+              ? parseFloat(memberPriceRaw)
+              : null;
+          const effectivePrice = memberPrice !== null ? memberPrice : basePrice;
+
           return {
             variantId: variant.id,
             quantity: 1,
             meta: {
               title: product.title,
-              price: variant.price.amount,
+              price: effectivePrice.toString(),
+              basePrice: basePrice.toString(),
+              memberPrice: memberPrice !== null ? memberPrice.toString() : undefined,
+              currencyCode: 'GBP',
               image: product.images?.edges?.[0]?.node?.url,
               handle: product.handle,
               metafields: product.metafields,
+              quantityAvailable: variant.quantityAvailable,
             },
           };
         })

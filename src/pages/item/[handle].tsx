@@ -1203,6 +1203,13 @@ const testCertificateUrl = getFileUrl('test_certificate');
   }}
 >
   <tbody>
+  {extraRows.map((row, i) => (
+    <tr key={`extra-${i}`}>
+      <td style={cellLabelStyle}>{row.label.toUpperCase()}</td>
+      <td style={cellValueStyle}>{row.value}</td>
+    </tr>
+  ))}
+
   {detailKeys.map((key) => {
     const value =
       key === 'shipping'
@@ -1214,21 +1221,10 @@ const testCertificateUrl = getFileUrl('test_certificate');
     const label = copy.detailLabels[key];
 
     return (
-      <>
-        {key === 'shipping' && extraRows.map((row, i) => (
-          <tr key={`extra-${i}`}>
-            <td style={cellLabelStyle}>{row.label.toUpperCase()}</td>
-            <td style={cellValueStyle}>{row.value}</td>
-          </tr>
-        ))}
-
-        {value ? (
-          <tr key={key}>
-            <td style={cellLabelStyle}>{label.toUpperCase()}</td>
-            <td style={cellValueStyle}>{value}</td>
-          </tr>
-        ) : null}
-      </>
+      <tr key={key}>
+        <td style={cellLabelStyle}>{label.toUpperCase()}</td>
+        <td style={cellValueStyle}>{value}</td>
+      </tr>
     );
   })}
 </tbody>
@@ -1468,7 +1464,21 @@ const query = `
         { namespace: "custom", key: "variant_label" },
         { namespace: "custom", key: "fitting" },
         { namespace: "custom", key: "extra_table_rows" },
-        { namespace: "custom", key: "test_certificate" }
+        { namespace: "custom", key: "test_certificate" },
+        { namespace: "custom", key: "name" },
+        { namespace: "custom", key: "metal" },
+        { namespace: "custom", key: "alloy" },
+        { namespace: "custom", key: "metal_colour" },
+        { namespace: "custom", key: "thread_type" },
+        { namespace: "custom", key: "fitting" },
+        { namespace: "custom", key: "gem_type" },
+        { namespace: "custom", key: "gem_colour" },
+        { namespace: "custom", key: "gauge" },
+        { namespace: "custom", key: "base_size" },
+        { namespace: "custom", key: "length" },
+        { namespace: "custom", key: "width" },
+        { namespace: "custom", key: "height" },
+        { namespace: "custom", key: "sold_as" }
 
       ]) {
         key

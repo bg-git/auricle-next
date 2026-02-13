@@ -7,6 +7,7 @@ import type {
 } from 'next';
 import Stripe from 'stripe';
 import Link from 'next/link';
+import { useState } from 'react';
 import { withAdminBasicAuth } from '@/lib/withAdminBasicAuth';
 
 type AdminDashboardProps = {
@@ -212,6 +213,101 @@ function AdminDashboardPage({
   shopifyOrdersMonthCount,
   shopifyRevenueMonthMinor,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+  const [webhookLoading, setWebhookLoading] = useState(false);
+  const [webhookMessage, setWebhookMessage] = useState<{
+    type: 'success' | 'error';
+    text: string;
+  } | null>(null);
+  const [testProductHandle, setTestProductHandle] = useState(
+    'piercing-jewellery-oro-14k-yellow-gold-bezel-gem-earring-with-gold-drop-spike',
+  );
+  const [testWebhookLoading, setTestWebhookLoading] = useState(false);
+  const [testWebhookMessage, setTestWebhookMessage] = useState<{
+    type: 'success' | 'error';
+    text: string;
+  } | null>(null);
+
+  const handleRegisterWebhook = async () => {
+    setWebhookLoading(true);
+    setWebhookMessage(null);
+
+    try {
+      const response = await fetch('/api/admin/register-poa-webhook', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        let errorText = data.error || 'Failed to register webhook';
+        
+        // If there are userErrors from Shopify, show them
+        if (data.userErrors && Array.isArray(data.userErrors)) {
+          const userErrorMessages = data.userErrors
+            .map((e: { message: string }) => e.message)
+            .join(', ');
+          errorText = `${errorText}: ${userErrorMessages}`;
+        }
+        
+        setWebhookMessage({
+          type: 'error',
+          text: errorText,
+        });
+        console.error('Webhook registration error', data);
+        return;
+      }
+
+      setWebhookMessage({
+        type: 'success',
+        text: `✓ Webhook registered! Topic: ${data.webhook.topic}`,
+      });
+    } catch (err) {
+      setWebhookMessage({
+        type: 'error',
+        text: err instanceof Error ? err.message : 'Unknown error',
+      });
+    } finally {
+      setWebhookLoading(false);
+    }
+  };
+
+  const handleTestWebhook = async () => {
+    setTestWebhookLoading(true);
+    setTestWebhookMessage(null);
+
+    try {
+      const response = await fetch('/api/admin/test-poa-webhook', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productHandle: testProductHandle }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setTestWebhookMessage({
+          type: 'error',
+          text: data.error || 'Failed to test webhook',
+        });
+        console.error('Test webhook error', data);
+        return;
+      }
+
+      setTestWebhookMessage({
+        type: 'success',
+        text: `✓ Webhook triggered for "${testProductHandle}"! Check Pierce of Art.`,
+      });
+    } catch (err) {
+      setTestWebhookMessage({
+        type: 'error',
+        text: err instanceof Error ? err.message : 'Unknown error',
+      });
+    } finally {
+      setTestWebhookLoading(false);
+    }
+  };
+
   const vipRevenueMonthFormatted = (vipRevenueMonthMinor / 100).toLocaleString('en-GB', {
     style: 'currency',
     currency: 'GBP',
@@ -319,6 +415,91 @@ function AdminDashboardPage({
                 Enable Auricle products for Pierce of Art and set retail pricing.
               </p>
             </Link>
+
+            <div className="admin-card">
+              <h2 className="admin-card__title">POA Live Webhook</h2>
+              <p className="admin-card__meta">
+                Enable real-time sync when products update in Auricle.
+              </p>
+              <button
+                onClick={handleRegisterWebhook}
+                disabled={webhookLoading}
+                type="button"
+                style={{
+                  marginTop: '12px',
+                  padding: '8px 16px',
+                  backgroundColor: webhookLoading ? '#ccc' : '#333',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: webhookLoading ? 'not-allowed' : 'pointer',
+                  fontSize: '14px',
+                }}
+              >
+                {webhookLoading ? 'Registering...' : 'Register Webhook'}
+              </button>
+              {webhookMessage && (
+                <p
+                  style={{
+                    marginTop: '12px',
+                    color: webhookMessage.type === 'success' ? '#2ecc71' : '#e74c3c',
+                    fontSize: '14px',
+                  }}
+                >
+                  {webhookMessage.text}
+                </p>
+              )}
+            </div>
+
+            <div className="admin-card">
+              <h2 className="admin-card__title">Test Webhook (Local)</h2>
+              <p className="admin-card__meta">
+                Manually trigger the webhook for a specific product to test locally.
+              </p>
+              <input
+                type="text"
+                value={testProductHandle}
+                onChange={(e) => setTestProductHandle(e.target.value)}
+                placeholder="Enter product handle..."
+                style={{
+                  marginTop: '12px',
+                  width: '100%',
+                  padding: '8px',
+                  borderRadius: '4px',
+                  border: '1px solid #ddd',
+                  fontSize: '13px',
+                  boxSizing: 'border-box',
+                }}
+              />
+              <button
+                onClick={handleTestWebhook}
+                disabled={testWebhookLoading}
+                type="button"
+                style={{
+                  marginTop: '12px',
+                  padding: '8px 16px',
+                  backgroundColor: testWebhookLoading ? '#ccc' : '#666',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: testWebhookLoading ? 'not-allowed' : 'pointer',
+                  fontSize: '14px',
+                }}
+              >
+                {testWebhookLoading ? 'Testing...' : 'Trigger Webhook'}
+              </button>
+              {testWebhookMessage && (
+                <p
+                  style={{
+                    marginTop: '12px',
+                    color: testWebhookMessage.type === 'success' ? '#2ecc71' : '#e74c3c',
+                    fontSize: '14px',
+                  }}
+                >
+                  {testWebhookMessage.text}
+                </p>
+              )}
+            </div>
           </section>
 
           <section className="admin-main__section">
