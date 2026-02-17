@@ -82,10 +82,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const orders = await fetchAllOrders();
     console.log(`Fetched ${orders.length} orders`);
 
-    // Pre-fetch customer ID mappings
+    // Pre-fetch customer ID mappings (Supabase defaults to 1000 rows max)
     const { data: customers } = await supabaseAdmin
       .from('customers')
-      .select('id, shopify_customer_id');
+      .select('id, shopify_customer_id')
+      .limit(10000);
 
     const customerMap = new Map<string, number>();
     if (customers) {
@@ -97,7 +98,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Pre-fetch product ID mappings
     const { data: products } = await supabaseAdmin
       .from('products')
-      .select('id, shopify_product_id');
+      .select('id, shopify_product_id')
+      .limit(10000);
 
     const productMap = new Map<string, number>();
     if (products) {
