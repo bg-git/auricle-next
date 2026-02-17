@@ -193,7 +193,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     console.log(`Order sync complete: ${synced} synced, ${errors} errors`);
-    return res.status(200).json({ success: true, total: orders.length, synced, errors });
+    return res.status(200).json({
+      success: true,
+      total: orders.length,
+      synced,
+      errors,
+      debug: {
+        customersInMap: customerMap.size,
+        productsInMap: productMap.size,
+      },
+    });
   } catch (error: any) {
     console.error('Order sync failed:', error);
     return res.status(500).json({ error: error.message });
