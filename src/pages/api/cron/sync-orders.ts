@@ -82,32 +82,41 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const orders = await fetchAllOrders();
     console.log(`Fetched ${orders.length} orders`);
 
-    // Pre-fetch customer ID mappings (Supabase defaults to 1000 rows max)
-    const { data: customers } = await supabaseAdmin
-      .from('customers')
-      .select('id, shopify_customer_id')
-      .limit(10000);
-
+    // Pre-fetch customer ID mappings (paginate to bypass row limits)
     const customerMap = new Map<string, number>();
-    if (customers) {
-      for (const c of customers) {
+    let customerOffset = 0;
+    const PAGE_SIZE = 1000;
+    while (true) {
+      const { data: batch } = await supabaseAdmin
+        .from('customers')
+        .select('id, shopify_customer_id')
+        .range(customerOffset, customerOffset + PAGE_SIZE - 1);
+
+      if (!batch || batch.length === 0) break;
+      for (const c of batch) {
         customerMap.set(c.shopify_customer_id, c.id);
       }
+      if (batch.length < PAGE_SIZE) break;
+      customerOffset += PAGE_SIZE;
     }
 
-    // Pre-fetch product ID mappings
-    const { data: products } = await supabaseAdmin
-      .from('products')
-      .select('id, shopify_product_id')
-      .limit(10000);
-
+    // Pre-fetch product ID mappings (paginate to bypass row limits)
     const productMap = new Map<string, number>();
-    if (products) {
-      for (const p of products) {
+    let productOffset = 0;
+    while (true) {
+      const { data: batch } = await supabaseAdmin
+        .from('products')
+        .select('id, shopify_product_id')
+        .range(productOffset, productOffset + PAGE_SIZE - 1);
+
+      if (!batch || batch.length === 0) break;
+      for (const p of batch) {
         if (p.shopify_product_id) {
           productMap.set(p.shopify_product_id, p.id);
         }
       }
+      if (batch.length < PAGE_SIZE) break;
+      productOffset += PAGE_SIZE;
     }
 
     let synced = 0;
