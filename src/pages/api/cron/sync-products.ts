@@ -40,7 +40,7 @@ interface ShopifyProduct {
 async function fetchAllProducts(): Promise<ShopifyProduct[]> {
   const all: ShopifyProduct[] = [];
   let nextUrl: string | null =
-    `https://${auricleAdmin.domain}/admin/api/2025-01/products.json?limit=250&status=any`;
+    `https://${auricleAdmin.domain}/admin/api/2025-01/products.json?limit=250`;
 
   while (nextUrl) {
     const res: Response = await fetch(nextUrl, {
@@ -82,6 +82,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     let synced = 0;
     let errors = 0;
+    let firstError = '';
 
     for (const sp of products) {
       try {
@@ -106,6 +107,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         if (productError) {
           console.error(`Error upserting product ${sp.id}:`, productError.message);
+          if (!firstError) firstError = `Product ${sp.id}: ${productError.message}`;
           errors++;
           continue;
         }
@@ -163,7 +165,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     console.log(`Product sync complete: ${synced} synced, ${errors} errors`);
-    return res.status(200).json({ success: true, total: products.length, synced, errors });
+    return res.status(200).json({
+      success: true,
+      total: products.length,
+      synced,
+      errors,
+      debug: { firstError: firstError || null, domain: auricleAdmin.domain },
+    });
   } catch (error: any) {
     console.error('Product sync failed:', error);
     return res.status(500).json({ error: error.message });
