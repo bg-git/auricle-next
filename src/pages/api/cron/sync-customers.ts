@@ -74,6 +74,8 @@ async function fetchAllCustomers(): Promise<ShopifyCustomer[]> {
   return all;
 }
 
+const BATCH_SIZE = 50;
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -87,75 +89,98 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     let synced = 0;
     let errors = 0;
 
-    for (const sc of customers) {
-      try {
-        const customerData = {
-          shopify_customer_id: String(sc.id),
-          first_name: sc.first_name,
-          last_name: sc.last_name,
-          email: sc.email,
-          phone: sc.phone,
-          status: sc.state?.toUpperCase() || 'DISABLED',
-          orders_count: sc.orders_count || 0,
-          total_spent: sc.total_spent ? parseFloat(sc.total_spent) : 0,
-          currency: sc.currency || 'GBP',
-          accepts_marketing: sc.accepts_marketing || false,
-          tags: sc.tags ? sc.tags.split(', ').filter(Boolean) : [],
-          note: sc.note,
-          verified_email: sc.verified_email || false,
-          tax_exempt: sc.tax_exempt || false,
-          updated_at: new Date().toISOString(),
-        };
+    // Process customers in batches
+    for (let i = 0; i < customers.length; i += BATCH_SIZE) {
+      const batch = customers.slice(i, i + BATCH_SIZE);
 
-        const { data: customer, error: customerError } = await supabaseAdmin
-          .from('customers')
-          .upsert(customerData, { onConflict: 'shopify_customer_id' })
-          .select('id')
-          .single();
+      // Batch upsert customers
+      const customerRows = batch.map((sc) => ({
+        shopify_customer_id: String(sc.id),
+        first_name: sc.first_name,
+        last_name: sc.last_name,
+        email: sc.email,
+        phone: sc.phone,
+        status: sc.state?.toUpperCase() || 'DISABLED',
+        orders_count: sc.orders_count || 0,
+        total_spent: sc.total_spent ? parseFloat(sc.total_spent) : 0,
+        currency: sc.currency || 'GBP',
+        accepts_marketing: sc.accepts_marketing || false,
+        tags: sc.tags ? sc.tags.split(', ').filter(Boolean) : [],
+        note: sc.note,
+        verified_email: sc.verified_email || false,
+        tax_exempt: sc.tax_exempt || false,
+        updated_at: new Date().toISOString(),
+      }));
 
-        if (customerError) {
-          console.error(`Error upserting customer ${sc.id}:`, customerError.message);
-          errors++;
-          continue;
+      const { data: upsertedCustomers, error: batchError } = await supabaseAdmin
+        .from('customers')
+        .upsert(customerRows, { onConflict: 'shopify_customer_id' })
+        .select('id, shopify_customer_id');
+
+      if (batchError) {
+        console.error(`Batch upsert error (batch ${i / BATCH_SIZE}):`, batchError.message);
+        errors += batch.length;
+        continue;
+      }
+
+      // Build a map of shopify_customer_id -> supabase id for address linking
+      const idMap = new Map<string, number>();
+      if (upsertedCustomers) {
+        for (const c of upsertedCustomers) {
+          idMap.set(c.shopify_customer_id, c.id);
         }
+      }
 
-        // Sync addresses
-        if (sc.addresses?.length > 0 && customer) {
-          await supabaseAdmin.from('customer_addresses').delete().eq('customer_id', customer.id);
+      // Collect all addresses for this batch
+      const customerIds = Array.from(idMap.values());
+      if (customerIds.length > 0) {
+        // Delete existing addresses for this batch
+        await supabaseAdmin
+          .from('customer_addresses')
+          .delete()
+          .in('customer_id', customerIds);
 
-          const addresses = sc.addresses.map((addr) => ({
-            customer_id: customer.id,
-            shopify_address_id: String(addr.id),
-            first_name: addr.first_name,
-            last_name: addr.last_name,
-            company: addr.company,
-            address1: addr.address1,
-            address2: addr.address2,
-            city: addr.city,
-            province: addr.province,
-            province_code: addr.province_code,
-            country: addr.country,
-            country_code: addr.country_code,
-            zip: addr.zip,
-            phone: addr.phone,
-            is_default: addr.default || false,
-            updated_at: new Date().toISOString(),
-          }));
+        // Collect all new addresses
+        const allAddresses: any[] = [];
+        for (const sc of batch) {
+          const customerId = idMap.get(String(sc.id));
+          if (!customerId || !sc.addresses?.length) continue;
 
-          const { error: addrError } = await supabaseAdmin
-            .from('customer_addresses')
-            .insert(addresses);
-
-          if (addrError) {
-            console.error(`Error inserting addresses for customer ${sc.id}:`, addrError.message);
+          for (const addr of sc.addresses) {
+            allAddresses.push({
+              customer_id: customerId,
+              shopify_address_id: String(addr.id),
+              first_name: addr.first_name,
+              last_name: addr.last_name,
+              company: addr.company,
+              address1: addr.address1,
+              address2: addr.address2,
+              city: addr.city,
+              province: addr.province,
+              province_code: addr.province_code,
+              country: addr.country,
+              country_code: addr.country_code,
+              zip: addr.zip,
+              phone: addr.phone,
+              is_default: addr.default || false,
+              updated_at: new Date().toISOString(),
+            });
           }
         }
 
-        synced++;
-      } catch (err: any) {
-        console.error(`Error processing customer ${sc.id}:`, err.message);
-        errors++;
+        if (allAddresses.length > 0) {
+          const { error: addrError } = await supabaseAdmin
+            .from('customer_addresses')
+            .insert(allAddresses);
+
+          if (addrError) {
+            console.error(`Address insert error (batch ${i / BATCH_SIZE}):`, addrError.message);
+          }
+        }
       }
+
+      synced += upsertedCustomers?.length || 0;
+      console.log(`Synced ${synced}/${customers.length} customers...`);
     }
 
     console.log(`Customer sync complete: ${synced} synced, ${errors} errors`);
