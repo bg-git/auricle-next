@@ -1,0 +1,151 @@
+import { NextRequest, NextResponse } from 'next/server';
+import crypto from 'crypto';
+import { supabaseAdmin } from '@/lib/supabase-server';
+
+function verifyShopifyWebhook(body: string, hmacHeader: string): boolean {
+  const secret = process.env.SHOPIFY_WEBHOOK_SECRET;
+  if (!secret) {
+    console.error('SHOPIFY_WEBHOOK_SECRET is not set');
+    return false;
+  }
+  const hash = crypto.createHmac('sha256', secret).update(body, 'utf8').digest('base64');
+  return crypto.timingSafeEqual(Buffer.from(hash), Buffer.from(hmacHeader));
+}
+
+export async function POST(request: NextRequest) {
+  const topic = request.headers.get('x-shopify-topic');
+  const hmac = request.headers.get('x-shopify-hmac-sha256');
+
+  if (!topic || !hmac) {
+    return NextResponse.json({ error: 'Missing Shopify headers' }, { status: 400 });
+  }
+
+  const rawBody = await request.text();
+
+  if (!verifyShopifyWebhook(rawBody, hmac)) {
+    console.error('Webhook verification failed for topic:', topic);
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const payload = JSON.parse(rawBody);
+  console.log(`📨 Shopify webhook received: ${topic}`);
+
+  try {
+    switch (topic) {
+      case 'products/update':
+      case 'products/create':
+        await handleProductUpdate(payload);
+        break;
+
+      case 'products/delete':
+        await handleProductDelete(payload);
+        break;
+
+      default:
+        console.log(`Unhandled webhook topic: ${topic}`);
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    console.error(`Error processing webhook ${topic}:`, error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
+async function handleProductUpdate(payload: any) {
+  const shopifyProductId = String(payload.id);
+
+  // Update main product fields
+  const productUpdate = {
+    title: payload.title,
+    handle: payload.handle,
+    description: payload.body_html,
+    status: payload.status?.toUpperCase() ?? 'DRAFT',
+    vendor: payload.vendor,
+    product_type: payload.product_type,
+    tags: payload.tags ? payload.tags.split(', ').filter(Boolean) : [],
+    published_at: payload.published_at,
+    updated_at: new Date().toISOString(),
+  };
+
+  const { error: productError } = await supabaseAdmin
+    .from('products')
+    .update(productUpdate)
+    .eq('shopify_product_id', shopifyProductId);
+
+  if (productError) {
+    console.error('Error updating product:', productError);
+    throw new Error(productError.message);
+  }
+
+  // Update all variants — this includes inventory_quantity from Shopify
+  if (payload.variants && payload.variants.length > 0) {
+    for (const shopifyVariant of payload.variants) {
+      const variantUpdate = {
+        title: shopifyVariant.title,
+        price: shopifyVariant.price ? parseFloat(shopifyVariant.price) : null,
+        compare_at_price: shopifyVariant.compare_at_price
+          ? parseFloat(shopifyVariant.compare_at_price)
+          : null,
+        sku: shopifyVariant.sku || null,
+        barcode: shopifyVariant.barcode || null,
+        inventory_quantity: shopifyVariant.inventory_quantity ?? 0,
+        updated_at: new Date().toISOString(),
+      };
+
+      const { error: variantError } = await supabaseAdmin
+        .from('variants')
+        .update(variantUpdate)
+        .eq('shopify_variant_id', String(shopifyVariant.id));
+
+      if (variantError) {
+        console.error('Error updating variant:', shopifyVariant.id, variantError);
+      }
+    }
+  }
+
+  // Update product images
+  if (payload.images && payload.images.length > 0) {
+    const { data: product } = await supabaseAdmin
+      .from('products')
+      .select('id')
+      .eq('shopify_product_id', shopifyProductId)
+      .single();
+
+    if (product) {
+      await supabaseAdmin.from('product_images').delete().eq('product_id', product.id);
+
+      const images = payload.images.map((img: any, index: number) => ({
+        product_id: product.id,
+        shopify_image_id: String(img.id),
+        src: img.src,
+        alt_text: img.alt || null,
+        position: img.position ?? index + 1,
+        updated_at: new Date().toISOString(),
+      }));
+
+      const { error: imgError } = await supabaseAdmin.from('product_images').insert(images);
+      if (imgError) {
+        console.error('Error updating product images:', imgError);
+      }
+    }
+  }
+
+  console.log(`✅ Product synced: ${shopifyProductId} (${payload.title})`);
+}
+
+async function handleProductDelete(payload: any) {
+  const shopifyProductId = String(payload.id);
+
+  const { error } = await supabaseAdmin
+    .from('products')
+    .delete()
+    .eq('shopify_product_id', shopifyProductId);
+
+  if (error) {
+    console.error('Error deleting product:', error);
+    throw new Error(error.message);
+  }
+
+  console.log(`🗑️ Product deleted: ${shopifyProductId}`);
+}

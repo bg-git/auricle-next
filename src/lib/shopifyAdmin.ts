@@ -195,3 +195,30 @@ export async function shopifyAdminPut(
 
   return res.json();
 }
+
+/**
+ * Get variant costs for a product via REST API
+ * Returns array of {id (as GraphQL ID), cost}
+ * 
+ * NOTE: REST API returns numeric IDs, but Supabase stores GraphQL format IDs,
+ * so we convert them back to GraphQL format for database matching
+ */
+export async function shopifyAdminGetProductVariantCosts(
+  store: ShopifyAdminConfig,
+  shopifyProductId: string,
+): Promise<Array<{ id: string; cost: number | null }>> {
+  try {
+    // Extract numeric ID from graphql ID (gid://shopify/Product/12345 -> 12345)
+    const numericProductId = shopifyProductId.split('/').pop();
+    const data = await shopifyAdminGet(store, `products/${numericProductId}/variants.json?limit=250`);
+    
+    // REST API returns numeric variant IDs, but we need GraphQL format for DB matching
+    return (data.variants || []).map((v: any) => ({
+      id: `gid://shopify/ProductVariant/${v.id}`, // Convert to GraphQL format
+      cost: v.cost ? parseFloat(v.cost) : null,
+    }));
+  } catch (error) {
+    console.warn(`Failed to fetch variant costs for ${shopifyProductId}:`, error);
+    return [];
+  }
+}
