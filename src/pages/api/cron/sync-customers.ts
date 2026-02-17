@@ -2,6 +2,10 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { supabaseAdmin } from '@/lib/supabase';
 import { auricleAdmin } from '@/lib/shopifyAdmin';
 
+export const config = {
+  maxDuration: 300,
+};
+
 interface ShopifyAddress {
   id: number;
   first_name: string | null;

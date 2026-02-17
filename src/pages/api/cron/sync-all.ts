@@ -1,5 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
+export const config = {
+  maxDuration: 300,
+};
+
 const CRON_SECRET = process.env.CRON_SECRET;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
