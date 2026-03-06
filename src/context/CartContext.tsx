@@ -77,6 +77,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const abortController = useRef<AbortController | null>(null);
   const latestItemsRef = useRef<CartItem[]>(cartItems);
   const draftRequestRef = useRef(0);
+  const revalidatingRef = useRef(false);
 
   const { addFavourite, isFavourite } = useFavourites();
   const { showToast } = useToast();
@@ -98,6 +99,89 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     setDraftSignature(null);
     setDraftStatus('idle');
     draftRequestRef.current += 1;
+  };
+
+  const revalidateInventory = async (items: CartItem[]) => {
+    if (items.length === 0 || revalidatingRef.current) return;
+    revalidatingRef.current = true;
+
+    try {
+      const variantIds = items.map((item) => item.variantId);
+      const res = await fetch('/api/check-inventory', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ variantIds }),
+      });
+
+      if (!res.ok) return;
+
+      const data = await res.json();
+      const inventory = new Map<
+        string,
+        { availableForSale: boolean; quantityAvailable: number }
+      >(
+        (data.variants || []).map(
+          (v: { id: string; availableForSale: boolean; quantityAvailable: number }) => [v.id, v]
+        )
+      );
+
+      let removed = false;
+      let adjusted = false;
+
+      const updated = items
+        .filter((item) => {
+          const stock = inventory.get(item.variantId);
+          if (!stock) return true; // keep items we couldn't look up
+          if (!stock.availableForSale || stock.quantityAvailable <= 0) {
+            removed = true;
+            return false;
+          }
+          return true;
+        })
+        .map((item) => {
+          const stock = inventory.get(item.variantId);
+          if (!stock) return item;
+
+          const newAvailable = stock.quantityAvailable;
+          const cappedQty =
+            item.quantity > newAvailable ? newAvailable : item.quantity;
+
+          if (cappedQty < item.quantity) adjusted = true;
+
+          return {
+            ...item,
+            quantity: cappedQty,
+            quantityAvailable: newAvailable,
+          };
+        });
+
+      if (removed || adjusted) {
+        setCartItems(updated);
+        latestItemsRef.current = updated;
+        scheduleSync(updated);
+        resetDraftState();
+
+        if (removed) {
+          showToast('Some items have been removed as they are no longer available');
+        }
+        if (adjusted) {
+          showToast('Some item quantities have been adjusted based on availability');
+        }
+      } else {
+        // Update quantityAvailable silently even if no removals/adjustments
+        const refreshed = items.map((item) => {
+          const stock = inventory.get(item.variantId);
+          if (!stock) return item;
+          return { ...item, quantityAvailable: stock.quantityAvailable };
+        });
+        setCartItems(refreshed);
+        latestItemsRef.current = refreshed;
+      }
+    } catch {
+      // Silently fail — don't break the cart
+    } finally {
+      revalidatingRef.current = false;
+    }
   };
 
   const computeDraftSignature = (items: CartItem[], vip: boolean) =>
@@ -239,6 +323,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       }
     }
 
+    if (!storedId && parsedItems.length > 0) {
+      revalidateInventory(parsedItems);
+    }
+
     if (storedId) {
       setCheckoutId(storedId);
       fetch('/api/get-checkout', {
@@ -262,6 +350,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
                 setCheckoutId(data.checkoutId);
                 setCheckoutUrl(data.checkoutUrl);
                 checkoutUrlRef.current = data.checkoutUrl;
+                revalidateInventory(parsedItems);
               })
               .catch(() => {
                 setCheckoutId(null);
@@ -302,6 +391,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
           setCartItems(items);
           setCheckoutUrl(cart.checkoutUrl);
           checkoutUrlRef.current = cart.checkoutUrl;
+          revalidateInventory(items);
         })
         .catch(() => {
           setCheckoutId(null);
@@ -360,6 +450,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         checkIfCompleted();
+        revalidateInventory(latestItemsRef.current);
       }
     };
 
