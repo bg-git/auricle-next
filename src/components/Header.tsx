@@ -286,7 +286,7 @@ function Header() {
           }}
         >
           {[
-            { label: 'NEW', href: '/new' },
+            { label: 'NEW', href: '/browse/new' },
             { label: 'STARTER KITS', href: '/starter-kits' },
             { label: 'ESSENTIALS', href: '/browse/essentials' },
             { label: 'ENDS & GEMS', href: '/browse/ends-gems' },
