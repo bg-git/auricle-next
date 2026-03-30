@@ -20,7 +20,7 @@ export default function AnnouncementBanner() {
         src="/shipping-icon.png"
         alt="Fast shipping"
         width="20"
-        height="20"
+        height="auto"
         style={{
           display: 'block',
           flexShrink: 0,
