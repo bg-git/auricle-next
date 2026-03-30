@@ -36,6 +36,7 @@ import '@/styles/pages/piercing-wholesalers.scss';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import BreadcrumbSchema from '@/components/BreadcrumbSchema';
+import AnnouncementBanner from '@/components/AnnouncementBanner';
 import AccountCompletionBanner from '@/components/AccountCompletionBanner';
 import { CartProvider } from '@/context/CartContext';
 import { AuthProvider } from '@/context/AuthContext';
@@ -60,6 +61,23 @@ interface MyAppProps extends AppProps {
 export default function MyApp({ Component, pageProps }: MyAppProps) {
   const initialRegion: Region = pageProps.region ?? 'uk';
   const noLayout = pageProps.noLayout === true;
+
+  // ------------------------------
+  // Auto-reload when a new service worker takes control
+  // (prevents stale cached JS after deploys, especially on iOS Safari)
+  // ------------------------------
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return;
+
+    const onControllerChange = () => {
+      window.location.reload();
+    };
+
+    navigator.serviceWorker.addEventListener('controllerchange', onControllerChange);
+    return () => {
+      navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange);
+    };
+  }, []);
 
   // ------------------------------
   // Scroll restoration (fixes: back to "/" not remembering position)
@@ -161,6 +179,7 @@ export default function MyApp({ Component, pageProps }: MyAppProps) {
                           minHeight: '100dvh',
                         }}
                       >
+                        <AnnouncementBanner />
                         <AccountCompletionBanner />
                         <Header />
                         <main style={{ flex: '1 0 auto' }}>
