@@ -4,7 +4,7 @@ export default function AnnouncementBanner() {
       style={{
         backgroundColor: '#181818',
         color: 'white',
-        padding: '12px 16px',
+        padding: '8px 16px',
         textAlign: 'center',
         fontSize: '14px',
         fontWeight: '500',
@@ -13,13 +13,14 @@ export default function AnnouncementBanner() {
         justifyContent: 'center',
         alignItems: 'center',
         gap: '8px',
+        lineHeight: '1',
       }}
     >
       <img
         src="/shipping-icon.png"
         alt="Fast shipping"
-        width="24"
-        height="auto"
+        width="20"
+        height="20"
         style={{
           display: 'block',
           flexShrink: 0,
